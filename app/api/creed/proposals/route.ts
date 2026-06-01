@@ -75,7 +75,7 @@ export async function POST(request: Request) {
     : submittedBody.draft;
   const draftKind = normalizedDraft?.kind;
 
-  // Categorisation defaults — applied to every draft kind, not just meta
+  // Categorisation defaults - applied to every draft kind, not just meta
   // operations. `changeType` / `impact` / `confidence` are bookkeeping
   // fields that drive the activity sidebar's labelling; agents that omit
   // them shouldn't be forced into a 400. The per-kind table below picks
@@ -305,7 +305,7 @@ export async function POST(request: Request) {
   };
 
   // For meta proposals (delete / rename / recolor), the activity diff
-  // should compare like-for-like labels — not the section's entire content
+  // should compare like-for-like labels - not the section's entire content
   // against a one-line summary, which renders as if everything was deleted.
   const metaDiff = getMetaProposalDiffText(normalizedProposal.draft, targetSection);
   const summaryByMetaKind: Record<string, string> = {

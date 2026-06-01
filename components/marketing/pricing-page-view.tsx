@@ -339,7 +339,7 @@ function HostedPurchaseCta() {
     );
   }
 
-  // Signed-in but unpaid (or still resolving auth/paid — show the same
+  // Signed-in but unpaid (or still resolving auth/paid - show the same
   // button so the layout doesn't jump while paidStatus is "unknown").
   return (
     <button

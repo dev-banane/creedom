@@ -32,7 +32,7 @@ export const dynamic = "force-dynamic";
 // 4. Bad session / not paid / no session_id
 //      → render the generic "back to pricing" view.
 //
-// The upsert in branch (1) is a belt-and-braces alongside the webhook —
+// The upsert in branch (1) is a belt-and-braces alongside the webhook -
 // whichever lands first writes, the second is a no-op (UNIQUE on
 // stripe_session_id + PK on user_id). So if the user lands here before
 // the webhook fires, they still get entitled instantly.
@@ -92,7 +92,7 @@ async function resolveState(sessionId: string | null): Promise<SuccessState> {
       { sessionId, userId: supabaseUserId },
       error instanceof Error ? error : new Error(String(error))
     );
-    // Don't fail the page — the webhook will retry. The user can click
+    // Don't fail the page - the webhook will retry. The user can click
     // Continue and the entitlement gate will let them through once the
     // row exists.
   }
@@ -174,7 +174,7 @@ function Invalid() {
       <h1 className="t-section text-[var(--creed-text-primary)]">Something went sideways</h1>
       <p className="mt-4 max-w-sm text-[15px] leading-7 text-[var(--creed-text-secondary)]">
         We couldn&apos;t verify this checkout session. If you completed payment, the webhook
-        usually catches up within a minute — try refreshing, or head back to pricing.
+        usually catches up within a minute - try refreshing, or head back to pricing.
       </p>
       <Link
         href="/pricing"

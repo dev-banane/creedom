@@ -5,7 +5,7 @@ import { Plugin, PluginKey, TextSelection } from "@tiptap/pm/state";
 
 const PLACEHOLDER = "tag";
 
-// Inline tag mark — renders as <span class="creed-inline-tag" data-tag="value">.
+// Inline tag mark - renders as <span class="creed-inline-tag" data-tag="value">.
 // Used to embed Obsidian-style #tags inline in any rich-text paragraph.
 export const InlineTagMark = Mark.create({
   name: "creedInlineTag",

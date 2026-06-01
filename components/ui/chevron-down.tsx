@@ -15,7 +15,7 @@ interface ChevronDownIconProps extends HTMLAttributes<HTMLDivElement> {
   size?: number;
 }
 
-// Animated dropdown chevron — small downward bounce on hover, matches the
+// Animated dropdown chevron - small downward bounce on hover, matches the
 // other animated icons in components/ui/. Use alongside a parent state to
 // rotate 180° when the menu is open.
 const ChevronDownIcon = forwardRef<ChevronDownIconHandle, ChevronDownIconProps>(

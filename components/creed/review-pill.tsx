@@ -59,7 +59,7 @@ export function ReviewPill({
       const summary = summarizeDiff(parts);
       // Override the +N/−N counts for structural proposals. The raw diff
       // between section content and the meta preview ("Delete section",
-      // "Rename to Foo") produces misleading numbers — for a delete the
+      // "Rename to Foo") produces misleading numbers - for a delete the
       // existing content gets counted as removed AND the literal "Delete
       // section" string gets counted as added, which inverts the signal.
       // Force the badges to read as: delete → +0 −1, new-section → +1 −0.
@@ -87,7 +87,7 @@ export function ReviewPill({
 
   // Hover-driven open/close. A single shared close timer means moving the
   // cursor between the trigger, the content, or any sub-panel cancels the
-  // pending close — but lingering away from all of them closes after
+  // pending close - but lingering away from all of them closes after
   // ~200ms, so the dropdown disappears as soon as the user clearly moves on.
   const [open, setOpen] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -145,7 +145,7 @@ export function ReviewPill({
             <AnimatedChevronDown
               size={14}
               // Tertiary by default, flips to primary text colour when the
-              // trigger row is hovered or the dropdown is open — matches
+              // trigger row is hovered or the dropdown is open - matches
               // the chevron behaviour on the profile and colour dropdowns.
               className="-rotate-90 text-[var(--creed-text-tertiary)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/trigger:text-[var(--creed-text-primary)] group-data-[state=open]/trigger:rotate-0 group-data-[state=open]/trigger:text-[var(--creed-text-primary)]"
             />
@@ -175,7 +175,7 @@ export function ReviewPill({
           onMouseEnter={isMobile ? undefined : cancelClose}
           onMouseLeave={isMobile ? undefined : scheduleClose}
           onCloseAutoFocus={(event) => {
-            // Don't return focus to the trigger button on close — the
+            // Don't return focus to the trigger button on close - the
             // browser's smooth `scrollIntoView` from a "Jump to section"
             // click was getting interrupted by Radix's auto-focus.
             event.preventDefault();
@@ -255,7 +255,7 @@ export function ReviewPill({
                   </div>
                   <div className="creed-diff-block max-h-[200px] overflow-y-auto px-3 py-2 text-[12px] leading-5">
                     {isDeleteProposal ? (
-                      // Style the Delete line as a removal — same red
+                      // Style the Delete line as a removal - same red
                       // background + strikethrough as the diff machinery's
                       // `creed-diff-remove` so the affordance is consistent
                       // with how removed text is already shown elsewhere.
@@ -289,7 +289,7 @@ export function ReviewPill({
                       type="button"
                       onClick={() => {
                         // Close immediately so the smooth scroll is the
-                        // only thing the page is doing — and so the
+                        // only thing the page is doing - and so the
                         // dropdown unmount can't fight the scroll.
                         cancelClose();
                         setOpen(false);

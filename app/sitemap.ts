@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/supabase/env";
 
-// Only marketing routes go in the sitemap — anything behind the
+// Only marketing routes go in the sitemap - anything behind the
 // entitlement gate (/file, /onboarding, /connections, /settings) would
 // redirect to /pricing for unauthenticated crawlers, so listing them is
 // pointless and pollutes search results.

@@ -11,9 +11,9 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // navigation between marketing routes doesn't re-hit /api/stripe/status.
 //
 // Returns:
-//   "unknown" — auth state is still loading or we haven't asked yet.
-//   "unpaid" — signed-out, or signed-in without a creed_entitlements row.
-//   "paid"   — signed-in with a `status = 'paid'` row.
+//   "unknown" - auth state is still loading or we haven't asked yet.
+//   "unpaid" - signed-out, or signed-in without a creed_entitlements row.
+//   "paid"   - signed-in with a `status = 'paid'` row.
 //
 // Signing out invalidates the cache so the next signed-in user starts
 // fresh.
@@ -62,7 +62,7 @@ export function usePaidStatus(configured: boolean = true): PaidStatus {
       const cached = readCache(userId);
       if (cached) {
         if (active) setStatus(cached);
-        // Don't return — fall through and refresh in the background so a
+        // Don't return - fall through and refresh in the background so a
         // user who just paid sees the green Owned pill within seconds of
         // returning to a marketing page.
       }

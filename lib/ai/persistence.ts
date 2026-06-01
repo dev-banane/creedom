@@ -31,7 +31,7 @@ export type PublicAiSettings = {
   lastValidatedAt?: string;
 };
 
-export type AiUsageRange = "24h" | "7d" | "30d" | "1y";
+export type AiUsageRange = "7d" | "30d" | "90d";
 
 export type AiUsageSummary = {
   range: AiUsageRange;
@@ -210,16 +210,8 @@ export async function recordAiUsage({
 
 export function getRangeStart(range: AiUsageRange) {
   const now = Date.now();
-  const ms =
-    range === "24h"
-      ? 24 * 60 * 60 * 1000
-      : range === "7d"
-        ? 7 * 24 * 60 * 60 * 1000
-        : range === "30d"
-          ? 30 * 24 * 60 * 60 * 1000
-          : 365 * 24 * 60 * 60 * 1000;
-
-  return new Date(now - ms).toISOString();
+  const days = range === "7d" ? 7 : range === "30d" ? 30 : 90;
+  return new Date(now - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 export async function readAiUsageSummary(client: unknown, userId: string, range: AiUsageRange) {

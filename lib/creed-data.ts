@@ -2,7 +2,7 @@
 // is derived from this array so the runtime list (used by validators and by
 // the agent contract docs) can never drift from the compile-time type.
 // The order the accent picker renders cells in. Sorted along a colour
-// wheel — warm → cool → neutral — so the grid reads as a coherent
+// wheel - warm → cool → neutral - so the grid reads as a coherent
 // gradient rather than a random palette. `custom` is intentionally
 // excluded; existing data using it renders as `mono`.
 export const VISIBLE_ACCENT_KEYS: readonly AccentKey[] = [
@@ -42,7 +42,7 @@ export const ACCENT_KEYS = [
   // Yellow added to fill the colour-wheel picker (between amber and lime).
   "yellow",
   // Mono is the theme-aware end of the palette (black in light mode,
-  // white in dark mode) — replaces the legacy "Grey" presentation of
+  // white in dark mode) - replaces the legacy "Grey" presentation of
   // `custom`. `custom` is kept in the type for back-compat with existing
   // stored sections but is no longer shown in the picker.
   "mono",
@@ -122,7 +122,7 @@ export const HEALTH_SECTION_ID = "health";
 export const ROUTINES_SECTION_ID = "routines";
 export const CONTEXT_SECTION_ID = "context";
 
-// Legacy IDs — kept so historical Creeds with the old dev-leaning section set
+// Legacy IDs - kept so historical Creeds with the old dev-leaning section set
 // still hydrate cleanly. New starter files never emit these.
 export const OPERATING_PRINCIPLES_SECTION_ID = "operating-principles";
 export const CURRENT_FOCUS_SECTION_ID = "current-focus";
@@ -325,7 +325,7 @@ export function normalizeLegacyAccent(accent: AccentKey | "conventions"): Accent
 
 // Coerces every legacy draft shape into the unified rich-text draft. Older
 // agents may still submit drafts with kind "operating-principles", "rules",
-// "chips", "decisions", "current-focus" — we render their payload to markdown
+// "chips", "decisions", "current-focus" - we render their payload to markdown
 // and pass it through as a rich-text update.
 export function normalizeLegacyProposalDraft(draft: ProposalDraft | { kind?: string }): ProposalDraft {
   const raw = draft && typeof draft === "object" ? (draft as Record<string, unknown>) : {};
@@ -383,7 +383,7 @@ export function normalizeLegacyProposalDraft(draft: ProposalDraft | { kind?: str
     };
   }
 
-  // Legacy shapes — flatten to rich-text markdown.
+  // Legacy shapes - flatten to rich-text markdown.
   if (kind === "operating-principles") {
     const text = stringField("text") ?? "";
     return {
@@ -395,7 +395,7 @@ export function normalizeLegacyProposalDraft(draft: ProposalDraft | { kind?: str
   if (kind === "decisions") {
     const title = stringField("title") ?? stringField("content") ?? "";
     const details = stringField("details");
-    const body = details ? `**${title}** — ${details}` : `**${title}**`;
+    const body = details ? `**${title}** - ${details}` : `**${title}**`;
     return {
       kind: "rich-text",
       contentMarkdown: title ? `- ${body}` : "",
@@ -516,7 +516,7 @@ export function legacyPayloadToRichTextContent(
       .map((entry) => {
         const title = `<strong>${escapeHtml(entry.title!.trim())}</strong>`;
         const details = entry.details && entry.details.trim().length > 0
-          ? ` — ${escapeHtml(entry.details.trim())}`
+          ? ` - ${escapeHtml(entry.details.trim())}`
           : "";
         return `<li>${title}${details}</li>`;
       })
@@ -758,7 +758,7 @@ export const accentTintMap: Record<AccentKey, string> = {
   mono: "var(--accent-tint-mono)",
   output: "var(--accent-tint-output)",
   rose: "var(--accent-tint-rose)",
-  // Legacy alias — render with the same theme-aware tint as mono.
+  // Legacy alias - render with the same theme-aware tint as mono.
   custom: "var(--accent-tint-mono)",
 };
 
@@ -779,7 +779,7 @@ export const accentLabelMap: Record<AccentKey, string> = {
   rose: "Rose",
   yellow: "Yellow",
   mono: "Mono",
-  // Legacy storage value — surface it under the new name so users see the
+  // Legacy storage value - surface it under the new name so users see the
   // same label regardless of when their section was created.
   custom: "Mono",
 };
@@ -1063,7 +1063,7 @@ export function sectionToMarkdown(section: CreedSection) {
     "#$1"
   );
 
-  // Inline formatting — convert rich-text spans to their markdown
+  // Inline formatting - convert rich-text spans to their markdown
   // equivalents BEFORE the generic stripTags pass runs at the end of
   // this function. Without these conversions, bold / italic / links /
   // inline code / strikethrough / highlight all get stripped to plain
@@ -1100,7 +1100,7 @@ export function sectionToMarkdown(section: CreedSection) {
       `\n\`\`\`${lang ?? ""}\n${decodeEntities(body).trimEnd().replace(/^\n+/, "")}\n\`\`\`\n`
   );
 
-  // Headings — shift down one level so they nest under the section's `## Name`.
+  // Headings - shift down one level so they nest under the section's `## Name`.
   text = text.replace(/<h2[^>]*>([\s\S]*?)<\/h2>/g, (_match, body: string) => `\n### ${stripTags(body).trim()}\n`);
   text = text.replace(/<h3[^>]*>([\s\S]*?)<\/h3>/g, (_match, body: string) => `\n#### ${stripTags(body).trim()}\n`);
 
@@ -1130,7 +1130,7 @@ export function sectionToMarkdown(section: CreedSection) {
     return items.length ? `\n${items.join("\n")}\n` : "";
   });
 
-  // Paragraphs — drop empty paragraphs entirely so we don't emit blank lines
+  // Paragraphs - drop empty paragraphs entirely so we don't emit blank lines
   // for `<p></p>` placeholders that the editor sometimes leaves behind.
   text = text.replace(/<p[^>]*>([\s\S]*?)<\/p>/g, (_match, body: string) => {
     const inner = stripTags(body).trim();
@@ -1282,7 +1282,7 @@ export function buildHiddenAgentGuidanceMarkdown(
   // Every kind the proposals route accepts. Listed here so the example
   // body in the contract and the policy JSON both stay in sync with the
   // actual server-side validator. Meta kinds (delete/rename/recolor) are
-  // available regardless of approval mode — proposals are how agents do
+  // available regardless of approval mode - proposals are how agents do
   // those operations when approval is on.
   const proposalDraftKinds = [
     "rich-text",
@@ -1347,7 +1347,7 @@ export function buildHiddenAgentGuidanceMarkdown(
             editable_sections: editableSections,
             // Proposals can also create new sections (and delete / rename /
             // recolor existing ones). When approval is on, this is the ONLY
-            // path for those mutations — direct_edit is disabled.
+            // path for those mutations - direct_edit is disabled.
             create_section_allowed: true,
             proposal_target_sections: proposalTargetSections,
             proposal_draft_kinds: proposalDraftKinds,
@@ -1368,26 +1368,26 @@ export function buildHiddenAgentGuidanceMarkdown(
       "**Use these tools. Flat params, server picks the mode, errors tell you valid options.**",
       "",
       "Mutation tools:",
-      "- `creed_update_section({ sectionId, contentMarkdown })` — rewrite a section's body.",
-      "- `creed_append_to_section({ sectionId, contentMarkdown })` — add new content to a section WITHOUT rewriting existing content. Prefer this for new facts.",
-      "- `creed_create_section({ name, contentMarkdown, accent?, insertAfterSectionId? })` — add a new section.",
-      "- `creed_delete_section({ sectionId })` — remove a section.",
-      "- `creed_rename_section({ sectionId, name })` — give a section a new name.",
-      "- `creed_recolor_section({ sectionId, accent })` — change a section's accent.",
-      "- `creed_reorder_section({ sectionId, afterSectionId? | position? })` — move a section. Pass `position: \"first\" | \"last\"` OR `afterSectionId`, not both.",
+      "- `creed_update_section({ sectionId, contentMarkdown })` - rewrite a section's body.",
+      "- `creed_append_to_section({ sectionId, contentMarkdown })` - add new content to a section WITHOUT rewriting existing content. Prefer this for new facts.",
+      "- `creed_create_section({ name, contentMarkdown, accent?, insertAfterSectionId? })` - add a new section.",
+      "- `creed_delete_section({ sectionId })` - remove a section.",
+      "- `creed_rename_section({ sectionId, name })` - give a section a new name.",
+      "- `creed_recolor_section({ sectionId, accent })` - change a section's accent.",
+      "- `creed_reorder_section({ sectionId, afterSectionId? | position? })` - move a section. Pass `position: \"first\" | \"last\"` OR `afterSectionId`, not both.",
       "",
       "Read tools (use these to operate with surgical precision instead of re-reading the whole profile):",
-      "- `creed_get_section({ sectionId })` — fetch ONE section in full (id, name, accent, contentHtml, lastEditedBy). Use this before update / append.",
-      "- `creed_search({ query, limit? })` — locate where a fact lives. Returns ranked sections with snippets.",
-      "- `creed_get_recent_activity({ limit?, sinceISO? })` — see what other agents recently did. Useful to avoid duplicate proposals.",
-      "- `creed_get_quality_report({ sectionId? })` — see auto-generated quality scores so you can target the weakest sections.",
+      "- `creed_get_section({ sectionId })` - fetch ONE section in full (id, name, accent, contentHtml, lastEditedBy). Use this before update / append.",
+      "- `creed_search({ query, limit? })` - locate where a fact lives. Returns ranked sections with snippets.",
+      "- `creed_get_recent_activity({ limit?, sinceISO? })` - see what other agents recently did. Useful to avoid duplicate proposals.",
+      "- `creed_get_quality_report({ sectionId? })` - see auto-generated quality scores so you can target the weakest sections.",
       "",
       "All mutation tools take flat parameters, do NOT ask you to pick a mode, and route to direct-edit or proposal automatically based on the user's approval setting. Errors include the list of valid section IDs and accents so you can self-correct without re-reading docs.",
       "",
-      "Two older tools also exist (`propose_creed_update` and `direct_edit_creed`). They still work, but require nested `draft.kind` / `operation` discriminators. Prefer the focused tools above. If you do use the older tools, remember: when approval is on, `direct_edit_creed` is blocked at the server and `propose_creed_update` is the only path — even for delete / rename / recolor / reorder.",
+      "Two older tools also exist (`propose_creed_update` and `direct_edit_creed`). They still work, but require nested `draft.kind` / `operation` discriminators. Prefer the focused tools above. If you do use the older tools, remember: when approval is on, `direct_edit_creed` is blocked at the server and `propose_creed_update` is the only path - even for delete / rename / recolor / reorder.",
       "",
       `- Submit ${collaborationRules.proposalContract.mode} updates only.`,
-      `- Required fields: ${collaborationRules.proposalContract.requiredFields.join(", ")}. (For meta proposals — delete / rename / recolor — these fields can be omitted; the server defaults them.)`,
+      `- Required fields: ${collaborationRules.proposalContract.requiredFields.join(", ")}. (For meta proposals - delete / rename / recolor - these fields can be omitted; the server defaults them.)`,
       `- ${collaborationRules.proposalContract.instruction}`,
       "",
       "### Action order",
@@ -1405,7 +1405,7 @@ export function buildHiddenAgentGuidanceMarkdown(
       '- Delete section: `{ "kind": "delete-section" }`. The proposal\'s `sectionId` selects which section to remove.',
       '- Rename section: `{ "kind": "rename-section", "name": "New name" }`',
       `- Recolour section: \`{ "kind": "recolor-section", "accent": "${ACCENT_KEYS.join(" | ")}" }\``,
-      '- Reorder section: `{ "kind": "reorder-section", "afterSectionId"?: "<id>" }` OR `{ "kind": "reorder-section", "position": "first" | "last" }` — provide exactly one.',
+      '- Reorder section: `{ "kind": "reorder-section", "afterSectionId"?: "<id>" }` OR `{ "kind": "reorder-section", "position": "first" | "last" }` - provide exactly one.',
       "",
       "### Agent write policy (JSON)",
       "```json",
@@ -1452,8 +1452,8 @@ export function buildHiddenAgentGuidanceMarkdown(
       "",
       "All other kinds (rich-text, new-section, delete-section, rename-section, recolor-section) are documented in the Draft shapes block above this point. Refer to that for current spec; prefer those over the legacy shapes.",
       "",
-      "### Rich-text component spec — REQUIRED READING BEFORE YOU PROPOSE",
-      "Always send `contentMarkdown` (not `contentHtml`). Creed converts the markdown into the editor's components. The exact syntax below is the contract — anything else gets flattened to plain text, which is the lowest-effort way to format this file. Walls of bullets and unbroken paragraphs are NOT how to write a good Creed.",
+      "### Rich-text component spec - REQUIRED READING BEFORE YOU PROPOSE",
+      "Always send `contentMarkdown` (not `contentHtml`). Creed converts the markdown into the editor's components. The exact syntax below is the contract - anything else gets flattened to plain text, which is the lowest-effort way to format this file. Walls of bullets and unbroken paragraphs are NOT how to write a good Creed.",
       "",
       "Use the FULL toolbox. The user can see when an agent only ships paragraphs and bullets, and treats it as a low-quality proposal.",
       "",
@@ -1476,39 +1476,39 @@ export function buildHiddenAgentGuidanceMarkdown(
       "",
       "If you submit a draft that is just a flat list of bullets and a few paragraphs, you have failed the spec. Rewrite it before sending.",
       "",
-      "**Headings** — split a long section into named groups.",
+      "**Headings** - split a long section into named groups.",
       "  Syntax: `## Major group` or `### Subgroup` on its own line.",
       "  When: any section over a few short lines. Always group related rules under a heading instead of leaving them as a flat list.",
       "",
-      "**Bullet lists** — unordered.",
+      "**Bullet lists** - unordered.",
       "  Syntax: `- item` (or `* item`) on its own line, multiple items consecutive.",
       "  When: short lists where order doesn't matter. Three items minimum or it should be a paragraph.",
       "",
-      "**Numbered lists** — ordered or sequential.",
-      "  Syntax: `1. step` `2. step` `3. step` — Creed re-numbers automatically so you can use `1.` for every item if you prefer.",
+      "**Numbered lists** - ordered or sequential.",
+      "  Syntax: `1. step` `2. step` `3. step` - Creed re-numbers automatically so you can use `1.` for every item if you prefer.",
       "  When: order matters. Steps in a routine. Priorities ranked. Days of the week. Anything where 'first then second' is part of the meaning.",
       "",
-      "**Callouts** — warnings, hard rules, do/don't notes.",
+      "**Callouts** - warnings, hard rules, do/don't notes.",
       "  Syntax: `> text on the line` (markdown blockquote). Multi-line callouts use `> ` on each line.",
-      "  When: a single rule that the AI should treat as a hard constraint. Things like 'Don't suggest meetings before 11.' or 'Vegetarian — no dairy in recipes.' Renders with an accent strip so it stands out.",
+      "  When: a single rule that the AI should treat as a hard constraint. Things like 'Don't suggest meetings before 11.' or 'Vegetarian - no dairy in recipes.' Renders with an accent strip so it stands out.",
       "  Don't: use callouts decoratively, or for prose. One callout per major idea is plenty.",
       "",
-      "**Code blocks** — literal commands, config, paths.",
+      "**Code blocks** - literal commands, config, paths.",
       "  Syntax: triple-backtick fence with a language hint, e.g. ```` ```bash ```` or ```` ```ts ````, then content, then ```` ``` ```` to close.",
       "  When: command-line snippets, config blocks, file paths the user keeps re-typing, scheduled jobs. Anything that should not be reflowed.",
       "  Don't: wrap normal sentences in code. Don't use a code block as a 'fancy' callout.",
       "",
-      "**Horizontal rule** — visual divider between major thoughts.",
+      "**Horizontal rule** - visual divider between major thoughts.",
       "  Syntax: `---` on its own line (or `***` / `___`).",
       "  When: a section is long enough to have two or more distinct chunks of meaning. One or two rules per section is plenty.",
       "  Don't: scatter rules between every list. They lose meaning if overused.",
       "",
-      "**Inline tags** — short repeatable labels.",
+      "**Inline tags** - short repeatable labels.",
       "  Syntax: `#word` inline within prose or list items. The hash must be preceded by start-of-line or whitespace. Hyphens and underscores work, e.g. `#deep-work`.",
       "  When: tools, environments, themes, recurring labels. ALWAYS use tags for tool lists. `Tools: #linear #notion #figma` is right; bullet-listing those names is wrong.",
-      "  Don't: tag full sentences. Don't tag every other word — 4 to 8 tags per section is the sweet spot. They render as coloured chips, so over-tagging looks noisy.",
+      "  Don't: tag full sentences. Don't tag every other word - 4 to 8 tags per section is the sweet spot. They render as coloured chips, so over-tagging looks noisy.",
       "",
-      "**Paragraphs** — plain prose.",
+      "**Paragraphs** - plain prose.",
       "  Syntax: a line of text with a blank line above and below.",
       "  When: a single durable fact or context that doesn't fit a list or callout. A paragraph should be one idea.",
       "",
@@ -1520,7 +1520,7 @@ export function buildHiddenAgentGuidanceMarkdown(
       "- A tool list is ALWAYS `#tag #tag #tag`. Never bullets of tool names.",
       "- A hard rule the AI should never break is ALWAYS a `> callout`. Never a bullet.",
       "",
-      "Worked example — a Routines section that uses every component appropriately:",
+      "Worked example - a Routines section that uses every component appropriately:",
       "```",
       "## Daily rhythm",
       "1. Wake at 6:30 and protect the first 90 minutes for deep work.",
@@ -1546,7 +1546,7 @@ export function buildHiddenAgentGuidanceMarkdown(
       "```",
       "```",
       "",
-      "Anti-pattern (DO NOT do this — this is a low-effort proposal):",
+      "Anti-pattern (DO NOT do this - this is a low-effort proposal):",
       "```",
       "- Wakes at 6:30 and protects mornings for deep work.",
       "- No meetings before 11.",
@@ -1577,7 +1577,7 @@ export function buildHiddenAgentGuidanceMarkdown(
         "- You may also create a new rich-text section when it helps the file.",
         "- For rich-text content, send contentHtml directly or contentMarkdown and Creed will convert headings, bullet lists, numbered lists, callouts, and code blocks into supported editor content.",
         "",
-        "Example JSON body for updating an existing section (note the rich `contentMarkdown` — submit something that genuinely uses the components, not a single paragraph or a flat bullet list):",
+        "Example JSON body for updating an existing section (note the rich `contentMarkdown` - submit something that genuinely uses the components, not a single paragraph or a flat bullet list):",
         "{",
         '  "operation": "update_section",',
         '  "sectionId": "identity | beliefs | goals | work | preferences | constraints | people | health | routines | context | any editable section id",',
@@ -1589,7 +1589,7 @@ export function buildHiddenAgentGuidanceMarkdown(
         "  }",
         "}",
         "",
-        "Example JSON body for creating a new section (notice the rich formatting in `contentMarkdown` — DO NOT submit a flat list of bullets):",
+        "Example JSON body for creating a new section (notice the rich formatting in `contentMarkdown` - DO NOT submit a flat list of bullets):",
         "{",
         '  "operation": "create_section",',
         '  "agentName": "Your agent name",',
@@ -1599,7 +1599,7 @@ export function buildHiddenAgentGuidanceMarkdown(
         '    "kind": "rich-text",',
         '    "accent": "custom",',
         '    "insertAfterSectionId": "context",',
-        '    "contentMarkdown": "## Where they live and work from\\nBased in Berlin, mostly working on UK time. Trips average two weeks per quarter.\\n\\n> Don\'t suggest meetings or calls before 9am local. Mornings are protected.\\n\\n### Default cities\\n#berlin #london #lisbon #ny\\n\\n---\\n\\n### Patterns to remember\\n1. Books accommodation directly with hosts, not through aggregators.\\n2. Flies premium economy on anything over 6 hours.\\n3. Always packs the same kit — don\'t suggest checking bags."',
+        '    "contentMarkdown": "## Where they live and work from\\nBased in Berlin, mostly working on UK time. Trips average two weeks per quarter.\\n\\n> Don\'t suggest meetings or calls before 9am local. Mornings are protected.\\n\\n### Default cities\\n#berlin #london #lisbon #ny\\n\\n---\\n\\n### Patterns to remember\\n1. Books accommodation directly with hosts, not through aggregators.\\n2. Flies premium economy on anything over 6 hours.\\n3. Always packs the same kit - don\'t suggest checking bags."',
         "  }",
         "}",
         "",
@@ -1609,11 +1609,11 @@ export function buildHiddenAgentGuidanceMarkdown(
         "- focus updates replace the focus text via section.content.",
         "- decisions updates append one decision via section.title and optional section.details.",
         "",
-        "Section-meta direct operations (no `section` body — flat fields on the request):",
+        "Section-meta direct operations (no `section` body - flat fields on the request):",
         '- Delete a section: { "operation": "delete_section", "sectionId": "<id>", "agentName": "..." }',
         '- Rename a section: { "operation": "rename_section", "sectionId": "<id>", "name": "New name", "agentName": "..." }',
         '- Recolour a section: { "operation": "recolor_section", "sectionId": "<id>", "accent": "identity | stack | operating-principles | decisions | preferences | workflows | tools | boundaries | questions | skills | mini-skills | projects | output | rose | custom", "agentName": "..." }',
-        "Use these only when the change is genuinely about identity (name), grouping (accent), or removing a clearly stale section. Don't recolour casually — accents are how the user navigates the file."
+        "Use these only when the change is genuinely about identity (name), grouping (accent), or removing a clearly stale section. Don't recolour casually - accents are how the user navigates the file."
       );
     }
   } else {
@@ -1639,7 +1639,7 @@ export function buildAgentReadPayload(
   }
 ) {
   // Writable sections come from the actual section.agentWritable flag. We
-  // intentionally don't hardcode an ID allow-list here — that approach
+  // intentionally don't hardcode an ID allow-list here - that approach
   // broke when section IDs changed and left agents seeing "writable: none"
   // on modern Creeds.
   const writableSections: GovernedSectionId[] = state.sections
@@ -1920,7 +1920,7 @@ export function inferAgentSectionAccent(input: {
 // always overwrites these via `loadCreedState` before the app renders.
 //
 // The example agent prompts below hard-code `https://creed.md` because
-// they illustrate what a real, hosted Creed deployment looks like — not
+// they illustrate what a real, hosted Creed deployment looks like - not
 // because the runtime depends on that origin. If you fork Creed and host
 // it at a different domain, the live read / MCP / write URLs the user
 // sees in their own Connect modal come from server-state at request time
@@ -2064,7 +2064,7 @@ export const initialCreedState: CreedState = {
       description:
         "Best for coding sessions where Creed should shape every run from the start.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Save Creed in your local Claude setup so every coding run starts with it automatically, and leave yourself a short local reminder to check Creed before major work if needed. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If you use recurring scripts, scheduled runs, or repo rituals, use one to periodically review Creed against recent work and tighten it when durable context has emerged. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Save Creed in your local Claude setup so every coding run starts with it automatically, and leave yourself a short local reminder to check Creed before major work if needed. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If you use recurring scripts, scheduled runs, or repo rituals, use one to periodically review Creed against recent work and tighten it when durable context has emerged. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this when you want Claude Code to load Creed automatically from local config and stay sticky across runs.",
       snippet:
@@ -2080,7 +2080,7 @@ export const initialCreedState: CreedState = {
       description:
         "Great for agentic coding runs that should start with your Creed already loaded.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Put Creed in AGENTS.md or your Codex config so it is hard to forget, and keep a lightweight repo-local reminder that Codex should read Creed before answering you. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If Codex supports automations or recurring checks in your workflow, set one up to review Creed against recent work, tighten any stale or contradictory context, and keep the profile sharp. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Put Creed in AGENTS.md or your Codex config so it is hard to forget, and keep a lightweight repo-local reminder that Codex should read Creed before answering you. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If Codex supports automations or recurring checks in your workflow, set one up to review Creed against recent work, tighten any stale or contradictory context, and keep the profile sharp. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want Codex to load Creed from AGENTS.md or local tool config, then reinforce it with a recurring maintenance habit.",
       snippet:
@@ -2094,7 +2094,7 @@ export const initialCreedState: CreedState = {
       language: "yaml",
       description: "A clean preset for agents that prefer YAML-based setup or prompt bootstrapping.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Add Creed to OpenClaw config and create a small local memory or reminder file so OpenClaw keeps using Creed instead of drifting back to session-only context. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If OpenClaw supports cron jobs or recurring background work, use one to regularly check Creed, compare it with what you've learned about the user lately, and refine only when durable updates exist. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Add Creed to OpenClaw config and create a small local memory or reminder file so OpenClaw keeps using Creed instead of drifting back to session-only context. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If OpenClaw supports cron jobs or recurring background work, use one to regularly check Creed, compare it with what you've learned about the user lately, and refine only when durable updates exist. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want OpenClaw to read Creed automatically through config and keep a recurring maintenance loop around it.",
       snippet:
@@ -2108,7 +2108,7 @@ export const initialCreedState: CreedState = {
       language: "bash",
       description: "A lightweight preset for Hermes-based workflows and local agent bootstrapping.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Store Creed in a stable Hermes bootstrap path so it stays part of each run, and keep a simple reminder in your workflow to check Creed before answering you. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If Hermes can run recurring scripts or scheduled reviews, use that to revisit Creed, compare it with recent work, and tighten stale entries without adding noise. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Store Creed in a stable Hermes bootstrap path so it stays part of each run, and keep a simple reminder in your workflow to check Creed before answering you. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If Hermes can run recurring scripts or scheduled reviews, use that to revisit Creed, compare it with recent work, and tighten stale entries without adding noise. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want Hermes to read Creed from a single environment variable and keep the habit durable.",
       snippet:
@@ -2123,7 +2123,7 @@ export const initialCreedState: CreedState = {
       description:
         "A clean preset for Cursor workflows that should keep Creed close to the repo and the session.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Keep Creed in Cursor rules or repo instructions so it stays visible at the start of meaningful work. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Keep Creed in Cursor rules or repo instructions so it stays visible at the start of meaningful work. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want Cursor to keep Creed in repo-local rules or startup instructions.",
       snippet:
@@ -2138,7 +2138,7 @@ export const initialCreedState: CreedState = {
       description:
         "A simple preset for Windsurf runs that should load Creed before answering you.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Keep Creed in Windsurf rules or workspace instructions so it stays part of the default workflow. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Keep Creed in Windsurf rules or workspace instructions so it stays part of the default workflow. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want Windsurf to load Creed from workspace rules or bootstrap instructions.",
       snippet:
@@ -2153,7 +2153,7 @@ export const initialCreedState: CreedState = {
       description:
         "Best for OpenCode runs that should load Creed alongside the repo’s own AGENTS.md guidance.",
       promptVariant:
-        "Use Creed alongside the repository's AGENTS.md when both are present. Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Reference Creed near the top of AGENTS.md or your bootstrap instructions so OpenCode keeps it in view from the start of each run. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If your repo has recurring maintenance scripts or review rituals, use them to revisit Creed, compare it with recent conversations, and tighten the profile instead of letting it bloat. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Use Creed alongside the repository's AGENTS.md when both are present. Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Reference Creed near the top of AGENTS.md or your bootstrap instructions so OpenCode keeps it in view from the start of each run. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If your repo has recurring maintenance scripts or review rituals, use them to revisit Creed, compare it with recent conversations, and tighten the profile instead of letting it bloat. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this if you want OpenCode to reference Creed from AGENTS.md or your project bootstrap instructions and keep it in the repo's recurring rhythm.",
       snippet:
@@ -2169,7 +2169,7 @@ export const initialCreedState: CreedState = {
       description:
         "Use this when you are wiring your own agent, script, or toolchain into Creed from scratch for a custom workflow.",
       promptVariant:
-        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Build a durable reminder into your own agent, script, or toolchain so Creed is checked before answering you and revisited after you learn something durable about the user. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current — don't rewrite the visible markdown directly. If your stack supports cron, queues, workflows, or scheduled jobs, use them to periodically review Creed, compare it with recent conversations, and keep the profile precise. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
+        "Before answering me, read my Creed from https://creed.md/u/example?token=xt_abc123_a1b2c3d4e5f6 and treat it as my personal context profile. The read payload includes a private agent contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly. Build a durable reminder into your own agent, script, or toolchain so Creed is checked before answering you and revisited after you learn something durable about the user. As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current - don't rewrite the visible markdown directly. If your stack supports cron, queues, workflows, or scheduled jobs, use them to periodically review Creed, compare it with recent conversations, and keep the profile precise. Only stop to ask if you spot a contradiction or something stale. If you need setup or fallback guidance, read https://creed.md/docs once.",
       advancedSetup:
         "Use this panel for raw tokens, proposal endpoints, and deeper API setup details when you want your own maintenance loop.",
       snippet:

@@ -19,7 +19,7 @@ const KNOWN_SECTION_IDS: Record<string, string> = {
   health: "health",
   routines: "routines",
   context: "context",
-  // Legacy section names — still recognised when re-importing older Creeds.
+  // Legacy section names - still recognised when re-importing older Creeds.
   stack: "work",
   "tools and spaces": "work",
   tools: "work",

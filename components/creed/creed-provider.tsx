@@ -3,7 +3,7 @@
 // Mutator functions in this provider are intentionally declared as plain
 // inline `function` declarations rather than `useCallback`s. Every mutator
 // goes through `commitState`, which uses `setState`'s function-update
-// form — so the "stale closure" risk that `react-hooks/exhaustive-deps`
+// form - so the "stale closure" risk that `react-hooks/exhaustive-deps`
 // is meant to catch can't actually occur here. Wrapping each of 30+
 // mutators in `useCallback` (with manually-curated deps for each) would
 // be a large surface for subtle bugs without changing observable
@@ -481,7 +481,7 @@ export function CreedProvider({
       nextMutationTick({
         ...current,
         locked: !current.locked,
-        // Toggling the master lock always clears per-section overrides — the
+        // Toggling the master lock always clears per-section overrides - the
         // header is the authority again.
         sectionLockOverrides: [],
       })
@@ -662,7 +662,7 @@ export function CreedProvider({
 
   function clearSections() {
     // Reset back to the recommended default starter sections instead of
-    // leaving the file empty — gives the user something to write into and
+    // leaving the file empty - gives the user something to write into and
     // every connected agent a sane scaffold to read from straight away.
     const defaultSections = initialCreedState.sections.map((section) => ({
       ...section,
@@ -753,7 +753,7 @@ export function CreedProvider({
 
       if (proposal.draft.kind === "delete-section") {
         // Delete the targeted section and drop any other pending proposals
-        // that targeted it — they're meaningless once the section is gone.
+        // that targeted it - they're meaningless once the section is gone.
         const targetId = proposal.sectionId;
         return nextMutationTick({
           ...current,

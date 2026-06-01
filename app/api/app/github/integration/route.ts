@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not validate GitHub token." }, { status: 400 });
     }
 
-    // Identity is derived from the verified token only — never from the request body.
+    // Identity is derived from the verified token only - never from the request body.
     await upsertGitHubIntegration(supabase, user.id, {
       status: "connected",
       providerAccountId: String(viewer.id),

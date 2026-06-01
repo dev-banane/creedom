@@ -320,7 +320,7 @@ function QualityNoteRow({ tone, note }: { tone: "good" | "bad"; note: QualityNot
         <ChevronDown
           className={cn(
             // Tertiary by default, flips to primary on row hover or when
-            // expanded — same affordance as the profile / colour / accept-
+            // expanded - same affordance as the profile / colour / accept-
             // all dropdown chevrons.
             "h-3 w-3 shrink-0 transition-all duration-150",
             open

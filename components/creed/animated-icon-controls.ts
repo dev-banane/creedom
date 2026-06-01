@@ -20,8 +20,8 @@ export function useAnimatedIconControls(
   const isAnimatingRef = useRef(false);
   // Initial state is calculated once per `persistKey` change. We read
   // `Date.now()` inside the memo (impure by React's lint, but the value
-  // is only consumed by the first render and the truth source —
-  // `persistedAnimationWindows` — is module-scoped state, not a render
+  // is only consumed by the first render and the truth source -
+  // `persistedAnimationWindows` - is module-scoped state, not a render
   // input). The mount effect below re-validates the window when the
   // component actually subscribes, so any drift between memo eval and
   // mount is corrected without a visible flicker.

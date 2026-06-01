@@ -443,7 +443,7 @@ export function FileScreen() {
   const versionIcon = useAnimatedIconControls();
   const activityIcon = useAnimatedIconControls();
   // `exportMarkdown` is re-created by the provider whenever state changes,
-  // so depending on it alone is sufficient — listing `state.sections`
+  // so depending on it alone is sufficient - listing `state.sections`
   // separately would be redundant.
   const localMarkdown = useMemo(() => exportMarkdown(), [exportMarkdown]);
   const sectionQualityById = useMemo(
@@ -484,11 +484,11 @@ export function FileScreen() {
     versionStatusBusy ||
     versionStatus?.syncStatus === "up-to-date" ||
     versionStatus?.syncStatus === "remote-ahead";
-  // Pull is allowed any time GitHub is configured — including when the
+  // Pull is allowed any time GitHub is configured - including when the
   // local file is "local-ahead." That way, as soon as you make a local
   // edit, you can still click Pull to refresh against the latest remote
   // commit. The pull-preview API always fetches fresh from the GitHub
-  // contents endpoint (no caching — see `githubRequest` in lib/github.ts)
+  // contents endpoint (no caching - see `githubRequest` in lib/github.ts)
   // so the dialog shows the true current state of the remote.
   const pullDisabled = !githubConfigured || versionStatusBusy;
   const primaryVersionAction =
@@ -623,7 +623,7 @@ export function FileScreen() {
 
     // Re-mount after navigation: if the runner already has a report cached,
     // skip the baseline read entirely. Likewise skip if a force refresh for
-    // the same fingerprint is still in flight — we'll see its result via the
+    // the same fingerprint is still in flight - we'll see its result via the
     // runner snapshot when it lands.
     if (qualityReport) {
       qualityBaselineLoadedRef.current = true;
@@ -719,7 +719,7 @@ export function FileScreen() {
 
     try {
       // Refresh any sections whose body has drifted since their last
-      // analysis — the runner dedups, so concurrent re-mounts share work.
+      // analysis - the runner dedups, so concurrent re-mounts share work.
       const staleSections = state.sections.filter((section) => {
         const analyzedFingerprint = analyzedSectionFingerprints[section.id];
         return Boolean(analyzedFingerprint) && analyzedFingerprint !== sectionFingerprints[section.id];
@@ -1355,7 +1355,7 @@ export function FileScreen() {
                         size="sm"
                         style={{ borderTopLeftRadius: 13, borderBottomLeftRadius: 13, borderTopRightRadius: 0, borderBottomRightRadius: 0, height: 32, minHeight: 32 }}
                         className={cn(
-                          // Neutral outline pill — this button only OPENS the
+                          // Neutral outline pill - this button only OPENS the
                           // push/pull dialog. The brand-blue CTA lives on the
                           // dialog's final confirm button (Push Creed / Import
                           // remote Creed), so we keep the trigger here calm to
@@ -1567,7 +1567,7 @@ export function FileScreen() {
 
                 {/* Review pill lives inside the sticky header block so both
                     pin to the top of the scroll viewport together. Visually
-                    distinct via its own card chrome and a top margin — but
+                    distinct via its own card chrome and a top margin - but
                     structurally they share the same sticky context, which
                     means the pill always rides directly under the header
                     while the user scrolls through the file. */}
@@ -1583,7 +1583,7 @@ export function FileScreen() {
                         };
                       })}
                       onAcceptAll={() => {
-                        // Single-commit batch accept — bypasses the
+                        // Single-commit batch accept - bypasses the
                         // per-proposal server-state fetch that was
                         // re-introducing already-accepted proposals.
                         acceptProposals(
@@ -1911,7 +1911,7 @@ export function FileScreen() {
                                 },
                               }}
                               style={{
-                                // No border — read as a tinted tag pill, not a
+                                // No border - read as a tinted tag pill, not a
                                 // bordered card. Same accent-tinted background
                                 // the rest of the section UI uses.
                                 backgroundColor: accentTintMap[accent],
@@ -2157,7 +2157,7 @@ function SectionCard({
                   ) : null}
                 </AnimatePresence>
                 {/* Per-section lock controls only exist while the master
-                    lock is on — the header is the authority. Smoothly
+                    lock is on - the header is the authority. Smoothly
                     expand/collapse so the chrome doesn't jump when the user
                     toggles the master. */}
                 <AnimatePresence initial={false}>
@@ -2282,7 +2282,7 @@ function SectionCard({
               </AnimatedMenuIconItem>
               <DropdownMenuSeparator />
               {/*
-                Delete row — styled red to match the rejected proposal pill
+                Delete row - styled red to match the rejected proposal pill
                 background. variant="destructive" tells the base
                 DropdownMenuItem CSS to set the icon + text + hover-fill to
                 the destructive palette automatically; we override the
@@ -2292,7 +2292,7 @@ function SectionCard({
               <AnimatedMenuIconItem
                 icon={DeleteIcon}
                 variant="destructive"
-                // Subtle red wash on hover — kept light so the menu reads
+                // Subtle red wash on hover - kept light so the menu reads
                 // calm. In dark mode the tint is just a 16% red over the
                 // surface; the destructive base styles handle text colour.
                 className="text-[13px] focus:bg-[#FEF2F2] dark:focus:bg-[rgba(248,113,113,0.10)]"
@@ -2355,7 +2355,7 @@ function SectionCard({
 }
 
 // Animated Lock / LockOpen button shared by the header (master) and per-section.
-// The lucide-animated icons fire `startAnimation()` on demand — the button
+// The lucide-animated icons fire `startAnimation()` on demand - the button
 // triggers the animation on click, *not* hover, so the user sees the latch
 // move in response to the new state. Same chrome as `QualityRefreshButton`.
 function AnimatedLockButton({
@@ -2693,7 +2693,7 @@ function ActivityRow({
   const agentNames = entry.actorType === "agent" ? uniqueAgentNames([entry.actor]) : [];
 
   // Reuse the in-app diff machinery so activity cards match the inline
-  // proposal diff exactly — same word-level highlighting, same +N/−N stats.
+  // proposal diff exactly - same word-level highlighting, same +N/−N stats.
   // For pending entries the parent feeds us the same live values the inline
   // card uses; for accepted/rejected/stale entries we fall back to the
   // snapshot stored on the entry.
@@ -2753,7 +2753,7 @@ function ActivityRow({
               <span className="truncate">{entry.actor}</span>
               {isDeletionActivity ? (
                 // A delete-section event is conceptually all-removed (one
-                // entire section) — overriding the badge stats keeps the
+                // entire section) - overriding the badge stats keeps the
                 // signal honest even though the underlying "Keep X" →
                 // "Delete X" diff would otherwise show a confusing
                 // +1/−1 split.
@@ -2796,7 +2796,7 @@ function ActivityRow({
               <div className="-mx-3 border-t border-[var(--creed-border)]" />
               <div className="creed-scrollbar creed-diff-block -mx-3 max-h-72 overflow-y-auto px-4 py-3">
                 {isDeletionActivity ? (
-                  // Render the Delete line as a removal — same red
+                  // Render the Delete line as a removal - same red
                   // background + strikethrough as `creed-diff-remove` so
                   // the operation reads consistently with how removed
                   // content is shown in the diff body elsewhere.

@@ -62,7 +62,7 @@ const gambarino = localFont({
 // - `/search-preview.png` (public/) is what Google's rich results, Slack,
 //   iMessage, LinkedIn, and Facebook fetch for the link preview.
 // - `app/twitter-image.png` is picked up by Next's filesystem convention
-//   and wired into `<meta name="twitter:image">` automatically — we
+//   and wired into `<meta name="twitter:image">` automatically - we
 //   don't need to reference it here.
 // - `app/favicon.ico` stays the browser-tab favicon via Next's
 //   filesystem convention. We pin it explicitly under `icons.icon` so a
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
 
 // Force every request through SSR. Without this, Vercel's build pass can
 // statically render this layout once (with no user, no cookies, no
-// pathname), then reuse the output for every visitor — so the imported
+// pathname), then reuse the output for every visitor - so the imported
 // `initialCreedState` ends up baked into the static shell and signed-in
 // users see seed sections + an empty name in the header. `headers()`
 // and `cookies()` reads below *should* mark this dynamic on their own,
@@ -147,7 +147,7 @@ export default async function RootLayout({
     >
       <head>
         {/* Apply persisted theme before paint so dark mode doesn't flash.
-            This is a server-rendered inline script — runs once during the
+            This is a server-rendered inline script - runs once during the
             initial HTML response, before React hydrates, so the dark-mode
             class is on <html> by the time anything else paints.
             `next/script` with strategy="beforeInteractive" was causing the

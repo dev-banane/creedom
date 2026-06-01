@@ -23,7 +23,7 @@ export function useLandingAuthState(configured: boolean = true): LandingAuthStat
     // Initial resolve: read the cached session first (snappy), then
     // validate it against the server via getUser(). If the server doesn't
     // recognise the user (e.g. their auth.users row was deleted), the
-    // local session is stale — sign them out so the chrome shows the
+    // local session is stale - sign them out so the chrome shows the
     // signed-out branch and they can re-auth properly. Without this the
     // user gets stuck seeing "Get Started" with no Login while every
     // server call 401s.
@@ -51,7 +51,7 @@ export function useLandingAuthState(configured: boolean = true): LandingAuthStat
         setAuthState("signed-in");
       } catch {
         if (!active) return;
-        // Network failure validating — leave the cached state as "signed-in"
+        // Network failure validating - leave the cached state as "signed-in"
         // rather than logging the user out on a transient error. The next
         // page load will re-attempt validation.
         setAuthState("signed-in");

@@ -67,7 +67,7 @@
   --creed-button-primary-fg: #ffffff;
   --creed-button-primary-hover: #2b2b28;
   --creed-ring-track: rgba(17, 17, 13, 0.12);
-  /* Brand action / accent — used by primary CTAs (dialog confirm buttons,
+  /* Brand action / accent - used by primary CTAs (dialog confirm buttons,
      accept-all, push/pull, etc.). Constant across both themes so the brand
      blue reads identically in light and dark mode. */
   --creed-accent: #2563eb;
@@ -96,7 +96,7 @@
   --accent-tint-output: #ccfbf1;
   --accent-tint-rose: #ffe4e6;
   --accent-tint-yellow: #fef9c3;
-  /* Mono — theme-aware accent. Light mode: near-black foreground with a
+  /* Mono - theme-aware accent. Light mode: near-black foreground with a
      soft warm grey tint. Dark mode definitions below flip these so the
      same `accent: "mono"` value reads white on a dark grey tint. */
   --accent-color-mono: #1c1c1a;
@@ -650,7 +650,7 @@
   pointer-events: none;
 }
 
-/* Inline tag pill — Obsidian-style #tags. Renders inside any rich-text
+/* Inline tag pill - Obsidian-style #tags. Renders inside any rich-text
  * paragraph via the creedInlineTag mark. */
 .creed-inline-tag {
   display: inline;
@@ -733,7 +733,7 @@
 }
 
 /* Flip pure-black-on-white SVGs (brandmark, logo, GitHub mark, etc.) in dark
-   mode so they read against the dark surface. Use sparingly — coloured brand
+   mode so they read against the dark surface. Use sparingly - coloured brand
    assets shouldn't get this class. */
 .dark .creed-invert-on-dark {
   filter: invert(1);
@@ -752,7 +752,7 @@
 
 /* Dark-canvas tweak for the code block surface only. Callouts intentionally
    keep their `--section-accent-tint` background so the section's colour
-   identity reads in both modes — overriding it with the neutral surface
+   identity reads in both modes - overriding it with the neutral surface
    stripped the callout of its accent in dark mode. */
 .dark .creed-code-block {
   background: var(--creed-surface-raised);

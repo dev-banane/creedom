@@ -17,7 +17,7 @@ type StatusVariant = {
 };
 
 // Pinned to "operational" until we wire this to a real status backend. The
-// component already supports every state — pass `status` to override later.
+// component already supports every state - pass `status` to override later.
 const DEFAULT_STATUS: SystemStatus = "operational";
 
 const STATUS_VARIANTS: Record<SystemStatus, StatusVariant> = {

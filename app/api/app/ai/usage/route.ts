@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { readAiUsageSummary, type AiUsageRange } from "@/lib/ai/persistence";
 import { requireApiAuth } from "@/lib/api-auth";
 
-const ranges = new Set<AiUsageRange>(["24h", "7d", "30d", "1y"]);
+const ranges = new Set<AiUsageRange>(["7d", "30d", "90d"]);
 
 export async function GET(request: Request) {
   const auth = await requireApiAuth();

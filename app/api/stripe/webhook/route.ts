@@ -27,7 +27,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
   const webhookSecret = getStripeWebhookSecret();
   if (!webhookSecret) {
-    // Loud log so the missing config can't hide — Stripe retries 5xx
+    // Loud log so the missing config can't hide - Stripe retries 5xx
     // responses aggressively (capped at three days), so returning 503
     // would flood our logs and Stripe's dashboard with red. Instead we
     // ack with 200 + `applied: false` and rely on this `error`-level
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
         });
         return NextResponse.json({ ok: true, applied: false });
       }
-      // Log the user id only — `sessionId` is sensitive (paired with the
+      // Log the user id only - `sessionId` is sensitive (paired with the
       // public success URL it can act as a soft bearer token while the
       // entitlement is being written). The event id is enough for
       // cross-referencing with Stripe Dashboard when we need it.

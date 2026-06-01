@@ -99,7 +99,7 @@ export function MarketingHeader({
                 animation creates a stacking context that nukes
                 backdrop-filter on descendants. A radial-mask fades the
                 blur to zero at the edges so there's no visible card
-                outline — the blur just melts into the surrounding hero. */}
+                outline - the blur just melts into the surrounding hero. */}
             <motion.div
               aria-hidden="true"
               initial={{ opacity: 0 }}
@@ -153,7 +153,7 @@ export function MarketingHeader({
                   <Button
                     asChild
                     variant="ghost"
-                    // White "Go to app" pill — matches the desktop chrome
+                    // White "Go to app" pill - matches the desktop chrome
                     // for paid users. Same dark-mode lock-in as the rest
                     // of the chrome's white pills.
                     className="h-9 rounded-md bg-white px-3.5 text-[13px] font-medium tracking-normal text-[#19345f] shadow-none transition-colors hover:bg-[#f6f7fb] hover:text-[#19345f] dark:bg-white dark:text-[#19345f] dark:hover:bg-[#f6f7fb] dark:hover:text-[#19345f] aria-expanded:bg-white aria-expanded:text-[#19345f]"
@@ -253,7 +253,7 @@ function HeaderAuthActions({
 
   // Signed in + paid → white "Go to app" pill (same white pill chrome as
   // the unpaid Get Started, just with the animated arrow + relabeled).
-  // We deliberately don't recolour the pill green — the label change +
+  // We deliberately don't recolour the pill green - the label change +
   // arrow are enough to signal ownership without competing with the rest
   // of the chrome.
   if (authState === "signed-in" && paidStatus === "paid") {
@@ -279,7 +279,7 @@ function HeaderAuthActions({
   // Signed in but not paid yet → only show "Get Started" (no Login
   // alongside, since they're already signed in). The pricing page picks
   // up from here and runs them straight into Stripe Checkout. Reusing
-  // `goToAppArrow` — only one of these CTA buttons ever renders at a
+  // `goToAppArrow` - only one of these CTA buttons ever renders at a
   // time so they can share the same controls ref.
   if (authState === "signed-in") {
     return (

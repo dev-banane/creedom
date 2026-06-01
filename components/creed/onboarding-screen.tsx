@@ -55,7 +55,7 @@ const stepAccentMap = [
   accentColorMap.identity, // 7 preview
 ];
 
-// Vibe accent colours: blue / green / orange / purple — matched to the
+// Vibe accent colours: blue / green / orange / purple - matched to the
 // 4 onboarding personas in CREED_TYPE_OPTIONS order.
 const typeThemes: Record<OnboardingState["creedType"], { accent: string; tint: string }> = {
   personal: { accent: "#2563EB", tint: "#DBEAFE" }, // blue
@@ -93,7 +93,7 @@ function makeStarterSection(
   };
 }
 
-// Used when the user skips onboarding — fills the file with the five core
+// Used when the user skips onboarding - fills the file with the five core
 // sections so they have something to edit immediately. Optional sections
 // (Beliefs, Constraints, People, Health, Context) are added later via the
 // section composer or by an agent's proposal.
@@ -463,7 +463,7 @@ export function OnboardingScreen() {
                   wide={step === 3 || step === TOTAL_STEPS - 1}
                   narrow={step === 0}
                 >
-                  {/* Step 0 — vibe picker */}
+                  {/* Step 0 - vibe picker */}
                   {step === 0 ? (
                     <OnboardingStep title={defaultStepTitle} subtitle={defaultStepSubtitle}>
                       <div className="grid gap-3 md:grid-cols-2">
@@ -521,7 +521,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 1 — Identity */}
+                  {/* Step 1 - Identity */}
                   {step === 1 ? (
                     <OnboardingStep
                       title={creedTypeDefinition.startTitle}
@@ -550,7 +550,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 2 — Direction (Goals + Work) */}
+                  {/* Step 2 - Direction (Goals + Work) */}
                   {step === 2 ? (
                     <OnboardingStep
                       title="Where you're headed."
@@ -581,7 +581,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 3 — Tools */}
+                  {/* Step 3 - Tools */}
                   {step === 3 ? (
                     <OnboardingStep
                       title={creedTypeDefinition.toolsTitle}
@@ -696,7 +696,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 4 — Preferences + Constraints */}
+                  {/* Step 4 - Preferences + Constraints */}
                   {step === 4 ? (
                     <OnboardingStep
                       title={creedTypeDefinition.defaultsTitle}
@@ -744,7 +744,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 5 — Daily Context (single optional textarea) */}
+                  {/* Step 5 - Daily Context (single optional textarea) */}
                   {step === 5 ? (
                     <OnboardingStep
                       title="Your daily context."
@@ -763,7 +763,7 @@ export function OnboardingScreen() {
                     </OnboardingStep>
                   ) : null}
 
-                  {/* Step 6 — API key + generate */}
+                  {/* Step 6 - API key + generate */}
                   {step === 6 ? (
                     isGenerating ? (
                       <GeneratingState />
@@ -833,7 +833,7 @@ export function OnboardingScreen() {
                     )
                   ) : null}
 
-                  {/* Step 7 — Preview + Claim */}
+                  {/* Step 7 - Preview + Claim */}
                   {step === TOTAL_STEPS - 1 ? (
                     <div className="text-center">
                       <AnimatedBlock index={0}>
@@ -1100,7 +1100,7 @@ function AnimatedHeadline({
 }) {
   // Split into lines, then per line into words, then per word into glyphs.
   // Word spans use `whitespace-nowrap` so they wrap as units (responsive),
-  // while glyphs inside still animate individually — same blur-in motion as
+  // while glyphs inside still animate individually - same blur-in motion as
   // the landing-hero headline.
   const lines = useMemo(() => text.split("\n"), [text]);
 

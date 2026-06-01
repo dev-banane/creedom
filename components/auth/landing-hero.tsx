@@ -54,7 +54,7 @@ export function LandingHero({ configured }: { configured: boolean }) {
     <>
       <section className="relative min-h-screen overflow-hidden bg-[#e9e5de] dark:bg-[#0e0e0d]">
         {/* Theme-paired hero artwork. Both images render to the DOM but only
-            the active theme's image is shown — keeps Next/Image priority +
+            the active theme's image is shown - keeps Next/Image priority +
             CDN caching while flipping cleanly with `.dark`. */}
         <Image
           src={lightApostlesImage}

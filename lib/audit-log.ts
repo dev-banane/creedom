@@ -27,7 +27,7 @@ function clientIp(request: Request | undefined): string | null {
 }
 
 /**
- * Fire-and-forget audit log entry. Never throws — audit failures should never
+ * Fire-and-forget audit log entry. Never throws - audit failures should never
  * block a sensitive action from completing. Call this after the action succeeds
  * so failed actions don't pollute the log.
  */

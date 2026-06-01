@@ -44,14 +44,14 @@ const strictScoreBands = [
 ];
 
 const sectionStandards = [
-  "Identity: concrete role, defining traits, values, defaults — what makes this person distinct. Not a bio.",
+  "Identity: concrete role, defining traits, values, defaults - what makes this person distinct. Not a bio.",
   "Beliefs: stable values or worldview that change how AI should reason or recommend. Not platitudes.",
   "Goals: live priorities (near-term + long-horizon) with stale-by hints when useful. Concrete, not vague intentions.",
   "Work: profession, craft, tools/stack, and how the user likes to work. Real surfaces and methods.",
   "Preferences: specific reply-style defaults with concrete do/avoid signal. Not generic 'be helpful'.",
-  "Constraints: explicit lines AI should not cross — hard noes, sensitive topics, things that need permission.",
+  "Constraints: explicit lines AI should not cross - hard noes, sensitive topics, things that need permission.",
   "People: named relationships, role, why they matter, what AI should remember when they come up.",
-  "Health: conditions, sensitivities, dietary patterns, accessibility needs — paired with how AI should accommodate them.",
+  "Health: conditions, sensitivities, dietary patterns, accessibility needs - paired with how AI should accommodate them.",
   "Routines: daily/weekly/seasonal rhythms AI should respect when planning, scheduling, or following up.",
   "Context: durable catch-all details (location, life stage, environment) that don't fit elsewhere.",
 ];
@@ -65,7 +65,7 @@ const strictPenalties = [
   "A section should rarely score above 80 without concrete details, anchors, or examples specific to this user.",
   "Overall score should rarely exceed the weakest core section (Identity, Goals, Work, Preferences, Routines) by more than 12 points.",
   "A profile with empty or near-empty core sections should almost never score above 74 overall.",
-  "Optional sections (Beliefs, Constraints, People, Health, Context) only count when they exist — don't penalise their absence, but penalise their presence if they're empty filler.",
+  "Optional sections (Beliefs, Constraints, People, Health, Context) only count when they exist - don't penalise their absence, but penalise their presence if they're empty filler.",
 ];
 
 export function buildQualityPrompt(sections: CreedSection[]) {
@@ -79,7 +79,7 @@ export function buildQualityPrompt(sections: CreedSection[]) {
     "- Give AI a clear, current picture of who the user is and what matters to them right now.",
     "- Anchor every claim in concrete details, examples, names, dates, or specific defaults.",
     "- Capture preferences, constraints, routines, people, and health/accessibility needs that change how AI should reply.",
-    "- Stay focused on durable facts about the user — not transcripts, recap, or moods of the day.",
+    "- Stay focused on durable facts about the user - not transcripts, recap, or moods of the day.",
     "",
     "Score bands:",
     ...strictScoreBands.map((item) => `- ${item}`),
@@ -90,13 +90,13 @@ export function buildQualityPrompt(sections: CreedSection[]) {
     "Strict penalties:",
     ...strictPenalties.map((item) => `- ${item}`),
     "",
-    "Tag vocabulary (this is a closed set — pick zero to three per section, only from this list, mixing tones honestly):",
+    "Tag vocabulary (this is a closed set - pick zero to three per section, only from this list, mixing tones honestly):",
     "GREEN tags (celebrate):",
-    ...tagVocabulary.green.map(([tag, hint]) => `- ${tag} — ${hint}`),
+    ...tagVocabulary.green.map(([tag, hint]) => `- ${tag} - ${hint}`),
     "AMBER tags (caution / room to improve):",
-    ...tagVocabulary.amber.map(([tag, hint]) => `- ${tag} — ${hint}`),
+    ...tagVocabulary.amber.map(([tag, hint]) => `- ${tag} - ${hint}`),
     "RED tags (actively hurt agent usefulness):",
-    ...tagVocabulary.red.map(([tag, hint]) => `- ${tag} — ${hint}`),
+    ...tagVocabulary.red.map(([tag, hint]) => `- ${tag} - ${hint}`),
     "",
     "Output rules:",
     "- Return JSON only. No markdown.",
@@ -104,7 +104,7 @@ export function buildQualityPrompt(sections: CreedSection[]) {
     "- A weak section should usually carry 1–2 red/amber tags; an excellent section can be tag-less or only green.",
     "- `strength` is the single most-important thing this section gives agents. Omit (set null) if nothing is genuinely strong.",
     "- `gap` is the single most-important missing or weak signal. Omit (null) if nothing meaningful to fix.",
-    "- Each note has a `title` (2–5 words, sentence case, no trailing period) and a `detail` (one sentence, ≤22 words, specific to THIS Creed — never templated).",
+    "- Each note has a `title` (2–5 words, sentence case, no trailing period) and a `detail` (one sentence, ≤22 words, specific to THIS Creed - never templated).",
     "- Keep `focus` as one crisp action sentence.",
     "- Strengths/gaps arrays may stay (≤3 each) for completeness but the UI uses `strength` and `gap` first.",
     "- Generated prose should be specific to this Creed, not templated.",

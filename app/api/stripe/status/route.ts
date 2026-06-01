@@ -7,7 +7,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 // Reads via the user's session client + the "Read own entitlement" RLS
 // policy, so this stays cheap (no admin client, no token decrypts) and
 // safe (a user can only see their own row). Unauthed callers get
-// `{ paid: false }` without a 401 — the marketing chrome polls this on
+// `{ paid: false }` without a 401 - the marketing chrome polls this on
 // every signed-in render and we don't want the network panel to fill up
 // with red rows when someone signs out.
 

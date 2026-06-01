@@ -229,7 +229,7 @@ export function InlineNewSectionProposal({
         >
           <ChevronDown
             className={cn(
-              // Chevron tinted green to match the proposal tone — same
+              // Chevron tinted green to match the proposal tone - same
               // affordance as the destructive (red) chevron on the delete
               // card so the colour also carries semantic information.
               "h-3.5 w-3.5 shrink-0 text-[#10b981] transition-transform duration-200 dark:text-[#4ade80]",
@@ -243,7 +243,7 @@ export function InlineNewSectionProposal({
             maxVisible={1}
           />
           <span className="truncate font-medium text-[var(--creed-text-primary)]">{agentName}</span>
-          {/* Tinted green to match the chevron / `+` glyph — the colour
+          {/* Tinted green to match the chevron / `+` glyph - the colour
               now also carries the meaning of the headline. */}
           <span className="text-[#10b981] dark:text-[#4ade80]">proposed a new section</span>
           <span className="text-[var(--creed-text-tertiary)]">·</span>
@@ -276,7 +276,7 @@ export function InlineNewSectionProposal({
       </div>
       <ExpandRegion open={expanded}>
         <div className="border-t border-[#10b981]/20" />
-        {/* Clean padded text block — no inner green highlight bar. The
+        {/* Clean padded text block - no inner green highlight bar. The
             card's outer green wash + colour signalling already conveys
             "this is an addition", and matching the delete card's plain
             content layout keeps the two cards visually consistent. */}
@@ -296,8 +296,8 @@ export function InlineNewSectionProposal({
 }
 
 // Generic renderer for the section-meta proposal kinds: delete-section,
-// rename-section, recolor-section. They share a common chrome — agent
-// attribution row + a single concise summary line — but differ in tone.
+// rename-section, recolor-section. They share a common chrome - agent
+// attribution row + a single concise summary line - but differ in tone.
 // Delete proposals lean red (destructive) so the user reads twice; rename
 // and recolor lean neutral.
 export function InlineMetaProposal({
@@ -348,7 +348,7 @@ export function InlineMetaProposal({
           <ChevronDown
             className={cn(
               // Tint the chevron to the proposal tone so the colour also
-              // signals what the card does — red for destructive, neutral
+              // signals what the card does - red for destructive, neutral
               // tertiary for the non-destructive meta kinds.
               "h-3.5 w-3.5 shrink-0 transition-transform duration-200",
               isDelete

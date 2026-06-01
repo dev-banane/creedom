@@ -194,7 +194,7 @@ export function RichTextEditor({
         keywords: ["paragraph", "body", "text"],
         run: (editor, range) => {
           // Insert a short Lorem ipsum placeholder so the user sees
-          // something happened — and select it so the next keystroke
+          // something happened - and select it so the next keystroke
           // replaces it cleanly.
           const placeholder =
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
@@ -336,7 +336,7 @@ export function RichTextEditor({
   // a useEffect. The previous version was racing: if you typed `/h` and
   // pressed Enter very fast, the Suggestion plugin's `onKeyDown` fired
   // before the post-render effect ran, so `slashItemsRef.current` still
-  // pointed at the unfiltered items — Enter then tried to run an index
+  // pointed at the unfiltered items - Enter then tried to run an index
   // that no longer existed in the filtered list, the menu exited, and
   // Tiptap inserted a newline. Synchronous refs make Enter always pick
   // from the freshest items.
@@ -346,7 +346,7 @@ export function RichTextEditor({
 
   const updateSlashMenu = useCallback(
     (props: SuggestionProps<SlashCommand, SlashCommand>) => {
-    // Keep the ref in sync as the items themselves change — synchronous
+    // Keep the ref in sync as the items themselves change - synchronous
     // update before the state setter so handleSlashKeyDown sees the fresh
     // list even if Enter fires inside the same tick.
     slashItemsRef.current = props.items;
@@ -610,7 +610,7 @@ export function RichTextEditor({
     const { selection } = state;
 
     // Bail for empty selections, NodeSelections (drag handles), and any
-    // selection where the editor isn't focused — Notion only shows the
+    // selection where the editor isn't focused - Notion only shows the
     // bubble menu while a *user* selection is live.
     if (selection.empty || !currentEditor.isFocused) {
       setSelectionToolbar(null);
@@ -623,7 +623,7 @@ export function RichTextEditor({
     const VIEWPORT_WIDTH = window.innerWidth;
     const VIEWPORT_HEIGHT = window.innerHeight;
 
-    // Prefer the actual DOM selection rect — it's the union of every line's
+    // Prefer the actual DOM selection rect - it's the union of every line's
     // visual rect, so multi-line selections position correctly. Fall back to
     // ProseMirror coordsAtPos when there's no live DOM selection (rare, but
     // can happen during programmatic chains).
@@ -647,7 +647,7 @@ export function RichTextEditor({
     }
 
     // Centre horizontally on the selection's bounding rect, then clamp so the
-    // toolbar never crosses the viewport edge — the rendered element uses a
+    // toolbar never crosses the viewport edge - the rendered element uses a
     // -50% translateX, so x is the centre point.
     const centreX = rect.left + rect.width / 2;
     const placeBelow = rect.top - TOOLBAR_HEIGHT - SELECTION_GAP < VIEWPORT_PADDING;
@@ -740,7 +740,7 @@ export function RichTextEditor({
       return;
     }
 
-    // Fast path: the parent re-rendered with the exact string we just emitted —
+    // Fast path: the parent re-rendered with the exact string we just emitted -
     // no need to serialize + diff the doc, definitely no need to setContent.
     if (content === lastEmittedHtmlRef.current) {
       editor.setEditable(!readOnly);
@@ -771,7 +771,7 @@ export function RichTextEditor({
             style={{ left: selectionToolbar.x, top: selectionToolbar.y }}
             onMouseDown={(event) => {
               // Prevent the editor from blurring when a toolbar button is
-              // clicked — keeps the selection alive so the command applies.
+              // clicked - keeps the selection alive so the command applies.
               event.preventDefault();
             }}
           >

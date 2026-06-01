@@ -49,7 +49,7 @@ export type CreedTypeDefinition = {
 
 export type OnboardingPreviewDraft = {
   identityText: string;
-  // Optional sections — null means "skip this section in the starter file".
+  // Optional sections - null means "skip this section in the starter file".
   beliefsText: string | null;
   goalsText: string;
   workText: string;
@@ -316,7 +316,7 @@ function buildGoalsText(onboarding: OnboardingState) {
 
 function buildWork(onboarding: OnboardingState) {
   const definition = getCreedTypeDefinition(onboarding.creedType);
-  const text = normalizeWhitespace(onboarding.work) || `${definition.label.toLowerCase()} — describe what you do in a sentence.`;
+  const text = normalizeWhitespace(onboarding.work) || `${definition.label.toLowerCase()} - describe what you do in a sentence.`;
   const tags = collectStackTags(onboarding);
   return { text, tags };
 }

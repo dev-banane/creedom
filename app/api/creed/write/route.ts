@@ -258,7 +258,7 @@ function buildAfterTextFromPatch(patch: DirectSectionPatch) {
   if (patch.kind === "focus") {
     return patch.content.trim();
   }
-  return `${patch.title}${patch.details ? ` — ${patch.details}` : ""}`;
+  return `${patch.title}${patch.details ? ` - ${patch.details}` : ""}`;
 }
 
 export async function POST(request: Request) {
@@ -339,7 +339,7 @@ export async function POST(request: Request) {
       );
     }
     // `kind` is informational right now (every section is rich-text under
-    // the unified model). Accept any value the caller sends — or none — and
+    // the unified model). Accept any value the caller sends - or none - and
     // normalize to "rich-text" internally so agents don't have to ship a
     // discriminator field whose only legal value is the default.
     const normalizedSection: CreateSectionInput = {

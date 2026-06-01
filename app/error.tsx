@@ -33,7 +33,7 @@ export default function RouteError({
         Something went sideways
       </h1>
       <p className="max-w-md text-[15px] leading-7 text-[var(--creed-text-secondary)]">
-        This is a temporary error. Try again, or head back to the home page —
+        This is a temporary error. Try again, or head back to the home page -
         if it keeps happening, the digest below helps us track it down.
       </p>
       {error.digest ? (

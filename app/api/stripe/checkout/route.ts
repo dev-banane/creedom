@@ -14,7 +14,7 @@ import { log } from "@/lib/observability";
 // (read by our webhook + success-page upsert) so the payment is
 // unambiguously linked to a real account.
 //
-// If the user already owns Creed, returns 409 — the pricing card should
+// If the user already owns Creed, returns 409 - the pricing card should
 // be showing them the "Owned" pill, but a deep-link or stale tab could
 // still POST here and we want a clear signal rather than an extra charge.
 
@@ -50,7 +50,7 @@ export async function POST() {
     // Idempotency key: `{userId}:{priceId}`. A user who double-clicks the
     // Get Started button (or whose request retries on a transient network
     // hiccup) receives the SAME Checkout Session URL rather than two new
-    // ones — Stripe deduplicates the create call within a 24h window. The
+    // ones - Stripe deduplicates the create call within a 24h window. The
     // key intentionally doesn't include a timestamp because that would
     // defeat the purpose: we want repeat-creates within the same purchase
     // attempt to collapse, not generate a fresh session each click.

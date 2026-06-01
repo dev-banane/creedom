@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 //
 // Belt-and-braces cookie clearing for shared-browser safety. Calling
 // `supabase.auth.signOut()` is necessary (it revokes the refresh token
-// server-side) but not sufficient — on shared devices, or after a future
+// server-side) but not sufficient - on shared devices, or after a future
 // cookie-domain change (e.g. moving to a custom Supabase auth domain),
 // stale `sb-*` cookies can linger and bleed the previous user's session
 // into the next sign-in. We explicitly expire every `sb-*` cookie we

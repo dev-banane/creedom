@@ -145,16 +145,16 @@ function ScreenshotStage() {
   );
 }
 
-// Landing-asset naming convention (canonical — keep code references in sync):
+// Landing-asset naming convention (canonical - keep code references in sync):
 //
 //   /assets/landing/backgrounds/{light|dark}-<name>.avif  // hero backgrounds (apostles)
-//   /assets/landing/screenshots/{light|dark}-<name>.png   — UI shots (overview, review, propose)
-//   /assets/landing/graphics/{light|dark}-<name>.png      — step illustrations (create, connect, review)
-//   /assets/landing/brands/<name>.png                     — third-party logos (mono variants flipped via .creed-invert-on-dark)
+//   /assets/landing/screenshots/{light|dark}-<name>.png   - UI shots (overview, review, propose)
+//   /assets/landing/graphics/{light|dark}-<name>.png      - step illustrations (create, connect, review)
+//   /assets/landing/brands/<name>.png                     - third-party logos (mono variants flipped via .creed-invert-on-dark)
 //
 // Every below-hero image is theme-paired. `MediaSlot` and `BrandImage` render
 // a clean placeholder (path + dimensions) when a referenced file isn't on
-// disk yet — so a missing image surfaces in dev as a visible card telling
+// disk yet - so a missing image surfaces in dev as a visible card telling
 // you what to add, not a silent blank tile.
 function MediaSlot({
   src,

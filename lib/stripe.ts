@@ -5,7 +5,7 @@ import type { SupabaseLikeClient } from "@/lib/supabase/types";
 
 // Stripe client + entitlement helpers.
 //
-// Everything in this module is server-only — the API key is server-side
+// Everything in this module is server-only - the API key is server-side
 // and writes happen via the Supabase admin client because the webhook
 // runs without an authed user session.
 //
@@ -25,7 +25,7 @@ function getStripeSecretKey(): string {
 
 export function getStripeClient(): Stripe {
   if (stripeClient) return stripeClient;
-  // No `apiVersion` pin — let the SDK use its own default so we don't
+  // No `apiVersion` pin - let the SDK use its own default so we don't
   // have to chase Stripe's version-string churn. Account-level pinning
   // is set in the Stripe Dashboard.
   stripeClient = new Stripe(getStripeSecretKey());
@@ -49,7 +49,7 @@ export function getStripeWebhookSecret(): string | null {
  * the signature is missing, malformed, or doesn't match the configured
  * webhook secret.
  *
- * Caller is responsible for passing the RAW request body — Stripe's
+ * Caller is responsible for passing the RAW request body - Stripe's
  * signature is computed over the unparsed bytes, so any prior `.json()`
  * call would invalidate the check.
  */
@@ -116,7 +116,7 @@ function rowToEntitlement(row: EntitlementRow): CreedEntitlement {
  * Cheap "is the current user paid?" check used by server route guards
  * (e.g. (creed-app)/layout, /onboarding, /). Reads via the caller's
  * already-authed Supabase client + the "Read own entitlement" RLS
- * policy — no admin client / token decrypt needed.
+ * policy - no admin client / token decrypt needed.
  *
  * Returns `true` only when a `status = 'paid'` row exists for the user.
  * Accepts `unknown` to match how the rest of the backend treats Supabase
@@ -145,7 +145,7 @@ export async function hasPaidEntitlement(
 /**
  * Read the entitlement row for a user via the admin client. Returns
  * `null` if no row exists. Callers that already have a user-scoped
- * Supabase client may prefer to read via RLS instead — the
+ * Supabase client may prefer to read via RLS instead - the
  * "Read own entitlement" policy makes that work without escalation.
  */
 export async function getEntitlement(userId: string): Promise<CreedEntitlement | null> {
@@ -165,7 +165,7 @@ export async function getEntitlement(userId: string): Promise<CreedEntitlement |
 /**
  * Idempotent upsert from a Stripe Checkout Session. Used by both the
  * `/api/stripe/webhook` (event-driven) and `/payment/success` (verify-
- * driven) paths — whichever lands first writes, the second is a no-op
+ * driven) paths - whichever lands first writes, the second is a no-op
  * because the row PK is `user_id` and `stripe_session_id` is UNIQUE.
  *
  * Returns the resulting entitlement, or `null` if the session payload

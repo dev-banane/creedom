@@ -39,7 +39,7 @@ export type PublicAiSettings = {
   lastValidatedAt?: string;
 };
 
-export type AiUsageRange = "24h" | "7d" | "30d" | "1y";
+export type AiUsageRange = "7d" | "30d" | "90d";
 
 export type AiUsageSummary = {
   range: AiUsageRange;

@@ -39,6 +39,7 @@ import { cn } from "@/lib/utils";
 import { CreedMark, CreedWordmark } from "@/components/creed/brand";
 import { useCreed } from "@/components/creed/creed-provider";
 import { preloadSettingsData } from "@/components/creed/settings-preload";
+import { preloadMcpHealth } from "@/components/creed/mcp-health-preload";
 
 const FILE_NAV_INTENT_KEY = "creed:file-nav-intent";
 
@@ -197,6 +198,9 @@ export function CreedShell({
       repoName: state.settings.versionControl.repoName,
       markdown: state.sections.length ? exportMarkdown() : undefined,
     });
+    if (state.sections.length) {
+      preloadMcpHealth();
+    }
   }, [
     exportMarkdown,
     state.sections,
@@ -484,7 +488,7 @@ function ThemeToggleMenuItem() {
     <DropdownMenuItem
       onSelect={(event) => {
         event.preventDefault();
-        // On touch / dropdown clicks the cursor isn't a useful origin —
+        // On touch / dropdown clicks the cursor isn't a useful origin -
         // emit the reveal from the centre of the menu row itself so the
         // animation feels rooted at the button the user just tapped.
         const target = event.target as HTMLElement | null;

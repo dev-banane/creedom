@@ -12,7 +12,7 @@ import { log } from "@/lib/observability";
 // whether the user has any sections to decide `/file` vs `/onboarding`.
 //
 // We deliberately use the lightweight `hasPersistedCreed` probe rather
-// than the full `loadCreedState` fan-out — this route is a redirect, not
+// than the full `loadCreedState` fan-out - this route is a redirect, not
 // a render, so any extra round-trips are pure overhead and the
 // (creed-app) layout will load real state on the next request.
 export default async function Home() {

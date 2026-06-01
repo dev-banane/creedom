@@ -20,7 +20,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 //
 // Marketing routes and /payment/* don't pass through here so they remain
 // reachable to anyone. The check uses the user's own session client +
-// the "Read own entitlement" RLS policy — no admin escalation needed.
+// the "Read own entitlement" RLS policy - no admin escalation needed.
 export default async function CreedAppLayout({ children }: { children: ReactNode }) {
   if (!isSupabaseConfigured()) {
     // Local dev without Supabase config: skip the gate so the rest of

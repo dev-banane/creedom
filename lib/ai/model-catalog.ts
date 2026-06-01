@@ -135,7 +135,7 @@ export const AI_MODEL_CATALOG = seedModels;
 // Tiered scoring rules. The first match wins, so list specific high-signal
 // patterns (flagships) before broad ones (small variants). Score is a
 // 0–100 reasoning-benchmark proxy that maps to the colored dot via
-// `qualityFromBenchmark` — the goal is that any new model OpenRouter ships
+// `qualityFromBenchmark` - the goal is that any new model OpenRouter ships
 // from a major provider lands on the right tier automatically without
 // shipping a code change.
 const benchmarkRules: Array<{ pattern: RegExp; score: number; label: string }> = [

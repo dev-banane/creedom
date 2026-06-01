@@ -5,7 +5,7 @@
 // Why this exists:
 // - The /file screen kicks off long-running AI quality analysis via fetch.
 // - If the user navigates away mid-analysis, we don't want to throw away the
-//   in-flight work — the server already persists the result, but the client
+//   in-flight work - the server already persists the result, but the client
 //   should keep showing the loading state and pick up the result on return.
 // - Holding the in-flight promises at module scope (instead of inside the
 //   component) means the work survives unmounts. Re-mounts re-attach to the
@@ -14,7 +14,7 @@
 // Contract:
 // - `runFullQuality` and `runSectionQuality` are the only entry points.
 // - A run with the same fingerprint that is already in flight returns the
-//   same promise — it is never re-issued.
+//   same promise - it is never re-issued.
 // - State changes (running flags, latest report) fan out via a tiny pub-sub
 //   so any mounted screen can stay in sync via `useSyncExternalStore`.
 // - This module never aborts a fetch; the server is the source of truth and
@@ -42,7 +42,7 @@ type FullRunResult = {
 
 const listeners = new Set<Listener>();
 
-// Mutable internals — never expose directly. We hand out frozen snapshots so
+// Mutable internals - never expose directly. We hand out frozen snapshots so
 // `useSyncExternalStore` can compare references safely.
 let report: CreedQualityReport | null = null;
 let error: string | null = null;
@@ -78,7 +78,7 @@ export function getQualityRunnerSnapshot(): RunnerSnapshot {
   return snapshot;
 }
 
-// SSR-safe server snapshot — quality state is purely client-side, but
+// SSR-safe server snapshot - quality state is purely client-side, but
 // useSyncExternalStore demands a stable server snapshot reference.
 const SERVER_SNAPSHOT: RunnerSnapshot = Object.freeze({
   report: null,

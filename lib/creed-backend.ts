@@ -523,9 +523,9 @@ function tokenFields(token: string) {
 // Two failure modes both resolve to `""`, which the upgrade-on-read paths
 // in `ensureTokenRow` / `ensureMcpCredentialRow` use as the signal to
 // regenerate fresh tokens:
-//   1. `encrypted` column is null — legacy row never written by the
+//   1. `encrypted` column is null - legacy row never written by the
 //      current code path.
-//   2. `decryptSecret` throws — the ciphertext was written with a
+//   2. `decryptSecret` throws - the ciphertext was written with a
 //      different `CREED_ENCRYPTION_SECRET` than is currently set (i.e.
 //      the key was rotated without clearing the column). Self-heal here
 //      so a rotation doesn't crash every signed-in request.
@@ -636,20 +636,24 @@ function inferIntegrationId(agentName?: string | null) {
   return "custom";
 }
 
-function inferAgentIconKind(agentName?: string | null): AgentIconKind {
+export function inferAgentIconKind(agentName?: string | null): AgentIconKind {
   return inferIntegrationId(agentName);
 }
 
-function normalizeMcpClientId(clientName?: string | null) {
+export function normalizeMcpClientId(clientName?: string | null) {
   const icon = inferAgentIconKind(clientName);
   if (icon !== "custom") {
     return icon;
   }
 
-  const normalized = clientName
-    ?.toLowerCase()
+  const normalized = (clientName ?? "")
+    .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "")
+    // Drop generic client-wrapper suffixes so the same custom agent resolves to
+    // one id whether it identifies as "foo", "foo-mcp", or "foo-mcp-client".
+    .replace(/-(mcp-client|mcp|client|cli|vscode|extension|desktop|app|bot)$/u, "")
+    .replace(/-$/u, "")
     .slice(0, 48);
 
   return normalized || "custom";
@@ -693,7 +697,7 @@ function buildPrompt(
     ? ` ${options.maintenanceInstruction}`
     : " If your environment supports recurring tasks or background checks, use them to periodically review Creed, compare it with what you've actually learned about me, and keep it sharp rather than just longer.";
 
-  return `${contextLine}Before answering me, read my Creed from ${url}. It is my personal context profile — who I am, what I care about, how I want you to talk to me, what to respect, and what to avoid. Treat it as the source of truth about me across every conversation. Store the Creed API key securely in local agent config when possible, ideally in a .env value like CREED_API_KEY, and use that stored value for future Creed requests instead of relying on conversation context alone. The read payload includes a private contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly.${reminderLine} As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current. Do not rewrite the visible markdown directly.${maintenanceLine} Only stop to ask if there is an actual error or you detect an issue in Creed itself. If you need setup or fallback guidance, read ${docsUrl} once and use it as the guide.`;
+  return `${contextLine}Before answering me, read my Creed from ${url}. It is my personal context profile - who I am, what I care about, how I want you to talk to me, what to respect, and what to avoid. Treat it as the source of truth about me across every conversation. Store the Creed API key securely in local agent config when possible, ideally in a .env value like CREED_API_KEY, and use that stored value for future Creed requests instead of relying on conversation context alone. The read payload includes a private contract with the exact proposal mode, token, endpoint, JSON shape, and judgment rules to use. Follow that contract exactly.${reminderLine} As you learn new things about me through our conversations, propose narrowly-scoped updates so the profile stays accurate, polished, concise, and current. Do not rewrite the visible markdown directly.${maintenanceLine} Only stop to ask if there is an actual error or you detect an issue in Creed itself. If you need setup or fallback guidance, read ${docsUrl} once and use it as the guide.`;
 }
 
 function buildConnectionDefinitions(readToken: string, proposalToken: string, directEditToken: string) {
@@ -922,7 +926,7 @@ function hydrateProposal(row: ProposalRow): Proposal {
 // which made the sidebar diff render only the proposed text as "added"
 // with nothing on the removed side. We now snapshot the section content at
 // proposal-creation time, but for any historic rows still missing it we
-// fall back to the section's CURRENT content here — for a pending entry
+// fall back to the section's CURRENT content here - for a pending entry
 // that's still the right "before" reference because the proposal hasn't
 // been applied yet.
 function hydrateActivityEntries(
@@ -982,7 +986,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
 
   if (data) {
     // Trigger upgrade when the row is legacy (any hash / ciphertext
-    // column missing) OR when a resolved token is empty — the latter
+    // column missing) OR when a resolved token is empty - the latter
     // means `resolveSecret` couldn't decrypt the stored ciphertext,
     // typically because `CREED_ENCRYPTION_SECRET` was rotated. Either
     // way, regenerate fresh tokens with the current key.
@@ -1006,7 +1010,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
           // Mirror the encrypted blob into the legacy plaintext columns so
           // we satisfy any lingering NOT NULL / UNIQUE constraints in
           // databases that haven't applied 20260502130000. The blob is
-          // ciphertext, never decoded — `resolveSecret` only reads
+          // ciphertext, never decoded - `resolveSecret` only reads
           // `encrypted_*`, so nothing readable lives in this slot.
           read_token: read.encrypted,
           proposal_token: proposal.encrypted,
@@ -1039,7 +1043,7 @@ async function ensureTokenRow(client: unknown, userId: string) {
     // Mirror the encrypted blob into the legacy plaintext columns for
     // backwards-compat with schemas that haven't dropped the NOT NULL.
     // resolveSecret reads only encrypted_*, so this slot holds ciphertext
-    // and is never decoded — no security regression vs writing null.
+    // and is never decoded - no security regression vs writing null.
     read_token: read.encrypted,
     proposal_token: proposal.encrypted,
     direct_edit_token: directEdit.encrypted,
@@ -1120,7 +1124,7 @@ async function ensureMcpCredentialRow(client: unknown, userId: string) {
 
   if (data) {
     // Trigger upgrade when the row is legacy (no hash / no ciphertext) OR
-    // when `data.mcp_token` is empty — which means resolveSecret couldn't
+    // when `data.mcp_token` is empty - which means resolveSecret couldn't
     // decrypt the stored ciphertext, typically because the encryption key
     // was rotated. Either way, regenerate a fresh token now.
     if (!data.mcp_token_hash || !data.encrypted_mcp_token || !data.mcp_token) {
@@ -1129,7 +1133,7 @@ async function ensureMcpCredentialRow(client: unknown, userId: string) {
         .from("creed_mcp_credentials")
         .update({
           // Mirror encrypted into the legacy plaintext column for
-          // backwards-compat — see ensureTokenRow for the rationale.
+          // backwards-compat - see ensureTokenRow for the rationale.
           mcp_token: mcp.encrypted,
           mcp_token_hash: mcp.hash,
           encrypted_mcp_token: mcp.encrypted,
@@ -1280,7 +1284,7 @@ export function createBlankCreedState(
  * than fanning out the full `loadCreedState`, which is overkill for a
  * binary decision.
  *
- * NB: we deliberately don't use `head: true` + `count` — the structural
+ * NB: we deliberately don't use `head: true` + `count` - the structural
  * `SupabaseLikeClient` type doesn't expose `count` and the row-payload
  * approach is cheaper to type and just as fast on a single-row read.
  */
@@ -1307,7 +1311,7 @@ export async function hasPersistedCreed(
 // only the first triggers the 7-query Supabase fan-out + token enrichment;
 // the rest receive the same in-flight promise. The cache scope is bounded
 // to a single request, so writes elsewhere (persistCreedState) always see
-// fresh data on the next request — no staleness risk.
+// fresh data on the next request - no staleness risk.
 //
 // Cache key is identity-based on `client` and `user`. In practice the
 // supabase client and user objects are stable within a single render tree,
@@ -1829,19 +1833,38 @@ export async function recordMcpCredentialUsage(
 
   assertNoError(error, "Could not record MCP credential usage.");
   if (hasSpecificClientName) {
+    const clientId = normalizeMcpClientId(normalizedClientName);
     const { error: clientError } = await db.from("creed_mcp_clients").upsert(
       {
         user_id: userId,
-        client_id: normalizeMcpClientId(normalizedClientName),
+        client_id: clientId,
         client_name: normalizedClientName,
         last_seen_at: now,
-        created_at: now,
+        // Omit created_at so the column default seeds it on first insert and a
+        // later read never resets first-seen (onConflict would overwrite it).
         updated_at: now,
       },
       { onConflict: "user_id,client_id" }
     );
 
     assertNoError(clientError, "Could not record MCP client usage.");
+
+    // Bump the per-agent daily read rollup that powers the MCP health
+    // dashboard. Best-effort: a failed counter must never break a read.
+    const rpcClient = db as unknown as {
+      rpc: (
+        fn: string,
+        params: Record<string, unknown>
+      ) => Promise<{ error: { message: string } | null }>;
+    };
+    const { error: readEventError } = await rpcClient.rpc("increment_mcp_read", {
+      p_user_id: userId,
+      p_client_id: clientId,
+      p_day: now.slice(0, 10),
+    });
+    if (readEventError) {
+      log.warn("Could not record MCP read event", { message: readEventError.message });
+    }
   }
 
   await recordConnectionUsage(

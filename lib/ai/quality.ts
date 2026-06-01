@@ -19,7 +19,7 @@ export type CreedQualityReport = {
     tags: string[];
     strength: QualityNote | null;
     gap: QualityNote | null;
-    // Legacy arrays — kept for backwards-compat consumers / fallback when the
+    // Legacy arrays - kept for backwards-compat consumers / fallback when the
     // model returns the previous shape.
     strengths: string[];
     gaps: string[];
@@ -390,7 +390,7 @@ export async function analyzeCreedQuality({
       {
         role: "system",
         content:
-        `Score how well this Creed (a personal context profile every AI reads before talking to its owner) lets a fresh AI know the user. Use rubric ${CREED_QUALITY_RUBRIC_VERSION}. Be strict, specific, concise. Judge how complete, accurate, current, and concrete the profile is — not how it would help engineering. Return valid JSON only.`,
+        `Score how well this Creed (a personal context profile every AI reads before talking to its owner) lets a fresh AI know the user. Use rubric ${CREED_QUALITY_RUBRIC_VERSION}. Be strict, specific, concise. Judge how complete, accurate, current, and concrete the profile is - not how it would help engineering. Return valid JSON only.`,
       },
       {
         role: "user",

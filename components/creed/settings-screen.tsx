@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { UserIdentity } from "@supabase/supabase-js";
-import { motion } from "framer-motion";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
   AlertTriangle,
   Check,
@@ -25,8 +25,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { RoundedTopBar } from "@/components/creed/rounded-bar";
 import { AnimatedIconButton } from "@/components/creed/animated-icon-action";
 import { toast } from "sonner";
 import { SearchableSelect } from "@/components/creed/searchable-select";
@@ -55,6 +61,7 @@ import {
   DEFAULT_AI_MODEL_ID,
   formatModelCost,
   type AiModelCatalogItem,
+  type AiModelQuality,
 } from "@/lib/ai/model-catalog";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 import type { IntegrationConnectionStatus } from "@/lib/creed-data";
@@ -134,15 +141,12 @@ export function SettingsScreen() {
     exportActivityJson,
     exportAllDataJson,
     refreshState,
-    rotateTokens,
     rotateMcpCredential,
     deleteAccount,
   } = useCreed();
   const [nameDraft, setNameDraft] = useState(state.user.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [mcpCopied, setMcpCopied] = useState(false);
-  const [rotating, setRotating] = useState(false);
   const [rotatingMcp, setRotatingMcp] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [connectingGitHub, setConnectingGitHub] = useState(false);
@@ -161,11 +165,21 @@ export function SettingsScreen() {
   const [aiKeyDraft, setAiKeyDraft] = useState("");
   const [aiSaving, setAiSaving] = useState(false);
   // aiNotice was an inline error string under the API key field. Replaced
-  // by toast notifications — see toast.error/.success calls in the handlers.
+  // by toast notifications - see toast.error/.success calls in the handlers.
   const [usageRange, setUsageRange] = useState<AiUsageRange>("7d");
   const [usage, setUsage] = useState<AiUsageSummary | null>(null);
   const [aiModels, setAiModels] = useState<AiModelCatalogItem[]>(AI_MODEL_CATALOG);
   const canSaveAiKey = looksLikeApiKey(aiKeyDraft) && !aiSaving;
+
+  // Summary line for the Data card: gives the export buttons a sense of
+  // weight ("this is everything you've built") without being a dashboard.
+  const dataSummary = useMemo(() => {
+    const plural = (n: number, one: string, many = `${one}s`) =>
+      `${n.toLocaleString()} ${n === 1 ? one : many}`;
+    const sectionCount = state.sections.length;
+    const wordCount = exportMarkdown().trim().split(/\s+/).filter(Boolean).length;
+    return `${plural(wordCount, "word")} across ${plural(sectionCount, "section")}.`;
+  }, [state.sections, exportMarkdown]);
 
   useEffect(() => {
     if (state.sections.length === 0) {
@@ -374,12 +388,6 @@ export function SettingsScreen() {
     state.settings.versionControl.lastSyncedContentHash,
   ]);
 
-  async function copyUrl() {
-    await navigator.clipboard.writeText(state.readUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  }
-
   async function copyMcpConfig() {
     await navigator.clipboard.writeText(state.mcpConfig);
     setMcpCopied(true);
@@ -394,18 +402,6 @@ export function SettingsScreen() {
     link.download = filename;
     link.click();
     URL.revokeObjectURL(url);
-  }
-
-  async function handleRotateTokens() {
-    try {
-      setRotating(true);
-      await rotateTokens();
-      toast.success("Tokens rotated");
-    } catch {
-      toast.error("Couldn't rotate tokens");
-    } finally {
-      setRotating(false);
-    }
   }
 
   async function handleRotateMcpCredential() {
@@ -965,10 +961,7 @@ export function SettingsScreen() {
             <h2 className="text-[16px] font-medium text-[var(--creed-text-primary)]">
               Agent credentials
             </h2>
-            <div className="mt-4 space-y-5 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5">
-              {/* MCP first — matches the order on the Connections page so
-                  agents-and-MCP-related controls live above the raw API
-                  surface for users who think in "agent connections" first. */}
+            <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5">
               <div>
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -1017,51 +1010,6 @@ export function SettingsScreen() {
                   </span>
                 </div>
               </div>
-
-              <div className="border-t border-[var(--creed-border)] pt-5">
-                <div className="mb-3 text-[14px] font-medium text-[var(--creed-text-primary)]">
-                  Creed API
-                </div>
-                <div className="mb-4 hidden overflow-hidden rounded-[var(--radius-lg)] border border-[var(--creed-border)] bg-[var(--creed-background)] px-4 py-4 font-mono text-[13px] text-[var(--creed-text-primary)] md:block">
-                  <span className="block break-all">
-                    {maskSensitiveText(state.readUrl)}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <AnimatedIconButton
-                    icon={CopyIcon}
-                    showIcon={!copied}
-                    variant="outline"
-                    className="rounded-md border-[var(--creed-border)]"
-                    onClick={copyUrl}
-                  >
-                    {copied ? (
-                      <>
-                        <AnimatedCheckmark className="h-4 w-4" size={16} />
-                        Copied
-                      </>
-                    ) : (
-                      "Copy URL"
-                    )}
-                  </AnimatedIconButton>
-                  <AnimatedIconButton
-                    icon={RotateCCWIcon}
-                    showIcon={!rotating}
-                    variant="outline"
-                    className="rounded-md border-[var(--creed-border)] text-[var(--creed-text-primary)]"
-                    onClick={() => void handleRotateTokens()}
-                    disabled={rotating}
-                  >
-                    {rotating ? (
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                    ) : null}
-                    Rotate token
-                  </AnimatedIconButton>
-                  <span className="text-[13px] text-[var(--creed-text-secondary)]">
-                    Rotating your token will break existing agent connections.
-                  </span>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -1071,45 +1019,50 @@ export function SettingsScreen() {
             <h2 className="text-[16px] font-medium text-[var(--creed-text-primary)]">
               Data
             </h2>
-            <div className="mt-4 flex flex-wrap gap-3">
-              <AnimatedIconButton
-                icon={DownloadIcon}
-                variant="outline"
-                className="rounded-md border-[var(--creed-border)]"
-                onClick={() =>
-                  downloadFile("creed.md", exportMarkdown(), "text/markdown;charset=utf-8")
-                }
-              >
-                Export Creed as markdown
-              </AnimatedIconButton>
-              <AnimatedIconButton
-                icon={DownloadIcon}
-                variant="outline"
-                className="rounded-md border-[var(--creed-border)]"
-                onClick={() =>
-                  downloadFile(
-                    "creed-activity.json",
-                    exportActivityJson(),
-                    "application/json;charset=utf-8"
-                  )
-                }
-              >
-                Export activity log
-              </AnimatedIconButton>
-              <AnimatedIconButton
-                icon={DownloadIcon}
-                variant="outline"
-                className="rounded-md border-[var(--creed-border)]"
-                onClick={() =>
-                  downloadFile(
-                    "creed-data.json",
-                    exportAllDataJson(),
-                    "application/json;charset=utf-8"
-                  )
-                }
-              >
-                Export all data
-              </AnimatedIconButton>
+            <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5">
+              <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+                {dataSummary}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <AnimatedIconButton
+                  icon={DownloadIcon}
+                  variant="outline"
+                  className="rounded-md border-[var(--creed-border)]"
+                  onClick={() =>
+                    downloadFile("creed.md", exportMarkdown(), "text/markdown;charset=utf-8")
+                  }
+                >
+                  Export Creed as markdown
+                </AnimatedIconButton>
+                <AnimatedIconButton
+                  icon={DownloadIcon}
+                  variant="outline"
+                  className="rounded-md border-[var(--creed-border)]"
+                  onClick={() =>
+                    downloadFile(
+                      "creed-activity.json",
+                      exportActivityJson(),
+                      "application/json;charset=utf-8"
+                    )
+                  }
+                >
+                  Export activity log
+                </AnimatedIconButton>
+                <AnimatedIconButton
+                  icon={DownloadIcon}
+                  variant="outline"
+                  className="rounded-md border-[var(--creed-border)]"
+                  onClick={() =>
+                    downloadFile(
+                      "creed-data.json",
+                      exportAllDataJson(),
+                      "application/json;charset=utf-8"
+                    )
+                  }
+                >
+                  Export all data
+                </AnimatedIconButton>
+              </div>
             </div>
           </section>
 
@@ -1298,15 +1251,33 @@ function UsageCard({
   onRangeChange: (range: AiUsageRange) => void;
 }) {
   const total = usage?.totalCostUsd ?? 0;
-  const maxDay = Math.max(
-    0.000001,
-    ...(usage?.days.map((day) =>
-      day.segments.reduce((sum, segment) => sum + segment.costUsd, 0)
-    ) ?? [])
+
+  // Quality tiers present in the range, in fixed order. Each day's cost is
+  // stacked by tier - same recharts pattern as the /connections charts.
+  const qualityOrder: AiModelQuality[] = ["excellent", "good", "weak", "uncertain"];
+  const present = qualityOrder.filter((quality) =>
+    (usage?.days ?? []).some((day) => day.segments.some((s) => s.quality === quality && s.costUsd > 0))
   );
+  const chartData = (usage?.days ?? [])
+    .map((day) => {
+      const row: Record<string, number | string> = { date: day.date };
+      for (const quality of present) row[quality] = 0;
+      for (const segment of day.segments) {
+        if (present.includes(segment.quality)) {
+          row[segment.quality] = (Number(row[segment.quality]) || 0) + segment.costUsd;
+        }
+      }
+      return row;
+    })
+    // Only plot days that actually have spend.
+    .filter((row) => present.reduce((sum, quality) => sum + Number(row[quality] ?? 0), 0) > 0);
+  const chartConfig: ChartConfig = {};
+  present.forEach((quality) => {
+    chartConfig[quality] = { label: AI_MODEL_QUALITY_META[quality].label, color: AI_MODEL_QUALITY_META[quality].color };
+  });
 
   return (
-    <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] bg-[var(--creed-background)] p-4">
+    <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-4">
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
@@ -1328,9 +1299,9 @@ function UsageCard({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="end"
-            className="min-w-28 space-y-1 border-[var(--creed-border)] bg-[var(--creed-surface)] p-1.5"
+            className="min-w-24 space-y-1 border-[var(--creed-border)] bg-[var(--creed-surface)] p-1.5"
           >
-            {(["24h", "7d", "30d", "1y"] as AiUsageRange[]).map((item) => (
+            {(["7d", "30d", "90d"] as AiUsageRange[]).map((item) => (
               <DropdownMenuItem
                 key={item}
                 onSelect={() => onRangeChange(item)}
@@ -1349,134 +1320,57 @@ function UsageCard({
         </DropdownMenu>
       </div>
 
-      <motion.div layout className="mt-6 flex h-24 items-end gap-1.5">
-        {(usage?.days.length ? usage.days : Array.from({ length: 14 }, (_, index) => ({ date: String(index), segments: [] }))).map((day) => {
-          const dayTotal = day.segments.reduce((sum, segment) => sum + segment.costUsd, 0);
-          const height = Math.max(6, (dayTotal / maxDay) * 88);
-          const hasData = day.segments.length > 0;
-
-          return (
-            <UsageBar
-              key={day.date}
-              day={day}
-              height={height}
-              dayTotal={dayTotal}
-              hasData={hasData}
+      {chartData.length > 0 ? (
+        <ChartContainer config={chartConfig} className="mt-5 aspect-auto h-[120px] w-full">
+          <BarChart data={chartData} margin={{ left: 4, right: 4, top: 8, bottom: 0 }}>
+            <CartesianGrid vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="date" hide />
+            <YAxis hide />
+            <ChartTooltip
+              content={
+                <ChartTooltipContent
+                  labelFormatter={(value) => formatUsageDate(String(value))}
+                  formatter={(value, name, item) => (
+                    <div className="flex w-full items-center justify-between gap-3">
+                      <span className="flex items-center gap-1.5 text-[var(--creed-text-secondary)]">
+                        <span
+                          className="h-2.5 w-2.5 rounded-[2px]"
+                          style={{ backgroundColor: item.color ?? item.payload?.fill }}
+                        />
+                        {chartConfig[String(name)]?.label ?? name}
+                      </span>
+                      <span className="font-mono text-[var(--creed-text-primary)]">
+                        ${Number(value).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                />
+              }
             />
-          );
-        })}
-      </motion.div>
-
-      {!usage?.days.length ? (
-        <div className="mt-5 text-[13px] leading-6 text-[var(--creed-text-secondary)]">
+            {present.map((quality, index) => (
+              <Bar
+                key={quality}
+                dataKey={quality}
+                stackId="cost"
+                fill={`var(--color-${quality})`}
+                shape={index === present.length - 1 ? <RoundedTopBar /> : undefined}
+              />
+            ))}
+          </BarChart>
+        </ChartContainer>
+      ) : (
+        <div className="mt-5 flex h-[120px] items-center text-[13px] leading-6 text-[var(--creed-text-secondary)]">
           Spend appears here after Creed uses your key.
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
 
 function formatUsageDate(value: string) {
-  const date = new Date(value);
+  const date = new Date(`${value}T00:00:00Z`);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
-function UsageBar({
-  day,
-  height,
-  dayTotal,
-  hasData,
-}: {
-  day: AiUsageSummary["days"][number];
-  height: number;
-  dayTotal: number;
-  hasData: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const bar = (
-    <div
-      className={cn("flex flex-1 items-end", hasData && "cursor-default")}
-      onMouseEnter={() => hasData && setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => hasData && setOpen(true)}
-      onBlur={() => setOpen(false)}
-    >
-      <motion.div
-        layout
-        className={cn(
-          "flex w-full min-w-1 flex-col-reverse overflow-hidden rounded-t-sm bg-[var(--creed-border)]",
-          hasData && "transition-opacity hover:opacity-85"
-        )}
-        initial={false}
-        animate={{ height }}
-        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-      >
-        {day.segments.map((segment) => (
-          <motion.span
-            key={`${day.date}-${segment.modelId}`}
-            className="block w-full"
-            initial={false}
-            animate={{
-              height: `${Math.max(8, (segment.costUsd / Math.max(dayTotal, 0.000001)) * 100)}%`,
-              backgroundColor: AI_MODEL_QUALITY_META[segment.quality].color,
-            }}
-            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-          />
-        ))}
-      </motion.div>
-    </div>
-  );
-
-  if (!hasData) {
-    return bar;
-  }
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>{bar}</PopoverTrigger>
-      <PopoverContent
-        align="center"
-        side="top"
-        sideOffset={8}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onOpenAutoFocus={(event) => event.preventDefault()}
-        className="w-44 rounded-lg border border-[var(--creed-border)] bg-[var(--creed-surface)] p-2 shadow-[0_8px_24px_rgba(28,28,26,0.10)]"
-      >
-        <div className="flex items-baseline justify-between gap-2 pb-1.5">
-          <span className="text-[11px] font-medium text-[var(--creed-text-primary)]">
-            {formatUsageDate(day.date)}
-          </span>
-          <span className="font-mono text-[11px] font-medium tabular-nums text-[var(--creed-text-primary)]">
-            ${dayTotal.toFixed(dayTotal < 10 ? 2 : 0)}
-          </span>
-        </div>
-        <div className="space-y-1 border-t border-[var(--creed-border)] pt-1.5">
-          {[...day.segments]
-            .sort((a, b) => b.costUsd - a.costUsd)
-            .map((segment) => (
-              <div
-                key={`${day.date}-${segment.modelId}`}
-                className="flex items-center justify-between gap-2 text-[11px]"
-              >
-                <span className="inline-flex min-w-0 items-center gap-1.5 text-[var(--creed-text-primary)]">
-                  <span
-                    className="h-1.5 w-1.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: AI_MODEL_QUALITY_META[segment.quality].color }}
-                  />
-                  <span className="truncate">{segment.modelName}</span>
-                </span>
-                <span className="font-mono tabular-nums text-[var(--creed-text-secondary)]">
-                  ${segment.costUsd.toFixed(2)}
-                </span>
-              </div>
-            ))}
-        </div>
-      </PopoverContent>
-    </Popover>
-  );
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 function GoogleMark({ className }: { className?: string }) {

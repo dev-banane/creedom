@@ -347,7 +347,7 @@ const tools = [
   },
   // -------------------------------------------------------------------------
   // Two more single-purpose mutation tools. Same theme as creed_update_section
-  // — flat params, server picks the mode, errors enumerate valid options.
+  // - flat params, server picks the mode, errors enumerate valid options.
   // -------------------------------------------------------------------------
   {
     name: "creed_append_to_section",
@@ -516,7 +516,7 @@ function buildWritePolicy(state: CreedState) {
       "creed_get_quality_report",
     ],
     // What kinds of proposal drafts the legacy `propose_creed_update` tool
-    // accepts. Same list regardless of approval setting — proposals are
+    // accepts. Same list regardless of approval setting - proposals are
     // how agents do meta operations (delete/rename/recolor) when approval
     // is on. Prefer the recommended tools above.
     proposalDraftKinds: [...PROPOSAL_DRAFT_KINDS],
@@ -841,7 +841,7 @@ async function handleToolCall(
   }
 
   // -----------------------------------------------------------------------
-  // append / reorder — single-purpose mutations that need their own runners
+  // append / reorder - single-purpose mutations that need their own runners
   // because their state transitions don't fit the shared section mutation
   // helper.
   // -----------------------------------------------------------------------
@@ -997,7 +997,7 @@ async function runSectionMutation(
     });
   }
 
-  // Approval is on — submit a proposal. Defaults handle the categorisation
+  // Approval is on - submit a proposal. Defaults handle the categorisation
   // fields server-side so the agent doesn't have to invent them.
   const draft =
     kind === "update"
@@ -1142,7 +1142,7 @@ async function runAppend(
   // Approval-on path: submit a rich-text proposal with the merged body so
   // the user reviews the FULL resulting section (existing + appended). We
   // build the merged body here rather than relying on the user to mentally
-  // combine the two snippets — they should accept/reject the actual end
+  // combine the two snippets - they should accept/reject the actual end
   // state.
   const existing = (section.content ?? "").trim();
   const appendedHtml = markdownToRichHtml(payload.contentMarkdown);
@@ -1230,7 +1230,7 @@ async function runReorder(
 // ---------------------------------------------------------------------------
 
 function stripHtmlForSearch(html: string): string {
-  // Strip tags, collapse whitespace. Keep accents/casing — we lowercase at
+  // Strip tags, collapse whitespace. Keep accents/casing - we lowercase at
   // the match site, not here, so snippets preserve the original casing.
   return html
     .replace(/<[^>]+>/g, " ")
@@ -1303,7 +1303,7 @@ async function loadLatestQualityReport(
   userId: string
 ): Promise<CreedQualityReport | null> {
   // userId is threaded down from the request entry where we already
-  // resolved it once via findUserIdByMcpToken — avoids a second indexed
+  // resolved it once via findUserIdByMcpToken - avoids a second indexed
   // lookup + token hashing pass on every quality-report read.
   const admin = getSupabaseAdminClient();
   const row = await readLatestQualityReport(admin as never, userId);
@@ -1316,7 +1316,7 @@ async function loadLatestQualityReport(
     );
   } catch {
     // Stored report doesn't validate against the current sections (probably
-    // schema drift or a section was deleted). Return null — agents should
+    // schema drift or a section was deleted). Return null - agents should
     // re-run analysis rather than act on a stale report.
     return null;
   }
@@ -1425,7 +1425,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as JsonRpcRequest | JsonRpcRequest[];
   // MCP only needs recent activity for the `creed_get_recent_activity`
-  // tool — 100 rows is plenty of "what other agents did lately". Proposals
+  // tool - 100 rows is plenty of "what other agents did lately". Proposals
   // are only used for validation lookups (none of the per-tool handlers
   // iterate the list), so a tight cap is safe.
   const { state } = await loadCreedState(admin as never, userData.user, {

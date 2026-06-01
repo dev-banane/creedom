@@ -30,7 +30,7 @@ export function getSiteUrl() {
   }
 
   // Development convenience only. Production must set NEXT_PUBLIC_SITE_URL
-  // explicitly — there's no hardcoded production fallback so forks can't
+  // explicitly - there's no hardcoded production fallback so forks can't
   // accidentally leak OAuth callbacks / API URLs to the upstream domain.
   if (process.env.NODE_ENV === "development") {
     return "http://localhost:3000";

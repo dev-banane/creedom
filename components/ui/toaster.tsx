@@ -20,7 +20,7 @@ export function Toaster() {
         classNames: {
           // Title-only toasts. Keep the original generous padding so the
           // notification still has visual weight without a description row
-          // to balance against — the single line of text sits comfortably
+          // to balance against - the single line of text sits comfortably
           // centred rather than crammed into a thin pill. Extra right
           // padding to leave room for the absolutely-positioned close
           // button which now lives on the right edge of the toast.

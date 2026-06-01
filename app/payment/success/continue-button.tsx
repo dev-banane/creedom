@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 
-// Small client island for the success page's "Continue" CTA — the rest of
+// Small client island for the success page's "Continue" CTA - the rest of
 // the page stays a server component (it does Stripe + Supabase work in
 // `resolveState`). Animated arrow mirrors the chrome's "Owned" pill so the
 // motion language is consistent across the marketing surface.

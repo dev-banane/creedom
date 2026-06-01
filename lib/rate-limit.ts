@@ -1,4 +1,4 @@
-// Lightweight in-memory token-bucket rate limiter. Per-process scope only —
+// Lightweight in-memory token-bucket rate limiter. Per-process scope only -
 // adequate for single-region deployments and the volumes Creed sees today;
 // graduate to Upstash / Redis when running multi-instance.
 
