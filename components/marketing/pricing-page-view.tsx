@@ -1,12 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { toast } from "sonner";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import {
   ArrowUpRightIcon,
   type ArrowUpRightIconHandle,
@@ -15,6 +14,7 @@ import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
 import { MarketingFooter, MarketingHeader } from "@/components/marketing/site-chrome";
 import { usePaidStatus } from "@/components/marketing/use-paid-status";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
+import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { GITHUB_URL } from "@/lib/branding";
 import { cn } from "@/lib/utils";
@@ -250,71 +250,18 @@ function ExternalCta({
  * Hosted-plan CTA. Three states:
  *
  *   signed-in + paid    → green "Owned" pill, links to /file
- *   signed-in + unpaid  → "Get Started" → POST /api/stripe/checkout
- *   signed-out          → "Get Started" → Google OAuth with
- *                         redirectTo=/pricing?checkout=true; on return
- *                         the auto-trigger effect below fires the
- *                         checkout POST without another click.
+ *   signed-in + unpaid  → "Get Started" → /onboarding
+ *   signed-out          → "Get Started" → Google OAuth → /onboarding
+ *
+ * The app is the paid product; the actual $49 charge happens at the end of
+ * onboarding (the "Get Creed" button), so the pricing CTA just drops people
+ * into the free onboarding funnel rather than charging up front.
  */
 function HostedPurchaseCta() {
   const authState = useLandingAuthState();
   const paidStatus = usePaidStatus();
+  const canResume = useOnboardingResume();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [submitting, setSubmitting] = useState(false);
-  const autoTriggeredRef = useRef(false);
-
-  const startCheckout = useCallback(async () => {
-    if (submitting) return;
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/stripe/checkout", { method: "POST" });
-      const data = (await res.json().catch(() => ({}))) as {
-        url?: string;
-        error?: string;
-        alreadyPaid?: boolean;
-      };
-      if (data.alreadyPaid) {
-        toast.success("You already own Creed.");
-        router.push("/file");
-        return;
-      }
-      if (!res.ok || !data.url) {
-        throw new Error(data.error || "Couldn't start checkout.");
-      }
-      window.location.href = data.url;
-    } catch (error) {
-      setSubmitting(false);
-      toast.error(error instanceof Error ? error.message : "Couldn't start checkout.");
-    }
-  }, [router, submitting]);
-
-  // Surface the auth-callback's `not_paid` redirect as a toast on /pricing.
-  useEffect(() => {
-    const reason = searchParams.get("reason");
-    if (reason === "not_paid") {
-      toast.error("Finish checkout to unlock Creed.");
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("reason");
-      const query = params.toString();
-      router.replace(`/pricing${query ? `?${query}` : ""}`);
-    }
-  }, [router, searchParams]);
-
-  // Auto-trigger checkout when we land back from Google OAuth with
-  // ?checkout=true. Only fires once per mount, then clears the query so
-  // back-button navigation doesn't re-fire it.
-  useEffect(() => {
-    if (autoTriggeredRef.current) return;
-    if (searchParams.get("checkout") !== "true") return;
-    if (authState !== "signed-in") return;
-    autoTriggeredRef.current = true;
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("checkout");
-    const query = params.toString();
-    router.replace(`/pricing${query ? `?${query}` : ""}`);
-    void startCheckout();
-  }, [authState, router, searchParams, startCheckout]);
 
   if (paidStatus === "paid") {
     return (
@@ -331,31 +278,25 @@ function HostedPurchaseCta() {
   if (authState === "signed-out") {
     return (
       <GoogleSignInButton
-        label="Buy it now"
+        label="Get Started"
         showIcon={false}
-        redirectTo="/pricing?checkout=true"
+        redirectTo="/onboarding"
         className={ctaClass("solid")}
       />
     );
   }
 
-  // Signed-in but unpaid (or still resolving auth/paid - show the same
-  // button so the layout doesn't jump while paidStatus is "unknown").
+  // Signed-in but unpaid (or still resolving auth/paid - show the same button
+  // so the layout doesn't jump while paidStatus is "unknown"). Enter the free
+  // onboarding funnel; the paywall is the "Get Creed" button at the end. If they
+  // have an unfinished onboarding in this browser, offer "Resume".
   return (
     <button
       type="button"
-      onClick={() => void startCheckout()}
-      disabled={submitting}
-      className={cn(ctaClass("solid"), "disabled:cursor-not-allowed disabled:opacity-70")}
+      onClick={() => router.push("/onboarding")}
+      className={ctaClass("solid")}
     >
-      {submitting ? (
-        <>
-          <LoaderCircle className="h-4 w-4 animate-spin" />
-          Redirecting
-        </>
-      ) : (
-        "Buy it now"
-      )}
+      {canResume ? "Resume" : "Get Started"}
     </button>
   );
 }

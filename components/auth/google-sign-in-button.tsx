@@ -20,11 +20,11 @@ export function GoogleSignInButton({
   className?: string;
   showIcon?: boolean;
   // Optional post-auth destination. Forwarded through `/auth/callback`
-  // via its `next` query param. The pricing card passes
-  // `/pricing?checkout=true` so the user lands back on pricing ready to
-  // be auto-handed to Stripe; `/payment/success` passes `/file` so the
-  // post-purchase sign-in lands the user inside the app. When omitted,
-  // the callback's existing default (root redirect) applies.
+  // via its `next` query param. The pricing card and landing "Get Started"
+  // pass `/onboarding` so the user lands in the free onboarding funnel;
+  // `/payment/success` passes `/file` so the post-purchase sign-in lands
+  // the user inside the app. When omitted, the callback's existing default
+  // (root redirect) applies.
   redirectTo?: string;
 }) {
   const [loading, setLoading] = useState(false);

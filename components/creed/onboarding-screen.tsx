@@ -15,9 +15,11 @@ import { CreedWordmark, IntegrationGlyph } from "@/components/creed/brand";
 import { ConnectionCard, resolveConnectionStatus } from "@/components/creed/connection-card";
 import { useCreed } from "@/components/creed/creed-provider";
 import { RichTextEditor } from "@/components/creed/rich-text-editor";
+import { useStripeCheckout } from "@/components/marketing/use-stripe-checkout";
 import {
   accentColorMap,
   type CreedSection,
+  type McpClient,
   type OnboardingState,
 } from "@/lib/creed-data";
 import { getCreedPromptText } from "@/lib/creed-prompts";
@@ -68,95 +70,25 @@ const typeThemes: Record<OnboardingState["creedType"], { accent: string; tint: s
 const defaultStepTitle = "Pick the closest vibe.";
 const defaultStepSubtitle = "It only changes the question wording and examples.";
 
-function bullets(items: string[]) {
-  return `<ul class="creed-list creed-list-bullet">${items.map((text) => `<li>${text}</li>`).join("")}</ul>`;
-}
-
 // MCP clients report names like "Claude Code (creed)" - the trailing
 // "(<server alias>)" is just the local connector name and is noise in the UI.
 function agentDisplayName(name: string) {
   return name.replace(/\s*\([^)]*\)\s*$/, "").trim() || name;
 }
 
-function makeStarterSection(
-  partial: Pick<CreedSection, "id" | "name" | "accent" | "content"> & {
-    template?: CreedSection["template"];
-    agentWritable?: boolean;
-  }
-): CreedSection {
-  return {
-    id: partial.id,
-    kind: "rich-text",
-    template: partial.template ?? "freeform",
-    name: partial.name,
-    accent: partial.accent,
-    content: partial.content,
-    // Pivot: every starter section is agent-writable so AI can keep the
-    // profile accurate, polished, concise, and current.
-    agentWritable: partial.agentWritable ?? true,
-    agentPermission: "propose",
-    lastEditedBy: "You",
-    lastEditedType: "user",
-    lastEditedLabel: "just now",
-  };
-}
-
-// Used when the user skips onboarding - fills the file with the five core
-// sections so they have something to edit immediately. Optional sections
-// (Beliefs, Constraints, People, Health, Context) are added later via the
-// section composer or by an agent's proposal.
-const blankTemplateSections: CreedSection[] = [
-  makeStarterSection({
-    id: "identity",
-    name: "Identity",
-    accent: "identity",
-    template: "identity",
-    content:
-      "<p>Use this section to give every AI a stable picture of who you are. Add the role, traits, and defaults that should follow you across every conversation.</p>",
-  }),
-  makeStarterSection({
-    id: "goals",
-    name: "Goals",
-    accent: "projects",
-    template: "focus",
-    content:
-      "<p>Note what you're working toward right now. Mix near-term outcomes with longer-horizon ambitions so AI can pull on the right thread.</p>",
-  }),
-  makeStarterSection({
-    id: "work",
-    name: "Work",
-    accent: "tools",
-    template: "freeform",
-    content:
-      "<p>What you do, the tools you reach for, and how you like to work. Add the surfaces AI should know you live in.</p>",
-  }),
-  makeStarterSection({
-    id: "preferences",
-    name: "Preferences",
-    accent: "preferences",
-    template: "principles",
-    content: bullets([
-      "Lead with the answer, then the supporting detail.",
-      "Keep replies tight unless depth genuinely helps.",
-      "Skip filler, hedging, and over-praise.",
-    ]),
-  }),
-  makeStarterSection({
-    id: "routines",
-    name: "Routines",
-    accent: "workflows",
-    template: "principles",
-    content: bullets([
-      "Habits and rhythms an AI should respect when planning, scheduling, or following up.",
-    ]),
-  }),
-];
-
-export function OnboardingScreen() {
+export function OnboardingScreen({
+  paid,
+  initialStage,
+}: {
+  paid: boolean;
+  initialStage?: "connect" | "preview";
+}) {
   const router = useRouter();
-  const { state, updateOnboarding, claimOnboardingPreview } =
-    useCreed();
-  const [step, setStep] = useState(0);
+  const { state, updateOnboarding, claimOnboardingPreview } = useCreed();
+  const { startCheckout, submitting: checkoutSubmitting } = useStripeCheckout();
+  const [step, setStep] = useState(
+    initialStage === "preview" ? PREVIEW_STEP : initialStage === "connect" ? CONNECT_STEP : 0
+  );
   const [groupOther, setGroupOther] = useState<string | null>(null);
   const [groupOtherValue, setGroupOtherValue] = useState("");
   const [claiming, setClaiming] = useState(false);
@@ -171,8 +103,19 @@ export function OnboardingScreen() {
     [state.onboarding]
   );
 
-  // Connect gate.
-  const connected = state.mcpStatus === "connected";
+  // The Connect step polls /api/app/state directly (effect below) and overrides
+  // the provider's roster the moment an agent registers - so detection is
+  // near-instant even for CLI agents (Codex, Claude Code, OpenCode) that never
+  // trigger the provider's focus/visibility sync. Falls back to provider state.
+  const [serverMcpClients, setServerMcpClients] = useState<McpClient[] | null>(null);
+  // Prefer the live provider roster once it has anything; the polled snapshot is
+  // just the fast-path bridge until the provider's slower sync catches up, so it
+  // never goes stale (e.g. a second agent connecting later still shows up).
+  const mcpClients = state.mcpClients.length > 0 ? state.mcpClients : (serverMcpClients ?? []);
+
+  // Connect gate: connected once the roster has any client (or the provider has
+  // already marked the session connected).
+  const connected = state.mcpStatus === "connected" || mcpClients.length > 0;
   // Compose "write landed" signal. The Compose step polls the server directly
   // (effect below) and flips these the moment an agent-authored section appears,
   // independent of the provider's background-sync merge guard - which during
@@ -193,19 +136,19 @@ export function OnboardingScreen() {
   // composer by alias-stripped name.
   const isAgentSubmitted = (clientName: string) =>
     composed &&
-    (state.mcpClients.length === 1 ||
+    (mcpClients.length === 1 ||
       agentDisplayName(clientName).toLowerCase() ===
         agentDisplayName(composerName ?? "").toLowerCase());
-  const submittedCount = state.mcpClients.filter((client) => isAgentSubmitted(client.name)).length;
-  const allSubmitted = state.mcpClients.length > 0 && submittedCount === state.mcpClients.length;
+  const submittedCount = mcpClients.filter((client) => isAgentSubmitted(client.name)).length;
+  const allSubmitted = mcpClients.length > 0 && submittedCount === mcpClients.length;
 
   // Roster of connected agents with their submit status, shown on the Compose
   // step so the user can see which agent(s) have actually sent a Creed - works
   // whether they have one agent or several connected.
   const connectedAgentsRoster =
-    state.mcpClients.length > 0 ? (
+    mcpClients.length > 0 ? (
       <div className="mx-auto flex w-full max-w-md flex-col gap-2">
-        {state.mcpClients.map((client) => {
+        {mcpClients.map((client) => {
           const submitted = isAgentSubmitted(client.name);
           return (
             <div
@@ -235,17 +178,16 @@ export function OnboardingScreen() {
       </div>
     ) : null;
 
-  // Returning users (and abandoned mid-flow reloads) who already have a Creed
-  // skip onboarding. Both land here at step 0, so that's the only place we
-  // bounce. We deliberately don't bounce mid-flow: advancing into Connect
-  // claims the seed draft (sections become non-empty) while the user is still
-  // inside onboarding, so a broader check would eject them before the Connect
-  // or Compose steps could render.
+  // A returning PAID user who already has a composed Creed skips onboarding and
+  // goes straight to /file. We gate on `paid` so unpaid composed users (whom the
+  // app layout sends here to pay) are NOT bounced - that would loop them
+  // /file <-> /onboarding. They instead start on the preview (via initialStage)
+  // with the "Get Creed" button. We only bounce at step 0, never mid-flow.
   useEffect(() => {
-    if (state.sections.length > 0 && step === 0) {
+    if (paid && step === 0 && composed) {
       router.replace("/file");
     }
-  }, [router, state.sections.length, step]);
+  }, [router, paid, step, composed]);
 
   // On the Compose step, poll the server directly so the screen flips the moment
   // the agent's compose lands. We read /api/app/state ourselves rather than going
@@ -277,6 +219,35 @@ export function OnboardingScreen() {
       window.clearInterval(id);
     };
   }, [step, composed]);
+
+  // On the Connect step, poll the roster directly so the card flips within a few
+  // seconds even for CLI agents that never trigger the provider's focus sync.
+  // Stops as soon as a client appears (the `connected` dep re-runs the effect).
+  useEffect(() => {
+    if (step !== CONNECT_STEP || connected) {
+      return;
+    }
+    let cancelled = false;
+    async function checkForConnect() {
+      try {
+        const res = await fetch("/api/app/state", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as { state?: { mcpClients?: McpClient[] } };
+        const clients = data.state?.mcpClients ?? [];
+        if (!cancelled && clients.length > 0) {
+          setServerMcpClients(clients);
+        }
+      } catch {
+        // Ignore transient poll errors; the next tick retries.
+      }
+    }
+    void checkForConnect();
+    const id = window.setInterval(checkForConnect, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(id);
+    };
+  }, [step, connected]);
 
   function toggleCommunicationStyle(
     option: "Direct" | "Collaborative" | "Thorough" | "Concise"
@@ -402,11 +373,6 @@ export function OnboardingScreen() {
     // local sections mid-flow). Use a full navigation so /file reloads from
     // server state and renders the composed Creed rather than the seed.
     window.location.href = "/file";
-  }
-
-  async function handleSkipOnboarding() {
-    await claimOnboardingPreview(blankTemplateSections);
-    router.push("/file");
   }
 
   async function handleCopyPrompt() {
@@ -754,7 +720,7 @@ export function OnboardingScreen() {
                             {state.connections.map((connection) => {
                               const { isConnected, lastSeen } = resolveConnectionStatus(
                                 connection,
-                                state.mcpClients
+                                mcpClients
                               );
                               return (
                                 <ConnectionCard
@@ -820,7 +786,7 @@ export function OnboardingScreen() {
                             <div className="flex items-center gap-2 text-[13px] text-[var(--creed-text-tertiary)]">
                               <LoaderCircle className="h-4 w-4 animate-spin" />
                               {composed
-                                ? `${submittedCount} of ${state.mcpClients.length} agents submitted`
+                                ? `${submittedCount} of ${mcpClients.length} agents submitted`
                                 : "Waiting for an agent to submit..."}
                             </div>
                           )}
@@ -868,10 +834,11 @@ export function OnboardingScreen() {
             {step === 0 && !claiming ? (
               <button
                 type="button"
-                onClick={() => void handleSkipOnboarding()}
+                onClick={() => router.push("/home")}
                 className="inline-flex items-center gap-2 text-sm text-[var(--creed-text-secondary)] transition-colors duration-150 hover:text-[var(--creed-text-primary)]"
               >
-                Skip
+                <ArrowLeft className="h-4 w-4" />
+                Back
               </button>
             ) : step > 0 && !claiming ? (
               <button
@@ -912,7 +879,7 @@ export function OnboardingScreen() {
                 )}
               </Button>
             </div>
-          ) : (
+          ) : paid ? (
             <Button
               style={{ borderRadius: "0.875rem" }}
               className="bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)]"
@@ -920,6 +887,20 @@ export function OnboardingScreen() {
             >
               Go to my Creed
               <ArrowRightIcon className="h-4 w-4" size={16} />
+            </Button>
+          ) : (
+            <Button
+              style={{ borderRadius: "0.875rem" }}
+              className="bg-[var(--creed-text-primary)] px-5 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)] disabled:bg-[var(--creed-border-strong)] disabled:text-[var(--creed-text-tertiary)]"
+              onClick={() => void startCheckout()}
+              disabled={checkoutSubmitting}
+            >
+              {checkoutSubmitting ? "Starting" : "Get Creed"}
+              {checkoutSubmitting ? (
+                <LoaderCircle className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArrowRightIcon className="h-4 w-4" size={16} />
+              )}
             </Button>
           )}
         </div>

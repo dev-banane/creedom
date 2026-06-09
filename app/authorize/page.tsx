@@ -1,10 +1,8 @@
-import Link from "next/link";
 import { CreedWordmark, IntegrationGlyph } from "@/components/creed/brand";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { getAgentIconKind } from "@/lib/agent-icon";
 import { getOAuthClient, isAllowedRedirectUri } from "@/lib/oauth";
-import { hasPaidEntitlement } from "@/lib/stripe";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -130,27 +128,10 @@ export default async function AuthorizePage({
     );
   }
 
-  const paid = await hasPaidEntitlement(supabase, user.id);
-  if (!paid) {
-    return (
-      <Shell>
-        <Message
-          title="Set up Creed first"
-          body="Connecting an agent needs an active Creed. Finish setting yours up, then start the connection again."
-        />
-        <div className="mt-6 flex justify-center">
-          <Link href="/pricing">
-            <Button className="rounded-md">Go to Creed</Button>
-          </Link>
-        </div>
-      </Shell>
-    );
-  }
-
-  // No Creed gate here on purpose: in onboarding the user connects an agent
-  // BEFORE the Creed exists - the agent is what composes the initial Creed - so
-  // requiring a persisted Creed would block the core flow. Signed-in + paid is
-  // the bar; the agent reads an empty/seed Creed fine until it composes.
+  // No payment or Creed gate here on purpose. Connecting an agent is free: it's
+  // how the user composes their Creed during onboarding (the agent reads an
+  // empty/seed Creed fine until it composes), and the paywall is the hosted app
+  // (/file etc.), not the agent. Signed-in is the only bar.
   const iconKind = getAgentIconKind(client.clientName);
 
   return (

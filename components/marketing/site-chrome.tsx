@@ -12,6 +12,7 @@ import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { Button } from "@/components/ui/button";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { usePaidStatus } from "@/components/marketing/use-paid-status";
+import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { cn } from "@/lib/utils";
 
 import { CONTACT_MAILTO, GITHUB_URL, INSTAGRAM_URL, TWITTER_URL } from "@/lib/branding";
@@ -32,6 +33,7 @@ export function MarketingHeader({
   void scrolled;
   const authState = useLandingAuthState(configured);
   const paidStatus = usePaidStatus(configured);
+  const canResume = useOnboardingResume(configured);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mobileGoToAppArrow = useAnimatedIconControls(80, undefined, 420);
 
@@ -192,8 +194,11 @@ export function MarketingHeader({
                         }
                       }}
                     >
-                      <Link href="/pricing" onClick={() => setMobileMenuOpen(false)}>
-                        Get Started
+                      <Link
+                        href={canResume ? "/onboarding" : "/pricing"}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {canResume ? "Resume" : "Get Started"}
                         <ArrowRightIcon ref={mobileGoToAppArrow.iconRef} className="h-3.5 w-3.5" size={14} />
                       </Link>
                     </Button>
@@ -225,6 +230,7 @@ function HeaderAuthActions({
 }) {
   const goToAppArrow = useAnimatedIconControls(80, undefined, 420);
   const paidStatus = usePaidStatus(configured);
+  const canResume = useOnboardingResume(configured);
 
   // Mobile-menu trigger is shared across all states so the navigation
   // links remain reachable. We render it once at the end.
@@ -291,8 +297,8 @@ function HeaderAuthActions({
           onMouseEnter={goToAppArrow.start}
           onMouseLeave={goToAppArrow.settle}
         >
-          <Link href="/pricing">
-            Get Started
+          <Link href={canResume ? "/onboarding" : "/pricing"}>
+            {canResume ? "Resume" : "Get Started"}
             <ArrowRightIcon ref={goToAppArrow.iconRef} className="h-3.5 w-3.5" size={14} />
           </Link>
         </Button>

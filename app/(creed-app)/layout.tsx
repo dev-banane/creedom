@@ -10,11 +10,13 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 // Entitlement + onboarding gate for everything inside the (creed-app)
 // route group (/file, /connections, /settings). Three-layer check:
 //   1. signed in? if not → /pricing
-//   2. has a paid creed_entitlements row? if not → /pricing?reason=not_paid
+//   2. has a paid creed_entitlements row? if not → /onboarding
 //   3. has any persisted sections? if not → /onboarding
 //
-// Step 3 catches users who deep-link to /file (or come back via a stale
-// browser tab) without having completed onboarding yet. Without this
+// The app is the paid product, so unpaid users are sent to /onboarding
+// (where they can finish onboarding and hit "Get Creed"), never into the
+// app. Step 3 catches users who deep-link to /file (or come back via a
+// stale browser tab) without having completed onboarding yet. Without it
 // they'd see the seed initialCreedState (placeholder sections, blank
 // name) instead of being routed through the proper first-run flow.
 //
@@ -39,7 +41,7 @@ export default async function CreedAppLayout({ children }: { children: ReactNode
 
   const paid = await hasPaidEntitlement(supabase, user.id);
   if (!paid) {
-    redirect("/pricing?reason=not_paid");
+    redirect("/onboarding");
   }
 
   // Onboarding gate. Treat a missing-tables error as "not onboarded" so

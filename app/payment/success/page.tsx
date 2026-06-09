@@ -38,7 +38,7 @@ export const dynamic = "force-dynamic";
 // the webhook fires, they still get entitled instantly.
 
 type SuccessState =
-  | { kind: "ok"; continueHref: string }
+  | { kind: "ok"; continueHref: string; autoAdvance: boolean }
   | { kind: "not-signed-in" }
   | { kind: "wrong-user" }
   | { kind: "invalid" };
@@ -83,9 +83,15 @@ async function resolveState(sessionId: string | null): Promise<SuccessState> {
     return { kind: "wrong-user" };
   }
 
-  // Idempotent upsert so the user doesn't have to wait for the webhook.
+  // Idempotent upsert so the user doesn't have to wait for the webhook. Track
+  // whether it actually landed: only a confirmed entitlement triggers the
+  // auto-advance. If it throws (DB hiccup), leave entitled=false so the page
+  // shows the manual Continue button rather than auto-bouncing the just-paid
+  // user to the paywall before the webhook catches up.
+  let entitled = false;
   try {
     await upsertEntitlementFromSession(session);
+    entitled = true;
   } catch (error) {
     log.error(
       "payment_success_upsert_failed",
@@ -97,7 +103,7 @@ async function resolveState(sessionId: string | null): Promise<SuccessState> {
     // row exists.
   }
 
-  return { kind: "ok", continueHref: "/file" };
+  return { kind: "ok", continueHref: "/file", autoAdvance: entitled };
 }
 
 export default async function PaymentSuccessPage({
@@ -111,7 +117,9 @@ export default async function PaymentSuccessPage({
   return (
     <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
       <div className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-6 py-16 text-center">
-        {state.kind === "ok" ? <SuccessOk continueHref={state.continueHref} /> : null}
+        {state.kind === "ok" ? (
+          <SuccessOk continueHref={state.continueHref} autoAdvance={state.autoAdvance} />
+        ) : null}
         {state.kind === "not-signed-in" ? <NotSignedIn /> : null}
         {state.kind === "wrong-user" ? <WrongUser /> : null}
         {state.kind === "invalid" ? <Invalid /> : null}
@@ -120,7 +128,13 @@ export default async function PaymentSuccessPage({
   );
 }
 
-function SuccessOk({ continueHref }: { continueHref: string }) {
+function SuccessOk({
+  continueHref,
+  autoAdvance,
+}: {
+  continueHref: string;
+  autoAdvance: boolean;
+}) {
   return (
     <>
       {/* Wider container (`max-w-2xl` on the page wrapper) gives the
@@ -131,7 +145,7 @@ function SuccessOk({ continueHref }: { continueHref: string }) {
       <p className="mt-4 max-w-sm text-[15px] leading-7 text-[var(--creed-text-secondary)]">
         Creed is unlocked on your account. Let&apos;s set things up.
       </p>
-      <ContinueButton href={continueHref} />
+      <ContinueButton href={continueHref} autoAdvance={autoAdvance} />
     </>
   );
 }

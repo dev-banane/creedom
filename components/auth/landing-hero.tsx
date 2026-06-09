@@ -8,6 +8,7 @@ import { BelowHeroSections } from "@/components/marketing/below-hero-sections";
 import { MarketingHeader } from "@/components/marketing/site-chrome";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { usePaidStatus } from "@/components/marketing/use-paid-status";
+import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { splitPreservingLigatures } from "@/lib/landing-text";
@@ -23,6 +24,9 @@ export function LandingHero({ configured }: { configured: boolean }) {
   const authState = useLandingAuthState(configured);
   const paidStatus = usePaidStatus(configured);
   const isPaid = authState === "signed-in" && paidStatus === "paid";
+  // Signed-in, unpaid, with an unfinished onboarding in this browser -> offer to
+  // resume straight into /onboarding rather than the generic "Get Started".
+  const canResume = useOnboardingResume(configured) && !isPaid;
   const heroArrow = useAnimatedIconControls(80, undefined, 420);
 
   useEffect(() => {
@@ -137,7 +141,7 @@ export function LandingHero({ configured }: { configured: boolean }) {
                   </Link>
                 ) : (
                   <Link
-                    href="/pricing"
+                    href={canResume ? "/onboarding" : "/pricing"}
                     onMouseEnter={heroArrow.start}
                     onMouseLeave={heroArrow.settle}
                     onPointerDown={(event) => {
@@ -145,7 +149,7 @@ export function LandingHero({ configured }: { configured: boolean }) {
                     }}
                     className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white pl-4 pr-3 text-[14px] font-medium text-[#19345f] transition-colors hover:bg-[#f6f7fb]"
                   >
-                    <span className="leading-none">Get Started</span>
+                    <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
                     <ArrowRightIcon
                       ref={heroArrow.iconRef}
                       size={16}

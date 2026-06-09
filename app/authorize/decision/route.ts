@@ -6,7 +6,6 @@ import {
   isAllowedRedirectUri,
   issueAuthorizationCode,
 } from "@/lib/oauth";
-import { hasPaidEntitlement } from "@/lib/stripe";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 // Handles the Allow / Deny POST from the consent screen. The user is
@@ -72,14 +71,10 @@ export async function POST(request: Request) {
     });
   }
 
-  // Eligibility re-check at grant time: MCP is a paid feature. We intentionally
-  // do NOT require a finished Creed here - agents connect during onboarding and
-  // the agent is what composes the initial Creed, so a Creed need not exist yet.
-  const paid = await hasPaidEntitlement(supabase, user.id);
-  if (!paid) {
-    return badRequest("This account is not set up to connect agents yet.");
-  }
-
+  // Connecting an agent is free: no payment or finished-Creed gate here. Agents
+  // connect during onboarding to compose the initial Creed, and the paywall is
+  // the hosted app, not the agent. Signed-in is the only bar.
+  //
   // OAuth scope is a coarse hint; real edit rights are enforced per-section on
   // the write / proposal routes, so the token scope gates nothing on its own.
   // Grant exactly the scopes the client asked for (bounded by what we support),

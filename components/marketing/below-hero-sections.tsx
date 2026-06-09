@@ -9,6 +9,7 @@ import { ChevronDown } from "lucide-react";
 import { MarketingFooter } from "@/components/marketing/site-chrome";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { usePaidStatus } from "@/components/marketing/use-paid-status";
+import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { splitPreservingLigatures } from "@/lib/landing-text";
@@ -431,6 +432,7 @@ function FaqSection() {
 function ClosingCtaSection({ configured }: { configured: boolean }) {
   const authState = useLandingAuthState(configured);
   const paidStatus = usePaidStatus(configured);
+  const canResume = useOnboardingResume(configured);
   const isPaid = authState === "signed-in" && paidStatus === "paid";
   const closingArrow = useAnimatedIconControls(80, undefined, 420);
 
@@ -468,7 +470,7 @@ function ClosingCtaSection({ configured }: { configured: boolean }) {
               </Link>
             ) : (
               <Link
-                href="/pricing"
+                href={canResume ? "/onboarding" : "/pricing"}
                 onMouseEnter={closingArrow.start}
                 onMouseLeave={closingArrow.settle}
                 onPointerDown={(event) => {
@@ -476,7 +478,7 @@ function ClosingCtaSection({ configured }: { configured: boolean }) {
                 }}
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
               >
-                <span className="leading-none">Get Started</span>
+                <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
                 <ArrowRightIcon
                   ref={closingArrow.iconRef}
                   size={16}

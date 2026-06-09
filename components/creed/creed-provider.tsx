@@ -261,13 +261,20 @@ function bumpSectionRevisionMap(
 export function CreedProvider({
   children,
   initialState = initialCreedState,
-  persistenceEnabled = false,
+  persistenceEnabled: initialPersistenceEnabled = false,
 }: {
   children: ReactNode;
   initialState?: CreedState;
   persistenceEnabled?: boolean;
 }) {
   const [state, setState] = useState(initialState);
+  // Reactive, not just the prop: onboarding loads before any Creed exists (so
+  // the initial value is false), then claims the seed mid-flow. Flipping this
+  // on claim turns on persistence AND the background sync, which is what drives
+  // live agent-connection detection on the Connect step. Without it, a fresh
+  // onboarding session never re-fetches server state and the Connect step never
+  // sees the agent register.
+  const [persistenceEnabled, setPersistenceEnabled] = useState(initialPersistenceEnabled);
   const latestStateRef = useRef(initialState);
   const saveTimerRef = useRef<number | null>(null);
   const lastPersistedTickRef = useRef(initialState.mutationTick);
@@ -1073,6 +1080,10 @@ export function CreedProvider({
       if (!response.ok) {
         throw new Error("Could not create your Creed.");
       }
+      // The seed is now persisted server-side, so this is a real backed
+      // session. Turn on persistence + the background sync so subsequent edits
+      // save and the Connect step detects the agent the moment it talks to us.
+      setPersistenceEnabled(true);
       return;
     }
 

@@ -66,7 +66,11 @@ export async function POST() {
           product: "creed_hosted",
         },
         success_url: `${baseUrl}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${baseUrl}/pricing`,
+        // Cancelling returns to onboarding, which resumes a composed-but-unpaid
+        // user straight on their Creed preview (with "Get Creed") rather than a
+        // cold pricing page - so backing out of checkout never costs them their
+        // onboarding work.
+        cancel_url: `${baseUrl}/onboarding`,
         // Surface promo-code support up-front so we can hand out codes later
         // without redeploying.
         allow_promotion_codes: true,

@@ -41,13 +41,14 @@ export default async function Home() {
     redirect("/home");
   }
 
-  // Entitlement gate: signed-in users without a paid row are sent to the
-  // pricing page rather than into the app. The (creed-app) layout also
-  // gates /file etc, but short-circuiting here avoids the redundant
-  // section-probe round-trip for unpaid users.
+  // Entitlement gate: the app is the paid product, so signed-in users
+  // without a paid row are sent to /onboarding (free: connect an agent,
+  // compose, preview, then "Get Creed") rather than into the app. The
+  // (creed-app) layout also gates /file etc, but short-circuiting here
+  // avoids the redundant section-probe round-trip for unpaid users.
   const paid = await hasPaidEntitlement(supabase, user.id);
   if (!paid) {
-    redirect("/pricing?reason=not_paid");
+    redirect("/onboarding");
   }
 
   // `redirect()` works by throwing a NEXT_REDIRECT marker that the
