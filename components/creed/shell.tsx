@@ -191,12 +191,15 @@ export function CreedShell({
   }, [router]);
 
   useEffect(() => {
+    const githubConnected = state.settings.integrations.github.status === "connected";
     preloadSettingsData({
       scope: state.user.email || state.user.handle,
-      githubConnected: state.settings.integrations.github.status === "connected",
+      githubConnected,
       repoOwner: state.settings.versionControl.repoOwner,
       repoName: state.settings.versionControl.repoName,
-      markdown: state.sections.length ? exportMarkdown() : undefined,
+      // The markdown only feeds the GitHub version-status preload, so skip the
+      // full export rebuild entirely when GitHub isn't connected.
+      markdown: githubConnected && state.sections.length ? exportMarkdown() : undefined,
     });
     if (state.sections.length) {
       preloadMcpHealth();
