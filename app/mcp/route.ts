@@ -518,7 +518,7 @@ function buildWritePolicy(state: CreedState) {
   // Permissions are per-section now. Hidden sections are excluded entirely;
   // writable = propose | direct; direct-edit targets = direct only.
   const readableSections = state.sections.filter(
-    (section) => section.agentPermission !== "hidden"
+    (section) => section.agentPermission !== "hidden" && !section.archived
   );
   const writableSectionIds: GovernedSectionId[] = readableSections
     .filter((section) => section.agentWritable)
@@ -641,7 +641,7 @@ async function handleToolCall(
   if (name === "list_sections") {
     return jsonToolResult(
       state.sections
-        .filter((section) => section.agentPermission !== "hidden")
+        .filter((section) => section.agentPermission !== "hidden" && !section.archived)
         .map((section) => ({
           id: section.id,
           name: section.name,
@@ -959,7 +959,9 @@ function resolveSectionOrThrow(state: CreedState, sectionId: string): CreedSecti
   // Hidden sections are invisible to agents - they can't be read or targeted,
   // so resolution (used by read + every mutation tool) operates on the
   // non-hidden set only.
-  const sections = state.sections.filter((section) => section.agentPermission !== "hidden");
+  const sections = state.sections.filter(
+    (section) => section.agentPermission !== "hidden" && !section.archived
+  );
   if (!sectionId) {
     const available = sections
       .map((s) => `${s.name} (${s.id})`)
@@ -1311,7 +1313,7 @@ function searchSections(state: CreedState, query: string, limit: number) {
   }> = [];
 
   for (const section of state.sections) {
-    if (section.agentPermission === "hidden") continue;
+    if (section.agentPermission === "hidden" || section.archived) continue;
     const plainBody = stripHtmlForSearch(section.content ?? "");
     const haystack = `${section.name} ${plainBody}`.toLowerCase();
     const matched = terms.filter((term) => haystack.includes(term));

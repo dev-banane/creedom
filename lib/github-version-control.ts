@@ -132,7 +132,7 @@ export async function requireAuthenticatedGitHubAccess() {
       );
     }
 
-    throw new Error("GitHub is not connected.");
+    throw new Error("GitHub is not connected");
   }
 
   const versionControl = await readVersionControlConfig(supabase, user.id);

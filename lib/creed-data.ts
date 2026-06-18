@@ -98,6 +98,10 @@ export type CreedSection = {
   lastEditedBy: string;
   lastEditedType: ActorType;
   lastEditedLabel: string;
+  // Archived sections are kept in state (so they survive persistence) but are
+  // hidden from the editor, the agent read payload, quality scoring, and the
+  // markdown export. Restorable from Settings -> Archived.
+  archived?: boolean;
 };
 
 export type ProposalChangeType =
@@ -1198,6 +1202,7 @@ export function buildVisibleCreedMarkdown(sections: CreedSection[]) {
   // One blank line between sections so the rendered file reads cleanly with
   // a single visual gap, not a stack of trailing newlines.
   return sections
+    .filter((section) => !section.archived)
     .map((section) => sectionToMarkdown(section).trim())
     .filter(Boolean)
     .join("\n\n")
@@ -1684,10 +1689,11 @@ export function buildAgentReadPayload(
     docsUrl?: string;
   }
 ) {
-  // Hidden sections never reach the agent. Everything else is readable; the
-  // per-section permission decides editability. Writable = propose | direct.
-  const readableSections = state.sections.filter((section) =>
-    permissionIsReadable(section.agentPermission)
+  // Hidden and archived sections never reach the agent. Everything else is
+  // readable; the per-section permission decides editability. Writable =
+  // propose | direct.
+  const readableSections = state.sections.filter(
+    (section) => !section.archived && permissionIsReadable(section.agentPermission)
   );
   const writableSections: GovernedSectionId[] = readableSections
     .filter((section) => permissionToWritable(section.agentPermission))

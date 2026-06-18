@@ -98,7 +98,22 @@ ${colorConfig
   );
 }
 
-const ChartTooltip = RechartsPrimitive.Tooltip;
+// Wrap recharts' Tooltip with our defaults so every chart behaves the same.
+// We keep recharts' position animation (the tooltip glides smoothly to the new
+// point as the cursor moves), and force the wrapper visible so its own
+// visibility:hidden doesn't clip the content's CSS fade-out (see
+// ChartTooltipContent). Callers can still override either prop explicitly.
+function ChartTooltip({
+  wrapperStyle,
+  ...props
+}: React.ComponentProps<typeof RechartsPrimitive.Tooltip>) {
+  return (
+    <RechartsPrimitive.Tooltip
+      wrapperStyle={{ visibility: "visible", pointerEvents: "none", ...wrapperStyle }}
+      {...props}
+    />
+  );
+}
 
 type TooltipPayloadItem = {
   name?: string | number;
@@ -143,11 +158,22 @@ function ChartTooltipContent({
 }) {
   const { config } = useChart();
 
+  // Recharts unmounts the tooltip content the instant the cursor leaves, so a
+  // CSS exit animation has nothing to play on. We retain the last payload to keep
+  // the box mounted and drive its opacity off `active`, so it fades out smoothly
+  // instead of blinking away. The ChartTooltip wrapper forces the recharts
+  // wrapper visible (its own visibility:hidden would otherwise clip the fade).
+  const lastPayloadRef = React.useRef<TooltipPayloadItem[] | undefined>(undefined);
+  if (active && payload?.length) {
+    lastPayloadRef.current = payload;
+  }
+  const renderPayload = active && payload?.length ? payload : lastPayloadRef.current;
+
   const tooltipLabel = React.useMemo(() => {
-    if (hideLabel || !payload?.length) {
+    if (hideLabel || !renderPayload?.length) {
       return null;
     }
-    const [item] = payload;
+    const [item] = renderPayload;
     const key = `${labelKey || item?.dataKey || item?.name || "value"}`;
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
@@ -156,30 +182,31 @@ function ChartTooltipContent({
         : itemConfig?.label;
 
     if (labelFormatter) {
-      return <div className="font-medium text-[var(--creed-text-primary)]">{labelFormatter(value, payload)}</div>;
+      return <div className="font-medium text-[var(--creed-text-primary)]">{labelFormatter(value, renderPayload)}</div>;
     }
     if (!value) {
       return null;
     }
     return <div className="font-medium text-[var(--creed-text-primary)]">{value}</div>;
-  }, [label, labelFormatter, payload, hideLabel, config, labelKey]);
+  }, [label, labelFormatter, renderPayload, hideLabel, config, labelKey]);
 
-  if (!active || !payload?.length) {
+  if (!renderPayload?.length) {
     return null;
   }
 
-  const nestLabel = payload.length === 1 && indicator !== "dot";
+  const nestLabel = renderPayload.length === 1 && indicator !== "dot";
 
   return (
     <div
       className={cn(
-        "grid min-w-[8rem] items-start gap-1.5 rounded-[10px] border border-[var(--creed-border)] bg-[var(--creed-surface)] px-2.5 py-2 text-[12px] shadow-[0_12px_32px_rgba(28,28,26,0.12)]",
+        "grid min-w-[8rem] items-start gap-1.5 rounded-[10px] border border-[var(--creed-border)] bg-[var(--creed-surface)] px-2.5 py-2 text-[12px] shadow-[0_12px_32px_rgba(28,28,26,0.12)] animate-in fade-in-0 zoom-in-95 transition-[opacity,transform] duration-150 ease-out",
+        active ? "opacity-100 scale-100" : "opacity-0 scale-95",
         className
       )}
     >
       {!nestLabel ? tooltipLabel : null}
       <div className="grid gap-1.5">
-        {payload.map((item, index) => {
+        {renderPayload.map((item, index) => {
           const key = `${nameKey || item.name || item.dataKey || "value"}`;
           const itemConfig = getPayloadConfigFromPayload(config, item, key);
           const indicatorColor = color || item.payload?.fill || item.color;

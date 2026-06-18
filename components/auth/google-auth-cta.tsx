@@ -66,8 +66,8 @@ export function GoogleAuthCta({
     >
       {loading ? (
         <>
-          <LoaderCircle className="h-4 w-4 animate-spin" />
           {loadingLabel}
+          <LoaderCircle className="h-4 w-4 animate-spin" />
         </>
       ) : (
         <>

@@ -299,7 +299,7 @@ function QualityCompactCard({
     <div className="space-y-2.5">
       <div className="flex items-baseline justify-between gap-3">
         <div
-          className="min-w-0 truncate text-[15px] font-medium leading-tight tracking-[-0.01em] text-[var(--creed-text-primary)]"
+          className="min-w-0 truncate text-[17px] font-medium leading-tight tracking-[-0.01em] text-[var(--creed-text-primary)]"
           style={labelColor ? { color: labelColor } : undefined}
         >
           {label}
@@ -311,7 +311,7 @@ function QualityCompactCard({
           >
             {loading ? "…" : score}
           </span>
-          <span className="text-[11px] font-medium text-[var(--creed-text-primary)]">
+          <span className="text-[12px] font-medium text-[var(--creed-text-primary)]">
             / 100
           </span>
         </div>

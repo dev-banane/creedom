@@ -90,7 +90,7 @@ function ShellNavLink({
         // (rounded-[10px], px-1.5 py-2.5, lg:px-2 lg:py-2, min-h-[34px])
         // so the two stacks read as one continuous list of equal-height
         // pills rather than two different button styles.
-        "flex min-h-[34px] items-center justify-center rounded-[10px] px-1.5 py-2.5 text-[13px] font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
+        "flex min-h-[34px] items-center justify-center rounded-[10px] px-1.5 py-2.5 text-[14px] font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
         active &&
           "bg-[var(--creed-surface-raised)] text-[var(--creed-text-primary)] hover:bg-[var(--creed-surface-raised)]"
       )}
@@ -268,11 +268,11 @@ export function CreedShell({
 
             <Separator className="my-4 bg-[var(--creed-border)] lg:my-6" />
 
-            <div className="hidden text-[12px] font-medium text-[var(--creed-text-tertiary)] lg:block">
+            <div className="hidden text-[13px] font-medium text-[var(--creed-text-tertiary)] lg:block">
               Sections
             </div>
             <div className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto creed-scrollbar lg:mt-4 lg:pr-1">
-              {sections.map((section) => {
+              {sections.filter((section) => !section.archived).map((section) => {
                 const pendingCount = pendingProposalCountBySection.get(section.id) ?? 0;
                 const isActive = activeSectionId === section.id && pathname === "/file";
                 const pendingDelete = pendingDeleteSectionIds.has(section.id);
@@ -314,7 +314,7 @@ export function CreedShell({
                     type="button"
                     onClick={() => handleSectionClick(section.id)}
                     className={cn(
-                      "flex min-h-[34px] w-full items-center justify-center rounded-[10px] px-1.5 py-2.5 text-left text-[13px] text-[var(--creed-text-secondary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
+                      "flex min-h-[34px] w-full items-center justify-center rounded-[10px] px-1.5 py-2.5 text-left text-[14px] font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                       isActive &&
                         "bg-[var(--creed-surface-raised)] text-[var(--creed-text-primary)] hover:bg-[var(--creed-surface-raised)]",
                       // Pending delete: subtle red wash and red text so the
@@ -355,7 +355,7 @@ export function CreedShell({
                     router.push("/file");
                   }}
                   className={cn(
-                    "flex min-h-[34px] w-full items-center justify-center rounded-[10px] bg-[#ECFDF5] px-1.5 py-2.5 text-left text-[13px] text-[#047857] transition-colors duration-150 hover:bg-[#D1FAE5] hover:text-[#065F46] dark:bg-[#052e1a]/40 dark:text-[#4ade80] dark:hover:bg-[#052e1a]/60 dark:hover:text-[#4ade80] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
+                    "flex min-h-[34px] w-full items-center justify-center rounded-[10px] bg-[#ECFDF5] px-1.5 py-2.5 text-left text-[14px] font-medium text-[#047857] transition-colors duration-150 hover:bg-[#D1FAE5] hover:text-[#065F46] dark:bg-[#052e1a]/40 dark:text-[#4ade80] dark:hover:bg-[#052e1a]/60 dark:hover:text-[#4ade80] lg:min-h-0 lg:justify-start lg:gap-3 lg:px-2 lg:py-2",
                     // Same active-equals-hover rule as the pending-delete
                     // rows above: once the user has scrolled into the
                     // proposal preview, lock the row into its hover tone.
@@ -375,7 +375,7 @@ export function CreedShell({
               <button
                 type="button"
                 onClick={handleAddSectionClick}
-                className="flex min-h-[34px] w-full items-center justify-center rounded-[10px] px-1.5 py-2.5 text-left text-[13px] text-[var(--creed-text-tertiary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-2 lg:px-2 lg:py-2"
+                className="flex min-h-[34px] w-full items-center justify-center rounded-[10px] px-1.5 py-2.5 text-left text-[14px] text-[var(--creed-text-tertiary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] lg:min-h-0 lg:justify-start lg:gap-2 lg:px-2 lg:py-2"
                 aria-label="Add section"
               >
                 <Plus className="h-3.5 w-3.5" strokeWidth={1.8} />

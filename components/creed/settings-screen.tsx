@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Check,
   ChevronDown,
+  ChevronRight,
   LoaderCircle,
   Plug,
   Unplug,
@@ -36,9 +37,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { SimpleTooltip } from "@/components/ui/tooltip";
 import {
   ChartContainer,
   ChartTooltip,
@@ -90,6 +99,7 @@ import {
   type IntegrationConnectionStatus,
 } from "@/lib/creed-data";
 import { cn } from "@/lib/utils";
+import { RichTextEditor } from "@/components/creed/rich-text-editor";
 
 const GITHUB_CONNECTED_EVENT = "creed:github-connected";
 
@@ -100,7 +110,7 @@ function looksLikeApiKey(value: string) {
 
 function formatGitHubConnectError(error: unknown) {
   const message =
-    error instanceof Error ? error.message : "Couldn't connect GitHub.";
+    error instanceof Error ? error.message : "Couldn't connect GitHub";
   const code =
     typeof error === "object" && error !== null && "code" in error
       ? String((error as { code?: unknown }).code ?? "")
@@ -110,7 +120,7 @@ function formatGitHubConnectError(error: unknown) {
     code === "manual_linking_disabled" ||
     /manual linking is disabled/i.test(message)
   ) {
-    return "Enable Manual Linking in Supabase Auth first.";
+    return "Enable Manual Linking in Supabase Auth first";
   }
 
   return message;
@@ -118,11 +128,11 @@ function formatGitHubConnectError(error: unknown) {
 
 function formatGitHubAccessError(message: string) {
   if (/GitHub is not connected/i.test(message)) {
-    return "GitHub isn't connected.";
+    return "GitHub isn't connected";
   }
 
   if (/repo access is missing/i.test(message)) {
-    return "GitHub access expired.";
+    return "GitHub access expired";
   }
 
   return message;
@@ -130,7 +140,7 @@ function formatGitHubAccessError(message: string) {
 
 function formatGitHubAccessErrorForState(message: string, githubConnected: boolean) {
   if (githubConnected && /GitHub is not connected/i.test(message)) {
-    return "GitHub access expired.";
+    return "GitHub access expired";
   }
 
   return formatGitHubAccessError(message);
@@ -149,9 +159,17 @@ export function SettingsScreen() {
     exportAllDataJson,
     refreshState,
     deleteAccount,
+    restoreSection,
+    deleteSection,
   } = useCreed();
   const [nameDraft, setNameDraft] = useState(state.user.name);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [archivedDeleteTarget, setArchivedDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [expandedArchived, setExpandedArchived] = useState<string | null>(null);
+  const archivedSections = state.sections.filter((section) => section.archived);
   const [permsOpen, setPermsOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [connectingGitHub, setConnectingGitHub] = useState(false);
@@ -189,14 +207,13 @@ export function SettingsScreen() {
     return perms.length > 0 && perms.every((perm) => perm === perms[0]) ? perms[0] : null;
   })();
 
-  // Summary line for the Data card: gives the export buttons a sense of
-  // weight ("this is everything you've built") without being a dashboard.
-  const dataSummary = useMemo(() => {
-    const plural = (n: number, one: string, many = `${one}s`) =>
-      `${n.toLocaleString()} ${n === 1 ? one : many}`;
+  // Stats for the Data card: gives the export buttons a sense of weight
+  // ("this is everything you've built") without being a dashboard. Rendered
+  // as small mono chips.
+  const dataStats = useMemo(() => {
     const sectionCount = state.sections.length;
     const wordCount = exportMarkdown().trim().split(/\s+/).filter(Boolean).length;
-    return `${plural(wordCount, "word")} across ${plural(sectionCount, "section")}.`;
+    return { sectionCount, wordCount };
   }, [state.sections, exportMarkdown]);
 
   useEffect(() => {
@@ -254,7 +271,7 @@ export function SettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub repos.",
+              error instanceof Error ? error.message : "Could not load GitHub repos",
               githubConnected
             )
           );
@@ -296,7 +313,7 @@ export function SettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub branches.",
+              error instanceof Error ? error.message : "Could not load GitHub branches",
               githubConnected
             )
           );
@@ -408,7 +425,7 @@ export function SettingsScreen() {
         if (!cancelled) {
           toast.error(
             formatGitHubAccessErrorForState(
-              error instanceof Error ? error.message : "Could not load GitHub sync status.",
+              error instanceof Error ? error.message : "Could not load GitHub sync status",
               githubConnected
             )
           );
@@ -498,16 +515,16 @@ export function SettingsScreen() {
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Could not disconnect GitHub.");
+        throw new Error(payload.error || "Could not disconnect GitHub");
       }
 
       await refreshState();
-      toast.success("GitHub disconnected.");
+      toast.success("GitHub disconnected");
       setRepos([]);
       setBranches([]);
       clearSettingsRepoCache();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not disconnect GitHub.");
+      toast.error(error instanceof Error ? error.message : "Could not disconnect GitHub");
     } finally {
       setDisconnectingGitHub(false);
     }
@@ -857,8 +874,7 @@ export function SettingsScreen() {
                   githubConnected ? (
                     <Button
                       aria-label="Disconnect GitHub"
-                      title="Disconnect"
-                      className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-[13px]"
+                      className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
                       onClick={() => void handleDisconnectGitHub()}
                       disabled={disconnectingGitHub}
                     >
@@ -874,8 +890,7 @@ export function SettingsScreen() {
                   ) : (
                     <Button
                       aria-label="Connect GitHub"
-                      title="Connect"
-                      className="rounded-md bg-[#10B981] text-white hover:bg-[#059669] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-[13px]"
+                      className="rounded-md bg-[#16A34A] text-white hover:bg-[#15803d] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
                       onClick={() => void handleConnectGitHub()}
                       disabled={connectingGitHub}
                     >
@@ -905,7 +920,7 @@ export function SettingsScreen() {
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
+                    className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-sm text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
                   >
                     {aiSettings.aiMode === "credits" ? "Credits" : "BYOK"}
                     <ChevronDown className="h-3.5 w-3.5 text-[var(--creed-text-secondary)]" />
@@ -920,7 +935,7 @@ export function SettingsScreen() {
                       key={mode}
                       onSelect={() => void handleModeChange(mode)}
                       className={cn(
-                        "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-[13px]",
+                        "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-sm",
                         aiSettings.aiMode === mode && "bg-[var(--creed-surface-selected)] font-medium"
                       )}
                     >
@@ -938,16 +953,16 @@ export function SettingsScreen() {
                 <div className="flex flex-col gap-4">
                   {aiSettings.aiMode === "credits" ? (
                     <div className="rounded-[var(--radius-lg)] border border-[var(--creed-border)] px-4 py-3">
-                      <div className="text-[12px] font-medium text-[var(--creed-text-secondary)]">
+                      <div className="text-[13px] font-medium text-[var(--creed-text-secondary)]">
                         Credit balance
                       </div>
-                      <div className="mt-0.5 text-[24px] font-medium tracking-[-0.03em] text-[var(--creed-text-primary)]">
+                      <div className="mt-0.5 text-[30px] font-medium tracking-[-0.03em] text-[var(--creed-text-primary)]">
                         ${(credits?.balanceUsd ?? 0).toFixed(2)}
                       </div>
                     </div>
                   ) : (
                     <div>
-                      <label className="mb-2 block text-[12px] font-medium text-[var(--creed-text-secondary)]">
+                      <label className="mb-2 block text-[13px] font-medium text-[var(--creed-text-secondary)]">
                         OpenRouter API key
                       </label>
                       <Input
@@ -967,7 +982,7 @@ export function SettingsScreen() {
                   )}
 
                   <div>
-                    <label className="mb-2 block text-[12px] font-medium text-[var(--creed-text-secondary)]">
+                    <label className="mb-2 block text-[13px] font-medium text-[var(--creed-text-secondary)]">
                       Model
                     </label>
                     <ModelSelect
@@ -1015,8 +1030,8 @@ export function SettingsScreen() {
                         onClick={() => void handleSaveAiSettings()}
                         disabled={!canSaveAiKey}
                       >
-                        {aiSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                         Save API key
+                        {aiSaving ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
                       </Button>
                     </div>
                   )}
@@ -1173,11 +1188,113 @@ export function SettingsScreen() {
 
           <section>
             <h2 className="text-[16px] font-medium text-[var(--creed-text-primary)]">
+              Archived
+            </h2>
+            <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5">
+              {archivedSections.length === 0 ? (
+                <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
+                  Nothing archived. Archived sections show up here, ready to restore.
+                </p>
+              ) : (
+                <div className="space-y-2.5">
+                  {archivedSections.map((section) => {
+                    const expanded = expandedArchived === section.id;
+                    return (
+                      <div
+                        key={section.id}
+                        className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--creed-border)]"
+                      >
+                        <div className="flex items-center justify-between gap-4 px-4 py-3">
+                          <button
+                            type="button"
+                            aria-expanded={expanded}
+                            onClick={() =>
+                              setExpandedArchived((current) =>
+                                current === section.id ? null : section.id
+                              )
+                            }
+                            className="group flex min-w-0 flex-1 items-center gap-2.5 text-left"
+                          >
+                            <span
+                              className="h-2 w-2 shrink-0 rounded-[3px]"
+                              style={{ backgroundColor: accentColorMap[section.accent] }}
+                            />
+                            <span className="truncate text-[14px] font-medium text-[var(--creed-text-primary)]">
+                              {section.name}
+                            </span>
+                            <ChevronRight
+                              className={cn(
+                                "h-4 w-4 shrink-0 text-[var(--creed-text-tertiary)] transition duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:text-[var(--creed-text-primary)]",
+                                expanded && "rotate-90"
+                              )}
+                            />
+                          </button>
+                          <div className="flex shrink-0 items-center gap-2">
+                            <Button
+                              variant="outline"
+                              className="rounded-md border-[var(--creed-border)]"
+                              onClick={() => {
+                                restoreSection(section.id);
+                                toast.success(`Restored "${section.name}"`);
+                              }}
+                            >
+                              Restore
+                            </Button>
+                            <Button
+                              className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white"
+                              onClick={() =>
+                                setArchivedDeleteTarget({ id: section.id, name: section.name })
+                              }
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                        <AnimatePresence initial={false}>
+                          {expanded ? (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                              className="overflow-hidden"
+                            >
+                              <div className="border-t border-[var(--creed-border)] px-4 py-4">
+                                <RichTextEditor
+                                  sectionId={section.id}
+                                  content={section.content}
+                                  readOnly
+                                  accentColor={accentColorMap[section.accent]}
+                                  onChange={() => {}}
+                                />
+                              </div>
+                            </motion.div>
+                          ) : null}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </section>
+
+          <Separator className="my-10 bg-[var(--creed-border)]" />
+
+          <section>
+            <h2 className="text-[16px] font-medium text-[var(--creed-text-primary)]">
               Data
             </h2>
             <div className="mt-4 rounded-[var(--radius-xl)] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-5">
               <p className="text-[14px] leading-7 text-[var(--creed-text-secondary)]">
-                {dataSummary}
+                <span className="inline-flex items-center rounded-md bg-[var(--creed-surface-raised)] px-2 py-0.5 align-middle font-mono text-[13px] text-[var(--creed-text-primary)]">
+                  {dataStats.wordCount.toLocaleString()}
+                </span>{" "}
+                {dataStats.wordCount === 1 ? "word" : "words"} across{" "}
+                <span className="inline-flex items-center rounded-md bg-[var(--creed-surface-raised)] px-2 py-0.5 align-middle font-mono text-[13px] text-[var(--creed-text-primary)]">
+                  {dataStats.sectionCount.toLocaleString()}
+                </span>{" "}
+                {dataStats.sectionCount === 1 ? "section" : "sections"}.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <AnimatedIconButton
@@ -1270,14 +1387,49 @@ export function SettingsScreen() {
             >
               {deleting ? (
                 <>
-                  <LoaderCircle className="h-4 w-4 animate-spin" />
                   Deleting
+                  <LoaderCircle className="h-4 w-4 animate-spin" />
                 </>
               ) : (
                 "Confirm delete"
               )}
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={archivedDeleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setArchivedDeleteTarget(null);
+        }}
+      >
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--creed-border)] bg-[var(--creed-surface)]">
+          <DialogHeader>
+            <DialogTitle>Delete archived section</DialogTitle>
+            <DialogDescription>
+              This permanently deletes &ldquo;{archivedDeleteTarget?.name}&rdquo; and its history.
+              This can&apos;t be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row items-center justify-between border-t-[var(--creed-border)] bg-[var(--creed-surface)] sm:justify-between">
+            <Button
+              variant="ghost"
+              className="rounded-md"
+              onClick={() => setArchivedDeleteTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="rounded-md bg-[#DC2626] px-4 text-white hover:bg-[#B91C1C] hover:text-white"
+              onClick={() => {
+                if (archivedDeleteTarget) deleteSection(archivedDeleteTarget.id);
+                setArchivedDeleteTarget(null);
+              }}
+            >
+              Delete permanently
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
@@ -1315,7 +1467,7 @@ function IntegrationRow({
             {statusLabel ? (
               <span
                 className={cn(
-                  "inline-flex items-center whitespace-nowrap rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium",
+                  "inline-flex items-center whitespace-nowrap rounded-[6px] px-1.5 py-0.5 text-[12px] font-medium",
                   isConnected
                     ? "bg-[#ECFDF5] text-[#047857] dark:bg-[#052e1a]/50 dark:text-[#4ade80]"
                     : isDisconnected
@@ -1442,7 +1594,7 @@ function UsageCard({
           <DropdownMenuTrigger asChild>
             <button
               type="button"
-              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
+              className="inline-flex h-8 items-center gap-2 rounded-md border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-sm text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
             >
               {range}
               <ChevronDown className="h-3.5 w-3.5 text-[var(--creed-text-secondary)]" />
@@ -1457,7 +1609,7 @@ function UsageCard({
                 key={item}
                 onSelect={() => onRangeChange(item)}
                 className={cn(
-                  "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-[13px]",
+                  "flex items-center justify-between gap-5 rounded-lg px-3 py-2 text-sm",
                   range === item && "bg-[var(--creed-surface-selected)] font-medium"
                 )}
               >
@@ -1616,43 +1768,44 @@ function PermissionSegment({
   const { iconRef, start, settle } = useAnimatedIconControls();
   const Icon = option.icon;
   return (
-    <button
-      type="button"
-      aria-label={option.label}
-      aria-pressed={selected}
-      title={option.label}
-      onClick={onSelect}
-      // When the control is greyed (mixed state) skip the hover animation so
-      // the icons read as inactive.
-      onMouseEnter={muted ? undefined : start}
-      onMouseLeave={muted ? undefined : settle}
-      className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors duration-150"
-    >
-      {selected ? (
-        <motion.span
-          layoutId={`perm-highlight-${layoutGroup}`}
-          className="absolute inset-0 rounded-[7px]"
-          style={{ backgroundColor: option.color }}
-          transition={{ type: "spring", stiffness: 520, damping: 40 }}
+    <SimpleTooltip label={option.label}>
+      <button
+        type="button"
+        aria-label={option.label}
+        aria-pressed={selected}
+        onClick={onSelect}
+        // When the control is greyed (mixed state) skip the hover animation so
+        // the icons read as inactive.
+        onMouseEnter={muted ? undefined : start}
+        onMouseLeave={muted ? undefined : settle}
+        className="group relative inline-flex h-7 w-7 items-center justify-center rounded-[7px] transition-colors duration-150"
+      >
+        {selected ? (
+          <motion.span
+            layoutId={`perm-highlight-${layoutGroup}`}
+            className="absolute inset-0 rounded-[7px]"
+            style={{ backgroundColor: option.color }}
+            transition={{ type: "spring", stiffness: 520, damping: 40 }}
+          />
+        ) : null}
+        <Icon
+          ref={iconRef}
+          size={14}
+          // pointer-events-none so the whole button is the click/hover target,
+          // not just the 14px glyph. The icon brightens on hover via group-hover
+          // (the button's hover), since its own :hover can't fire with pointer
+          // events disabled.
+          className={cn(
+            "pointer-events-none relative inline-flex h-3.5 w-3.5 items-center justify-center transition-colors duration-150",
+            selected
+              ? "text-white"
+              : muted
+                ? "text-[var(--creed-text-tertiary)]"
+                : "text-[var(--creed-text-tertiary)] group-hover:text-[var(--creed-text-primary)]"
+          )}
         />
-      ) : null}
-      <Icon
-        ref={iconRef}
-        size={14}
-        // pointer-events-none so the whole button is the click/hover target,
-        // not just the 14px glyph. The icon brightens on hover via group-hover
-        // (the button's hover), since its own :hover can't fire with pointer
-        // events disabled.
-        className={cn(
-          "pointer-events-none relative inline-flex h-3.5 w-3.5 items-center justify-center transition-colors duration-150",
-          selected
-            ? "text-white"
-            : muted
-              ? "text-[var(--creed-text-tertiary)]"
-              : "text-[var(--creed-text-tertiary)] group-hover:text-[var(--creed-text-primary)]"
-        )}
-      />
-    </button>
+      </button>
+    </SimpleTooltip>
   );
 }
 

@@ -175,7 +175,7 @@ async function validateOpenRouterKey(apiKey: string) {
   });
 
   if (!response.ok) {
-    throw new Error("OpenRouter could not validate that API key.");
+    throw new Error("OpenRouter could not validate that API key");
   }
 }
 

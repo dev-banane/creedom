@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       const configuredRepo = getConfiguredRepo(versionControl);
 
       if (!configuredRepo) {
-        throw new Error("GitHub version control is not configured yet. Choose a repo in Settings first.");
+        throw new Error("GitHub version control is not configured yet. Choose a repo in Settings first");
       }
 
       const remoteFile = await getGitHubFileSnapshot(

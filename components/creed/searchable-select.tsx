@@ -82,7 +82,7 @@ export function SearchableSelect({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={searchPlaceholder}
-            className="h-10 rounded-xl border-[var(--creed-border)] bg-[var(--creed-background)] pl-9 pr-3 text-[13px]"
+            className="h-10 rounded-xl border-[var(--creed-border)] bg-[var(--creed-background)] pl-9 pr-3 text-sm"
           />
         </div>
         <div className="mt-2 max-h-72 overflow-y-auto pr-1 creed-scrollbar">

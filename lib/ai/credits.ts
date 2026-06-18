@@ -53,7 +53,7 @@ export function getOpenRouterPlatformKey(): string {
   if (!value) {
     // Credits-specific copy. Never surface the BYOK "paste a key" error to a
     // credits user, who has no key to paste.
-    throw new Error("Credits are temporarily unavailable.");
+    throw new Error("Credits are temporarily unavailable");
   }
   return value;
 }
@@ -71,7 +71,7 @@ async function readBalanceMicro(client: unknown, userId: string): Promise<number
     .maybeSingle();
   if (error) {
     log.error("credit_balance_read_failed", { userId, message: error.message });
-    throw new Error("Credits are temporarily unavailable.");
+    throw new Error("Credits are temporarily unavailable");
   }
   const row = data as { balance_micro_usd?: number | string } | null;
   return row ? Number(row.balance_micro_usd) || 0 : 0;
@@ -93,7 +93,7 @@ export async function resolveAiCredential(
     // Reuse the row already loaded above instead of re-reading settings.
     const encryptedKey = row?.encrypted_api_key;
     if (!encryptedKey || row?.key_status !== "valid") {
-      throw new Error("Add an OpenRouter key in Settings.");
+      throw new Error("Add an OpenRouter key in Settings");
     }
     return {
       apiKey: decryptSecret(encryptedKey),
@@ -109,12 +109,12 @@ export async function resolveAiCredential(
   // we pay real money on the platform key. Refuse it in credits mode.
   const model = await getAiModel(modelId);
   if (model.inputCostPerMillion <= 0 && model.outputCostPerMillion <= 0) {
-    throw new Error("That model isn't available on credits.");
+    throw new Error("That model isn't available on credits");
   }
 
   const balanceMicro = await readBalanceMicro(getSupabaseAdminClient(), userId);
   if (balanceMicro <= 0) {
-    throw new Error("Out of credits.");
+    throw new Error("Out of credits");
   }
 
   return { apiKey, modelId, mode: "credits" };
@@ -178,7 +178,7 @@ export async function creditTopup({
   });
   if (error) {
     log.error("credit_topup_failed", { userId, paymentIntentId, message: error.message });
-    throw new Error("Could not credit balance.");
+    throw new Error("Could not credit balance");
   }
 }
 
@@ -198,11 +198,11 @@ export async function getCreditsState(client: unknown, userId: string): Promise<
 
   if (balanceResult.error) {
     log.error("credits_state_balance_failed", { userId, message: balanceResult.error.message });
-    throw new Error("Could not load credits.");
+    throw new Error("Could not load credits");
   }
   if (txResult.error) {
     log.error("credits_state_history_failed", { userId, message: txResult.error.message });
-    throw new Error("Could not load credits.");
+    throw new Error("Could not load credits");
   }
 
   const balanceRow = balanceResult.data as { balance_micro_usd?: number | string } | null;

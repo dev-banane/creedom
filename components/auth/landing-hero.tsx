@@ -90,7 +90,7 @@ export function LandingHero({ configured }: { configured: boolean }) {
               <AnimatedLandingHeadline
                 animate={animationReady}
                 simplifyMotion={reduceMotion}
-                text={"One file for your\nown context"}
+                text={"Your context file\nfor all agents"}
                 className="t-hero justify-center text-white"
               />
 

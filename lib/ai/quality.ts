@@ -569,7 +569,7 @@ async function persistQualityReport({
 export async function analyzeCreedQuality({
   client,
   userId,
-  sections,
+  sections: allSections,
   force = false,
   targetSectionIds,
 }: {
@@ -579,6 +579,9 @@ export async function analyzeCreedQuality({
   force?: boolean;
   targetSectionIds?: string[];
 }) {
+  // Archived sections are not part of the live file, so they are excluded from
+  // scoring entirely (hashing, targets, prompt, and report all see live only).
+  const sections = allSections.filter((section) => !section.archived);
   const contentHash = hashCreedSections(sections);
   const sectionHashes = hashCreedSectionsById(sections);
 
@@ -679,7 +682,7 @@ export async function analyzeCreedQuality({
   try {
     parsed = parseJsonObject(result.content);
   } catch {
-    throw new Error("Analysis failed. Try again.");
+    throw new Error("Analysis failed. Try again");
   }
 
   const root = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};

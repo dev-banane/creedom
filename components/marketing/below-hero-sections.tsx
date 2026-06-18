@@ -20,11 +20,21 @@ const codexIcon = "/assets/agents/codex.svg";
 const hermesIcon = "/assets/agents/hermes.svg";
 const openClawIcon = "/assets/agents/openclaw.svg";
 const openCodeIcon = "/assets/agents/opencode.svg";
+const cursorIcon = "/assets/agents/cursor.svg";
+const devinIcon = "/assets/agents/devin.svg";
+const grokIcon = "/assets/agents/grok.svg";
+const chatgptIcon = "/assets/agents/chatgpt.svg";
+const claudeIcon = "/assets/agents/claude.svg";
 
 type BrandLogoKey =
   | "chatgpt"
   | "claude"
+  | "claudecode"
+  | "codex"
+  | "cursor"
+  | "devin"
   | "github"
+  | "grok"
   | "hermes"
   | "openclaw"
   | "notion"
@@ -35,11 +45,31 @@ const brandLogoMap: Record<
   BrandLogoKey,
   { src: string | StaticImageData; imageClassName?: string }
 > = {
-  chatgpt: {
+  codex: {
     src: codexIcon,
     imageClassName: "scale-[0.92]",
   },
+  cursor: {
+    src: cursorIcon,
+    imageClassName: "scale-[0.88]",
+  },
+  devin: {
+    src: devinIcon,
+    imageClassName: "scale-[0.92]",
+  },
+  grok: {
+    src: grokIcon,
+    imageClassName: "scale-[0.84]",
+  },
+  chatgpt: {
+    src: chatgptIcon,
+    imageClassName: "scale-[0.9]",
+  },
   claude: {
+    src: claudeIcon,
+    imageClassName: "scale-[0.92]",
+  },
+  claudecode: {
     src: claudeCodeIcon,
     imageClassName: "scale-[0.92]",
   },
@@ -326,11 +356,16 @@ function HowItWorksSection() {
 
 function IntegrationsSection() {
   const agents = [
-    { label: "Codex", brand: "chatgpt" as const },
+    { label: "ChatGPT", brand: "chatgpt" as const },
     { label: "Claude", brand: "claude" as const },
-    { label: "Hermes", brand: "hermes" as const },
+    { label: "Grok", brand: "grok" as const },
     { label: "OpenClaw", brand: "openclaw" as const },
+    { label: "Hermes", brand: "hermes" as const },
+    { label: "Cursor", brand: "cursor" as const },
     { label: "OpenCode", brand: "opencode" as const },
+    { label: "Devin", brand: "devin" as const },
+    { label: "Codex", brand: "codex" as const },
+    { label: "Claude Code", brand: "claudecode" as const },
   ];
   const integrations = [
     { label: "GitHub", brand: "github" as const },
@@ -559,7 +594,14 @@ function SectionHeading({
 
 // Black-on-white brand logos that need flipping to white in dark mode.
 // Coloured brand assets (Claude, Codex, OpenClaw, Hermes, etc.) skip this.
-const MONOCHROME_BRANDS = new Set<BrandLogoKey>(["github", "opencode"]);
+const MONOCHROME_BRANDS = new Set<BrandLogoKey>([
+  "github",
+  "opencode",
+  "cursor",
+  "devin",
+  "grok",
+  "chatgpt",
+]);
 
 function BrandImage({
   brand,

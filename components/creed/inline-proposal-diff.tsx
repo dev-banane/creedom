@@ -267,7 +267,7 @@ export function InlineNewSectionProposal({
           <button
             type="button"
             onClick={onAccept}
-            className="inline-flex h-7 items-center gap-1 rounded-md bg-[#10b981] px-2.5 text-[12px] font-medium text-white transition-colors hover:bg-[#059669]"
+            className="inline-flex h-7 items-center gap-1 rounded-md bg-[#047857] px-2.5 text-[12px] font-medium text-white transition-colors hover:bg-[#036249]"
           >
             <Check className="h-3.5 w-3.5" />
             Accept

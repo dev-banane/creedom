@@ -71,8 +71,8 @@ export function GoogleSignInButton({
     >
       {loading ? (
         <>
-          <LoaderCircle className="h-4 w-4 animate-spin" />
           Redirecting
+          <LoaderCircle className="h-4 w-4 animate-spin" />
         </>
       ) : (
         <>

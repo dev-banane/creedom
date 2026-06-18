@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { CONTACT_MAILTO } from "@/lib/branding";
 import { AnimatePresence, motion } from "motion/react";
@@ -131,7 +131,7 @@ export function FeedbackMenuItem() {
         }}
         className={cn(
           // Match the AnimatedMenuIconItem rows: same padding, radius, gap, font.
-          "group/feedback gap-1.5 rounded-[var(--radius-md)] px-2.5 py-2 text-[13px] focus:bg-[var(--creed-surface-raised)] data-[state=open]:bg-[var(--creed-surface-raised)]",
+          "group/feedback gap-1.5 rounded-[var(--radius-md)] px-2.5 py-2 text-sm focus:bg-[var(--creed-surface-raised)] data-[state=open]:bg-[var(--creed-surface-raised)]",
           // Hide the trailing ChevronRight baked into DropdownMenuSubTrigger.
           "[&>svg:last-of-type]:hidden"
         )}
@@ -178,7 +178,7 @@ export function FeedbackMenuItem() {
               }
               rows={4}
               disabled={submitting || status === "sent"}
-              className="min-h-[96px] resize-none rounded-[9px] border-[var(--creed-border)] bg-transparent px-3 py-2.5 text-[13px] leading-5 placeholder:text-[var(--creed-text-tertiary)]"
+              className="min-h-[96px] resize-none rounded-[9px] border-[var(--creed-border)] bg-transparent px-3 py-2.5 text-sm leading-5 placeholder:text-[var(--creed-text-tertiary)]"
             />
             <div className="mt-2.5 flex items-center justify-between gap-2">
               <AnimatePresence mode="wait" initial={false}>
@@ -246,13 +246,14 @@ export function FeedbackMenuItem() {
                 }}
                 disabled={!canSubmit}
                 className={cn(
-                  "inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium transition-colors",
+                  "inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition-colors",
                   canSubmit
                     ? "bg-[#2563eb] text-white hover:bg-[#1d4ed8]"
                     : "bg-[var(--creed-surface-raised)] text-[var(--creed-text-tertiary)]"
                 )}
               >
                 {submitting ? "Sending…" : status === "sent" ? "Sent" : "Send"}
+                {submitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
               </button>
             </div>
           </div>

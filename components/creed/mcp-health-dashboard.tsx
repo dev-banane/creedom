@@ -497,7 +497,7 @@ export function McpHealthDashboard() {
                           ? sections[activeSection].count
                           : sectionTotal}
                       </span>
-                      <span className="mt-1 max-w-full truncate text-[11px] text-[var(--creed-text-tertiary)]">
+                      <span className="mt-1 max-w-full truncate text-[12px] text-[var(--creed-text-tertiary)]">
                         {activeSection !== null && sections[activeSection]
                           ? sections[activeSection].sectionName
                           : "edits"}
@@ -513,7 +513,7 @@ export function McpHealthDashboard() {
                         key={section.sectionId}
                         onMouseEnter={() => setActiveSection(index)}
                         className={cn(
-                          "flex items-center gap-2 rounded-md px-2 py-1 text-[12px] transition-colors duration-150",
+                          "flex items-center gap-2 rounded-md px-2 py-1 text-[13px] transition-colors duration-150",
                           activeSection === index ? "bg-[var(--creed-surface-raised)]" : "bg-transparent"
                         )}
                       >
@@ -571,10 +571,10 @@ function Dropdown({
         <button
           type="button"
           className={cn(
-            "inline-flex h-8 items-center gap-2 rounded-md px-3 text-[12px] text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]",
+            "inline-flex h-8 items-center gap-2 rounded-md px-3 text-[14px] text-[var(--creed-text-primary)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]",
             variant === "outline"
               ? "border border-[var(--creed-border)] bg-[var(--creed-surface)]"
-              : "-ml-1 text-[13px] font-medium text-[var(--creed-text-secondary)]"
+              : "-ml-1 text-[14px] font-medium text-[var(--creed-text-secondary)]"
           )}
         >
           {triggerIcon ? (
@@ -596,7 +596,7 @@ function Dropdown({
             key={item.key}
             onSelect={() => onSelect(item.key)}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-[13px]",
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-[14px]",
               selectedKey === item.key && "bg-[var(--creed-surface-selected)] font-medium"
             )}
           >
@@ -631,7 +631,7 @@ function StatTile({
       <div className="mt-2 text-[28px] font-medium leading-none tracking-[-0.04em] text-[var(--creed-text-primary)]">
         {value ?? <span className="text-[var(--creed-text-tertiary)]">-</span>}
       </div>
-      {sub ? <div className="mt-2 text-[11px] text-[var(--creed-text-tertiary)]">{sub}</div> : null}
+      {sub ? <div className="mt-2 text-[12px] text-[var(--creed-text-tertiary)]">{sub}</div> : null}
     </div>
   );
 }

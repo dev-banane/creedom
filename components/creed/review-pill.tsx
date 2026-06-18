@@ -129,7 +129,7 @@ export function ReviewPill({
                   }
             }
             onMouseLeave={isMobile ? undefined : scheduleClose}
-            className="group/trigger inline-flex h-7 items-center gap-2 rounded-md px-2.5 text-[12px] font-medium text-[var(--creed-text-secondary)] outline-none transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] focus:outline-none focus-visible:outline-none"
+            className="group/trigger inline-flex h-7 items-center gap-2 rounded-md px-2.5 text-sm font-medium text-[var(--creed-text-secondary)] outline-none transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] focus:outline-none focus-visible:outline-none"
           >
             <span className="inline-flex items-center gap-1">
               <DiffBadge tone="added" count={totals.added} />
@@ -201,7 +201,7 @@ export function ReviewPill({
             const isNewSectionProposal = item.proposal.draft.kind === "new-section";
             return (
               <DropdownMenuSub key={item.proposal.id}>
-                <DropdownMenuSubTrigger className="group/sub rounded-[var(--radius-md)] px-2 py-1.5 text-[12px] hover:bg-[var(--creed-surface-raised)] [&>svg:last-of-type]:hidden">
+                <DropdownMenuSubTrigger className="group/sub rounded-[var(--radius-md)] px-2 py-1.5 text-sm hover:bg-[var(--creed-surface-raised)] [&>svg:last-of-type]:hidden">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     <AgentIconStack
                       agents={[item.proposal.agentName]}
@@ -295,7 +295,7 @@ export function ReviewPill({
                         setOpen(false);
                         onJumpToProposal(item.proposal);
                       }}
-                      className="inline-flex h-7 items-center rounded-md px-2 text-[12px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+                      className="inline-flex h-7 items-center rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
                     >
                       Jump to section
                     </button>
@@ -303,7 +303,7 @@ export function ReviewPill({
                       <button
                         type="button"
                         onClick={() => onRejectOne(item.proposal.id)}
-                        className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+                        className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
                       >
                         <X className="h-3.5 w-3.5" />
                         Reject
@@ -312,14 +312,14 @@ export function ReviewPill({
                         type="button"
                         onClick={() => onAcceptOne(item.proposal.id)}
                         className={cn(
-                          "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium text-white transition-colors",
+                          "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                           // Accept colour reflects intent for structural
                           // operations: red for delete-section, green for
                           // new-section, default blue for content updates.
                           isDeleteProposal
                             ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                             : isNewSectionProposal
-                              ? "bg-[#10b981] hover:bg-[#059669]"
+                              ? "bg-[#047857] hover:bg-[#036249]"
                               : "bg-[#2563eb] hover:bg-[#1d4ed8]"
                         )}
                       >
@@ -341,7 +341,7 @@ export function ReviewPill({
         type="button"
         onClick={onRejectAll}
         aria-label="Reject all"
-        className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+        className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
       >
         <X className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Reject all</span>
@@ -350,7 +350,7 @@ export function ReviewPill({
         type="button"
         onClick={onAcceptAll}
         aria-label="Accept all"
-        className="inline-flex h-7 items-center gap-1 rounded-md bg-[#2563eb] px-2.5 text-[12px] font-medium text-white transition-colors hover:bg-[#1d4ed8]"
+        className="inline-flex h-7 items-center gap-1 rounded-md bg-[#2563eb] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1d4ed8]"
       >
         <Check className="h-3.5 w-3.5" />
         <span className="hidden sm:inline">Accept all</span>
@@ -385,7 +385,7 @@ function ReviewPillItem({
           event.stopPropagation();
           setOpen((value) => !value);
         }}
-        className="flex w-full min-w-0 items-center gap-2 px-2 py-1.5 text-left text-[12px] outline-none focus:outline-none focus-visible:outline-none"
+        className="flex w-full min-w-0 items-center gap-2 px-2 py-1.5 text-left text-sm outline-none focus:outline-none focus-visible:outline-none"
         aria-expanded={open}
       >
         <ChevronDown
@@ -455,7 +455,7 @@ function ReviewPillItem({
                   event.stopPropagation();
                   onJumpToProposal(item.proposal);
                 }}
-                className="inline-flex h-7 items-center rounded-md px-2 text-[12px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-black/[0.06] hover:text-[var(--creed-text-primary)] dark:hover:bg-white/[0.08]"
+                className="inline-flex h-7 items-center rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-black/[0.06] hover:text-[var(--creed-text-primary)] dark:hover:bg-white/[0.08]"
               >
                 Jump to section
               </button>
@@ -467,7 +467,7 @@ function ReviewPillItem({
                     event.stopPropagation();
                     onRejectOne(item.proposal.id);
                   }}
-                  className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-[12px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-black/[0.06] hover:text-[var(--creed-text-primary)] dark:hover:bg-white/[0.08]"
+                  className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-black/[0.06] hover:text-[var(--creed-text-primary)] dark:hover:bg-white/[0.08]"
                 >
                   <X className="h-3.5 w-3.5" />
                   Reject
@@ -480,11 +480,11 @@ function ReviewPillItem({
                     onAcceptOne(item.proposal.id);
                   }}
                   className={cn(
-                    "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-[12px] font-medium text-white transition-colors",
+                    "inline-flex h-7 items-center gap-1 rounded-md px-2.5 text-sm font-medium text-white transition-colors",
                     isDeleteProposal
                       ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                       : isNewSectionProposal
-                        ? "bg-[#10b981] hover:bg-[#059669]"
+                        ? "bg-[#047857] hover:bg-[#036249]"
                         : "bg-[#2563eb] hover:bg-[#1d4ed8]"
                   )}
                 >

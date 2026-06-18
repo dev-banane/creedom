@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import localFont from "next/font/local";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, EB_Garamond } from "next/font/google";
 import type { ReactNode } from "react";
 import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
 import { CreedProvider } from "@/components/creed/creed-provider";
@@ -52,16 +51,12 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const gambarino = localFont({
-  variable: "--font-gambarino",
+const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
   display: "swap",
-  src: [
-    {
-      path: "./fonts/Gambarino-Regular.otf",
-      weight: "400",
-      style: "normal",
-    },
-  ],
+  subsets: ["latin"],
+  weight: "500",
+  style: "normal",
 });
 
 // Share-card / search-result imagery.
@@ -150,7 +145,7 @@ export default async function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${gambarino.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${ebGaramond.variable} h-full antialiased`}
     >
       <head>
         {/* Apply persisted theme before paint so dark mode doesn't flash.

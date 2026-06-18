@@ -382,7 +382,7 @@ export async function getOpenRouterModelCatalog({ force = false }: { force?: boo
     const payload = (await response.json()) as { data?: OpenRouterModel[] };
 
     if (!response.ok || !Array.isArray(payload.data)) {
-      throw new Error("Could not load OpenRouter models.");
+      throw new Error("Could not load OpenRouter models");
     }
 
     const liveModels = payload.data

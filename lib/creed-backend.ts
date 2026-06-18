@@ -44,6 +44,7 @@ type SectionRow = {
   accent: AccentKey;
   payload: Record<string, unknown>;
   agent_permission?: string | null;
+  archived_at?: string | null;
   last_edited_by: string;
   last_edited_type: ActorType;
   last_edited_at: string;
@@ -766,6 +767,7 @@ function hydrateSection(row: SectionRow): CreedSection {
     lastEditedBy: row.last_edited_by,
     lastEditedType: row.last_edited_type,
     lastEditedLabel: toRelativeTime(row.last_edited_at) ?? "just now",
+    archived: row.archived_at != null,
   };
 }
 
@@ -1198,7 +1200,7 @@ async function loadCreedStateImpl(
 export async function persistCreedState(client: unknown, userId: string, state: CreedState) {
   const db = client as SupabaseLikeClient;
   const [currentSectionsResult, existingProposalsResult] = await Promise.all([
-    db.from("creed_sections").select("section_id, kind, name, accent, payload, revision, last_edited_at").eq("user_id", userId),
+    db.from("creed_sections").select("section_id, kind, name, accent, payload, revision, last_edited_at, archived_at").eq("user_id", userId),
     db.from("creed_proposals").select("id").eq("user_id", userId),
   ]);
 
@@ -1214,6 +1216,7 @@ export async function persistCreedState(client: unknown, userId: string, state: 
       payload: Record<string, unknown>;
       revision: number;
       last_edited_at?: string;
+      archived_at?: string | null;
     }> | null) ?? [];
   const currentSections = new Map<
     string,
@@ -1224,6 +1227,7 @@ export async function persistCreedState(client: unknown, userId: string, state: 
       payload: Record<string, unknown>;
       revision: number;
       lastEditedAt?: string;
+      archivedAt?: string | null;
     }
   >(
     currentSectionRows.map((row) => [
@@ -1235,6 +1239,7 @@ export async function persistCreedState(client: unknown, userId: string, state: 
         payload: row.payload,
         revision: row.revision,
         lastEditedAt: row.last_edited_at,
+        archivedAt: row.archived_at,
       },
     ])
   );
@@ -1265,6 +1270,9 @@ export async function persistCreedState(client: unknown, userId: string, state: 
       last_edited_type: section.lastEditedType,
       last_edited_at: changed ? now : current?.lastEditedAt ?? now,
       revision: changed ? (current?.revision ?? 0) + 1 : (current?.revision ?? 1),
+      // Preserve the original archive time so "archived" ordering is stable;
+      // null clears it on restore. Metadata only - does not bump revision.
+      archived_at: section.archived ? current?.archivedAt ?? now : null,
       created_at: now,
       updated_at: now,
     };

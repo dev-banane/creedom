@@ -24,17 +24,17 @@ export function useStripeCheckout() {
         alreadyPaid?: boolean;
       };
       if (data.alreadyPaid) {
-        toast.success("You already own Creed.");
+        toast.success("You already own Creed");
         router.push("/file");
         return;
       }
       if (!res.ok || !data.url) {
-        throw new Error(data.error || "Couldn't start checkout.");
+        throw new Error(data.error || "Couldn't start checkout");
       }
       window.location.href = data.url;
     } catch (error) {
       setSubmitting(false);
-      toast.error(error instanceof Error ? error.message : "Couldn't start checkout.");
+      toast.error(error instanceof Error ? error.message : "Couldn't start checkout");
     }
   }, [router, submitting]);
 

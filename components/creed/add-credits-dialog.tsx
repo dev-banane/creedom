@@ -86,12 +86,12 @@ export function AddCreditsDialog({
         error?: string;
       };
       if (!response.ok || !payload.clientSecret || !payload.publishableKey) {
-        throw new Error(payload.error || "Could not start the payment.");
+        throw new Error(payload.error || "Could not start the payment");
       }
       setPublishableKey(payload.publishableKey);
       setClientSecret(payload.clientSecret);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not start the payment.");
+      toast.error(error instanceof Error ? error.message : "Could not start the payment");
     } finally {
       setCreating(false);
     }
@@ -138,7 +138,7 @@ export function AddCreditsDialog({
                         setCustomAmount("");
                       }}
                       className={cn(
-                        "h-9 rounded-lg border bg-[var(--creed-surface)] text-[13px] font-medium outline-none transition-colors focus:outline-none focus-visible:outline-none",
+                        "h-9 rounded-lg border bg-[var(--creed-surface)] text-sm font-medium outline-none transition-colors focus:outline-none focus-visible:outline-none",
                         !active &&
                           "border-[var(--creed-border)] text-[var(--creed-text-secondary)] hover:border-[var(--creed-border-strong)] hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
                       )}
@@ -226,7 +226,7 @@ function PaymentForm({
         confirmParams: { return_url: window.location.href },
       });
       if (error) {
-        toast.error(error.message || "Payment failed.");
+        toast.error(error.message || "Payment failed");
         return;
       }
       if (paymentIntent && paymentIntent.status === "succeeded") {
@@ -242,18 +242,18 @@ function PaymentForm({
           if (!response.ok) {
             throw new Error("confirm failed");
           }
-          toast.success("Credits added.");
+          toast.success("Credits added");
         } catch {
           // Payment is captured; the webhook will reconcile the balance.
-          toast.success("Payment received.");
+          toast.success("Payment received");
         }
         onPaid();
         return;
       }
-      toast.success("Payment submitted.");
+      toast.success("Payment submitted");
       onPaid();
     } catch {
-      toast.error("Payment failed.");
+      toast.error("Payment failed");
     } finally {
       setSubmitting(false);
     }

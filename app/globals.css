@@ -32,7 +32,7 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
-  --font-hero-heading: var(--font-gambarino);
+  --font-hero-heading: var(--font-eb-garamond);
 }
 
 :root {
@@ -106,7 +106,7 @@
   --accent-tint-mono: #ebebe6;
   --accent-tint-custom: #ebebe6;
   --font-heading: var(--font-geist-sans);
-  --font-hero-heading: var(--font-gambarino);
+  --font-hero-heading: var(--font-eb-garamond);
 }
 
 /* Notion × Obsidian × Cursor inspired dark mode. Designed around a near-black
@@ -236,10 +236,10 @@
 
 .t-hero {
   font-family: var(--font-hero-heading), serif;
-  font-weight: 400;
-  font-size: clamp(2.4rem, 12vw, 6.6rem);
+  font-weight: 500;
+  font-size: clamp(2.2rem, 11vw, 6rem);
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: -0.015em;
   font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -497,15 +497,19 @@
 }
 
 .creed-bullets > li {
-  position: relative;
-  padding-left: 1.3em;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7em;
 }
 
 .creed-bullets > li::before {
   content: "";
-  position: absolute;
-  left: 0.1em;
-  top: 0.66em;
+  flex: 0 0 auto;
+  /* Centres the square on the first text line. The lists run line-height ~2
+     (leading-8), so the first line's optical centre is ~1em down; offset by
+     half the marker height keeps it pinned to that first line even when the
+     item wraps. */
+  margin-top: 0.8em;
   width: 0.4em;
   height: 0.4em;
   border-radius: 0.13em;

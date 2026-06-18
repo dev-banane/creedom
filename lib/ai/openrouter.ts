@@ -93,9 +93,9 @@ export async function callOpenRouter({
     clearTimeout(timeout);
     // Network failure or our own timeout abort.
     if (cause instanceof Error && cause.name === "AbortError") {
-      throw new Error("OpenRouter timed out.");
+      throw new Error("OpenRouter timed out");
     }
-    throw new Error("Couldn't reach OpenRouter.");
+    throw new Error("Couldn't reach OpenRouter");
   }
 
   try {
@@ -106,7 +106,7 @@ export async function callOpenRouter({
       // A read failure here is almost always our own timeout aborting the
       // still-streaming body. Surface it as a timeout, not "empty response".
       if (controller.signal.aborted) {
-        throw new Error("OpenRouter timed out.");
+        throw new Error("OpenRouter timed out");
       }
       payload = null;
     }
@@ -115,24 +115,24 @@ export async function callOpenRouter({
       // Translate the common HTTP statuses into something the user can act on.
       const upstream = payload?.error?.message?.trim();
       if (response.status === 401) {
-        throw new Error("OpenRouter rejected your key.");
+        throw new Error("OpenRouter rejected your key");
       }
       if (response.status === 402) {
-        throw new Error("OpenRouter is out of credit.");
+        throw new Error("OpenRouter is out of credit");
       }
       if (response.status === 429) {
-        throw new Error("OpenRouter is rate-limiting you.");
+        throw new Error("OpenRouter is rate-limiting you");
       }
       throw new Error(upstream || "OpenRouter rejected this request.");
     }
 
     if (!payload) {
-      throw new Error("OpenRouter returned an empty response.");
+      throw new Error("OpenRouter returned an empty response");
     }
 
     const content = extractContent(payload);
     if (!content) {
-      throw new Error("OpenRouter returned no content.");
+      throw new Error("OpenRouter returned no content");
     }
 
   const inputTokens = payload.usage?.prompt_tokens ?? 0;

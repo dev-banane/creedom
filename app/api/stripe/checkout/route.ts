@@ -79,7 +79,7 @@ export async function POST() {
     );
 
     if (!session.url) {
-      throw new Error("Stripe returned a session without a URL.");
+      throw new Error("Stripe returned a session without a URL");
     }
 
     return NextResponse.json({ url: session.url });

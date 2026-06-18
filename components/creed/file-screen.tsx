@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, Reorder, motion, useDragControls } from "framer-motion";
 import {
   AlertTriangle,
+  Check,
   ChevronDown,
   ChevronLeft,
   Clock3,
@@ -22,7 +23,9 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { fireConfetti } from "@/lib/confetti";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
+import { ArchiveIcon } from "@/components/ui/archive";
 import { Button } from "@/components/ui/button";
 import { CloudDownloadIcon } from "@/components/ui/cloud-download";
 import { CloudUploadIcon } from "@/components/ui/cloud-upload";
@@ -208,14 +211,14 @@ function ActivityFilterPill({
 }) {
   const activeClass =
     tone === "green"
-      ? "border-[#22C55E]/45 bg-[#F0FDF4] text-[#15803D] dark:border-[#4ade80]/45 dark:bg-[#052e1a]/50 dark:text-[#4ade80]"
+      ? "border-[#22C55E] bg-[#F0FDF4] text-[#15803D] shadow-[inset_0_0_0_1px_#22C55E] dark:border-[#4ade80] dark:bg-[#052e1a]/50 dark:text-[#4ade80] dark:shadow-[inset_0_0_0_1px_#4ade80]"
       : tone === "red"
-        ? "border-[#EF4444]/45 bg-[#FEF2F2] text-[#B91C1C] dark:border-[#F87171]/45 dark:bg-[#3F1212]/40 dark:text-[#fca5a5]"
+        ? "border-[#EF4444] bg-[#FEF2F2] text-[#B91C1C] shadow-[inset_0_0_0_1px_#EF4444] dark:border-[#F87171] dark:bg-[#3F1212]/40 dark:text-[#fca5a5] dark:shadow-[inset_0_0_0_1px_#F87171]"
         : tone === "orange"
-          ? "border-[#F59E0B]/45 bg-[#FFF7ED] text-[#C26A00] dark:border-[#fbbf24]/45 dark:bg-[#451a03]/40 dark:text-[#fbbf24]"
+          ? "border-[#F59E0B] bg-[#FFF7ED] text-[#C26A00] shadow-[inset_0_0_0_1px_#F59E0B] dark:border-[#fbbf24] dark:bg-[#451a03]/40 dark:text-[#fbbf24] dark:shadow-[inset_0_0_0_1px_#fbbf24]"
           : tone === "purple"
-            ? "border-[#8B5CF6]/45 bg-[#F5F3FF] text-[#7C3AED] dark:border-[#c4b5fd]/45 dark:bg-[#2e1065]/40 dark:text-[#c4b5fd]"
-            : "border-[#2563EB]/45 bg-[#EFF6FF] text-[#1447E6] dark:border-[#93c5fd]/45 dark:bg-[#1e3a8a]/30 dark:text-[#93c5fd]";
+            ? "border-[#8B5CF6] bg-[#F5F3FF] text-[#7C3AED] shadow-[inset_0_0_0_1px_#8B5CF6] dark:border-[#c4b5fd] dark:bg-[#2e1065]/40 dark:text-[#c4b5fd] dark:shadow-[inset_0_0_0_1px_#c4b5fd]"
+            : "border-[#2563EB] bg-[#EFF6FF] text-[#1447E6] shadow-[inset_0_0_0_1px_#2563EB] dark:border-[#93c5fd] dark:bg-[#1e3a8a]/30 dark:text-[#93c5fd] dark:shadow-[inset_0_0_0_1px_#93c5fd]";
 
   return (
     <motion.button
@@ -627,6 +630,8 @@ export function FileScreen() {
     setSectionAccent,
     duplicateSection,
     deleteSection,
+    archiveSection,
+    archiveCreed,
     clearSections,
     acceptProposal,
     acceptProposals,
@@ -635,6 +640,12 @@ export function FileScreen() {
     exportMarkdown,
     refreshState,
   } = useCreed();
+  // Archived sections stay in state (so they persist) but are hidden from the
+  // editor; the section list renders from this live set.
+  const visibleSections = useMemo(
+    () => state.sections.filter((section) => !section.archived),
+    [state.sections]
+  );
   const pendingProposals = useMemo(
     () => state.proposals.filter((proposal) => proposal.status === "pending"),
     [state.proposals]
@@ -730,6 +741,7 @@ export function FileScreen() {
     name: string;
   } | null>(null);
   const [deleteFileOpen, setDeleteFileOpen] = useState(false);
+  const [archiveAllOpen, setArchiveAllOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const importInputRef = useRef<HTMLInputElement | null>(null);
   const editorScrollRef = useRef<HTMLDivElement | null>(null);
@@ -831,7 +843,7 @@ export function FileScreen() {
         const payload = (await response.json()) as GitHubVersionStatus & { error?: string };
 
         if (!response.ok) {
-          throw new Error(payload?.error || "Could not load GitHub version status.");
+          throw new Error(payload?.error || "Could not load GitHub version status");
         }
 
         if (!cancelled) {
@@ -840,7 +852,7 @@ export function FileScreen() {
       } catch (error) {
         if (!cancelled) {
           toast.error(
-            error instanceof Error ? error.message : "Could not load GitHub version status."
+            error instanceof Error ? error.message : "Could not load GitHub version status"
           );
         }
       } finally {
@@ -1153,19 +1165,19 @@ export function FileScreen() {
       const parsed = parseCreedMarkdown(markdown);
 
       if (parsed.sections.length === 0) {
-        throw new Error(parsed.warnings[0] ?? "Could not import this markdown file.");
+        throw new Error(parsed.warnings[0] ?? "Could not import this markdown file");
       }
 
       await importSections(parsed.sections);
       if (parsed.warnings.length > 0) {
-        toast.warning(`Imported ${file.name} with warnings.`);
+        toast.warning(`Imported ${file.name} with warnings`);
       } else {
-        toast.success(`Imported ${file.name}.`);
+        toast.success(`Imported ${file.name}`);
       }
       markActionComplete("import");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Could not import this markdown file."
+        error instanceof Error ? error.message : "Could not import this markdown file"
       );
     } finally {
       setImportBusy(false);
@@ -1208,7 +1220,7 @@ export function FileScreen() {
 
       const payload = (await response.json()) as GitHubPullPreview & { error?: string };
       if (!response.ok) {
-        throw new Error(payload?.error || "Could not preview the push.");
+        throw new Error(payload?.error || "Could not preview the push");
       }
 
       setPushPreview({ sections: payload.sections, warnings: payload.warnings ?? [] });
@@ -1216,7 +1228,7 @@ export function FileScreen() {
     } catch (error) {
       // Leave the dialog open so the user can still push; just surface why the
       // preview is missing.
-      toast.error(error instanceof Error ? error.message : "Could not preview the push.");
+      toast.error(error instanceof Error ? error.message : "Could not preview the push");
     } finally {
       setPushPreviewBusy(false);
     }
@@ -1248,10 +1260,10 @@ export function FileScreen() {
       }
 
       await refreshState();
-      toast.success("Pushed Creed to GitHub.");
+      toast.success("Pushed Creed to GitHub");
       setPushDialogOpen(false);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not push Creed.");
+      toast.error(error instanceof Error ? error.message : "Could not push Creed");
     } finally {
       setPushBusy(false);
     }
@@ -1279,14 +1291,14 @@ export function FileScreen() {
       const payload = (await response.json()) as GitHubPullPreview & { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload?.error || "Could not preview GitHub import.");
+        throw new Error(payload?.error || "Could not preview GitHub import");
       }
 
       setPullPreview(payload);
       setPullPreviewRenderKey((current) => current + 1);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Could not preview GitHub import."
+        error instanceof Error ? error.message : "Could not preview GitHub import"
       );
       setPullDialogOpen(false);
     } finally {
@@ -1317,16 +1329,16 @@ export function FileScreen() {
       const payload = (await response.json()) as { error?: string };
 
       if (!response.ok) {
-        throw new Error(payload.error || "Could not import Creed from GitHub.");
+        throw new Error(payload.error || "Could not import Creed from GitHub");
       }
 
       await refreshState();
-      toast.success("Pulled Creed from GitHub.");
+      toast.success("Pulled Creed from GitHub");
       setPullDialogOpen(false);
       setPullPreview(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Could not import Creed from GitHub."
+        error instanceof Error ? error.message : "Could not import Creed from GitHub"
       );
     } finally {
       setPullBusy(false);
@@ -1464,10 +1476,6 @@ export function FileScreen() {
       setActiveShellSection(null);
     };
   }, [setActiveShellSection, state.sections.length, pendingNewSectionProposalCount]);
-
-  const saveTimeLabel = state.syncLabel
-    .replace(/^Last synced /, "")
-    .replace(/^Saved /, "");
 
   useEffect(() => {
     if (state.sections.length === 0) {
@@ -1625,7 +1633,7 @@ export function FileScreen() {
                     </div>
                     <div className="mt-2 flex items-center gap-2 text-[13px] text-[var(--creed-text-secondary)]">
                       <Clock3 className="h-3.5 w-3.5" />
-                      Last saved {saveTimeLabel}
+                      {state.syncLabel}
                     </div>
                   </div>
 
@@ -1701,7 +1709,7 @@ export function FileScreen() {
                           // dialog's final confirm button (Push Creed / Import
                           // remote Creed), so we keep the trigger here calm to
                           // avoid two competing CTAs on screen.
-                          "border-r-0 border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:px-3.5 md:text-[13px]",
+                          "border-r-0 border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:px-3.5 md:text-sm",
                           !githubConfigured && "text-[var(--creed-text-tertiary)]"
                         )}
                         onMouseEnter={versionIcon.start}
@@ -1746,7 +1754,7 @@ export function FileScreen() {
                         >
                           <AnimatedMenuIconItem
                             icon={CloudUploadIcon}
-                            className="text-[13px]"
+                            className="text-sm"
                             disabled={pushDisabled}
                             onSelect={(event) => {
                               event.preventDefault();
@@ -1757,7 +1765,7 @@ export function FileScreen() {
                           </AnimatedMenuIconItem>
                           <AnimatedMenuIconItem
                             icon={CloudDownloadIcon}
-                            className="text-[13px]"
+                            className="text-sm"
                             disabled={pullDisabled}
                             onSelect={(event) => {
                               event.preventDefault();
@@ -1799,7 +1807,7 @@ export function FileScreen() {
                       size="sm"
                       style={{ borderRadius: 13, height: 32, minHeight: 32 }}
                       className={cn(
-                        "hidden border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-[13px]",
+                        "hidden border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm",
                         activityOpen && "bg-[var(--creed-surface-raised)]"
                       )}
                       onMouseEnter={activityIcon.start}
@@ -1836,28 +1844,28 @@ export function FileScreen() {
                         <AnimatedMenuIconItem
                           icon={FolderUpIcon}
                           showIcon={!importBusy && copiedAction !== "import"}
-                          className="text-[13px]"
+                          className="text-sm"
                           disabled={importBusy}
                           onSelect={(event) => {
                             event.preventDefault();
                             importInputRef.current?.click();
                           }}
                         >
-                          {importBusy ? (
-                            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-                          ) : copiedAction === "import" ? (
-                            <AnimatedCheckmark />
-                          ) : null}
                           {importBusy
                             ? "Importing"
                             : copiedAction === "import"
                               ? "Imported"
                               : "Import"}
+                          {importBusy ? (
+                            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                          ) : copiedAction === "import" ? (
+                            <AnimatedCheckmark />
+                          ) : null}
                         </AnimatedMenuIconItem>
                         <AnimatedMenuIconItem
                           icon={CopyIcon}
                           showIcon={copiedAction !== "copy"}
-                          className="min-w-[82px] text-[13px]"
+                          className="min-w-[82px] text-sm"
                           onSelect={(event) => {
                             event.preventDefault();
                             void copyValue("copy", exportMarkdown());
@@ -1871,7 +1879,7 @@ export function FileScreen() {
                         <AnimatedMenuIconItem
                           icon={DownloadIcon}
                           showIcon={copiedAction !== "download"}
-                          className="text-[13px]"
+                          className="text-sm"
                           onSelect={(event) => {
                             event.preventDefault();
                             downloadFile(
@@ -1888,8 +1896,17 @@ export function FileScreen() {
                         </AnimatedMenuIconItem>
                         <DropdownMenuSeparator />
                         <AnimatedMenuIconItem
+                          icon={ArchiveIcon}
+                          className="text-sm"
+                          onSelect={() => {
+                            window.setTimeout(() => setArchiveAllOpen(true), 0);
+                          }}
+                        >
+                          Archive
+                        </AnimatedMenuIconItem>
+                        <AnimatedMenuIconItem
                           icon={DeleteIcon}
-                          className="bg-[#DC2626] text-[13px] text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                          className="mt-1 bg-[#DC2626] text-sm text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                           onSelect={() => {
                             // Let the menu close first, then open the dialog on
                             // the next tick so its enter animation plays (two
@@ -1954,11 +1971,11 @@ export function FileScreen() {
 
               <Reorder.Group
                 axis="y"
-                values={state.sections.map((section) => section.id)}
+                values={visibleSections.map((section) => section.id)}
                 onReorder={reorderSections}
                 className="space-y-10 md:space-y-16"
               >
-                {state.sections.map((section) => {
+                {visibleSections.map((section) => {
                   const quality = sectionQualityById.get(section.id);
                   const analyzedFingerprint = analyzedSectionFingerprints[section.id];
                   const currentFingerprint = sectionFingerprintById.get(section.id);
@@ -2010,11 +2027,26 @@ export function FileScreen() {
                           0
                         )
                       }
+                      onArchive={() => {
+                        archiveSection(section.id);
+                        toast.success(`Archived "${section.name}"`);
+                      }}
                       onAddSectionAfter={() => openComposerAndReveal(section.id)}
                     />
                   );
                 })}
               </Reorder.Group>
+
+              {visibleSections.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-2 rounded-[var(--radius-xl)] border border-dashed border-[var(--creed-border)] px-4 py-16 text-center">
+                  <div className="text-[15px] font-medium text-[var(--creed-text-primary)]">
+                    Every section is archived
+                  </div>
+                  <div className="max-w-sm text-[13px] leading-6 text-[var(--creed-text-secondary)]">
+                    Restore a section from Settings, under Archived, to bring it back into your Creed.
+                  </div>
+                </div>
+              ) : null}
 
               {normalizedPendingProposals.filter((p) => p.draft.kind === "new-section").length > 0 ? (
                 <div className="mt-10 space-y-3 md:mt-16">
@@ -2122,7 +2154,7 @@ export function FileScreen() {
                   <button
                     type="button"
                     onClick={() => openComposerAndReveal()}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--creed-border-strong)] bg-[var(--creed-surface)] px-4 py-3.5 text-[13px] font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:border-[var(--creed-text-secondary)] hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-[var(--creed-border-strong)] bg-[var(--creed-surface)] px-4 py-3.5 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors duration-150 hover:border-[var(--creed-text-secondary)] hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Add section
@@ -2197,6 +2229,7 @@ export function FileScreen() {
               disabled={pushBusy || !githubConfigured}
             >
               {pushBusy ? "Pushing" : "Push Creed"}
+              {pushBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2244,6 +2277,7 @@ export function FileScreen() {
               disabled={pullBusy || !pullPreview}
             >
               {pullBusy ? "Importing" : "Import remote Creed"}
+              {pullBusy ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -2353,6 +2387,33 @@ export function FileScreen() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={archiveAllOpen} onOpenChange={setArchiveAllOpen}>
+        <DialogContent className="rounded-[var(--radius-xl)] border-[var(--creed-border)] bg-[var(--creed-surface)]">
+          <DialogHeader>
+            <DialogTitle>Archive all sections</DialogTitle>
+            <DialogDescription>
+              This moves every section to your archive and starts you with a single fresh section.
+              Nothing is deleted - restore any section anytime in Settings, under Archived.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-row items-center justify-between border-t-[var(--creed-border)] bg-[var(--creed-surface)] sm:justify-between">
+            <Button variant="ghost" className="rounded-md" onClick={() => setArchiveAllOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="rounded-md bg-[var(--creed-text-primary)] px-4 text-[var(--creed-button-primary-fg)] hover:bg-[var(--creed-button-primary-hover)]"
+              onClick={() => {
+                archiveCreed();
+                setArchiveAllOpen(false);
+                toast.success("All sections archived");
+              }}
+            >
+              Archive all
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
@@ -2374,6 +2435,7 @@ function SectionCard({
   onSetAccent,
   onDuplicate,
   onDelete,
+  onArchive,
   onAddSectionAfter,
 }: {
   section: CreedSection;
@@ -2392,6 +2454,7 @@ function SectionCard({
   onSetAccent: (accent: AccentKey) => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onArchive: () => void;
   onAddSectionAfter: () => void;
 }) {
   const dragControls = useDragControls();
@@ -2490,7 +2553,7 @@ function SectionCard({
             <DropdownMenuContent align="end" className="border-[var(--creed-border)] bg-[var(--creed-surface)]">
               <AnimatedMenuIconItem
                 icon={SquarePenIcon}
-                className="text-[13px]"
+                className="text-sm"
                 onSelect={onRename}
               >
                 Rename
@@ -2505,7 +2568,7 @@ function SectionCard({
                 <DropdownMenuSubTrigger
                   onMouseEnter={() => stampIconRef.current?.startAnimation()}
                   onMouseLeave={() => stampIconRef.current?.stopAnimation()}
-                  className="group/colour rounded-[var(--radius-md)] gap-1.5 px-2.5 py-2 text-[13px] [&>svg:last-of-type]:hidden"
+                  className="group/colour rounded-[var(--radius-md)] gap-1.5 px-2.5 py-2 text-sm [&>svg:last-of-type]:hidden"
                 >
                   <StampIcon
                     ref={stampIconRef}
@@ -2543,24 +2606,29 @@ function SectionCard({
                             key={accentKey}
                             type="button"
                             aria-label={accentLabelMap[accentKey]}
-                            onClick={() => onSetAccent(accentKey)}
-                            className={cn(
-                              "flex aspect-square h-7 w-7 items-center justify-center rounded-md border bg-[var(--creed-surface)] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]",
-                              !selected && "border-[var(--creed-border)]"
-                            )}
-                            style={
-                              selected
-                                ? {
-                                    borderColor: accentColorMap[accentKey],
-                                    backgroundColor: accentTintMap[accentKey],
-                                  }
-                                : undefined
-                            }
+                            aria-pressed={selected}
+                            onClick={(event) => {
+                              const rect = event.currentTarget.getBoundingClientRect();
+                              onSetAccent(accentKey);
+                              fireConfetti(
+                                rect.left + rect.width / 2,
+                                rect.top + rect.height / 2,
+                                accentColorMap[accentKey]
+                              );
+                            }}
+                            // The selected tick is painted in the app background colour
+                            // so it reads as cut out of the filled swatch.
+                            className="group/swatch relative flex aspect-square h-7 w-7 items-center justify-center overflow-hidden rounded-md transition-transform duration-150 active:scale-95"
+                            style={{ backgroundColor: accentColorMap[accentKey] }}
                           >
-                            <span
-                              className="h-3 w-3 rounded-[4px]"
-                              style={{ backgroundColor: accentColorMap[accentKey] }}
-                            />
+                            <span className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-150 group-hover/swatch:bg-black/15" />
+                            {selected ? (
+                              <Check
+                                className="relative h-4 w-4"
+                                strokeWidth={3}
+                                style={{ color: "var(--creed-background)" }}
+                              />
+                            ) : null}
                           </button>
                         );
                       })}
@@ -2570,16 +2638,19 @@ function SectionCard({
               </DropdownMenuSub>
               <AnimatedMenuIconItem
                 icon={FileStackIcon}
-                className="text-[13px]"
+                className="text-sm"
                 onSelect={onDuplicate}
               >
                 Duplicate
               </AnimatedMenuIconItem>
               <DropdownMenuSeparator />
+              <AnimatedMenuIconItem icon={ArchiveIcon} className="text-sm" onSelect={onArchive}>
+                Archive
+              </AnimatedMenuIconItem>
               {/* Solid red, matching the file menu's Delete. */}
               <AnimatedMenuIconItem
                 icon={DeleteIcon}
-                className="bg-[#DC2626] text-[13px] text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
+                className="mt-1 bg-[#DC2626] text-sm text-white hover:bg-[#B91C1C] hover:text-white focus:bg-[#B91C1C] focus:text-white data-[highlighted]:bg-[#B91C1C] data-[highlighted]:text-white not-data-[variant=destructive]:focus:**:text-white"
                 onSelect={onDelete}
               >
                 Delete
@@ -2750,7 +2821,7 @@ function HeaderLockButton({ locked, onToggle }: { locked: boolean; onToggle: () 
         size="sm"
         aria-pressed={locked}
         style={{ borderRadius: 13, height: 32, minHeight: 32 }}
-        className="hidden border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-[13px]"
+        className="hidden border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 text-[12px] md:inline-flex md:px-3.5 md:text-sm"
         onClick={() => trigger({ lock: desktopLockRef, open: desktopOpenRef })}
       >
         {locked ? (
@@ -2902,7 +2973,8 @@ function ActivityRail({
 
         <ScrollArea className="mt-5 min-h-0 flex-1">
           {filtered.length ? (
-            <div className="space-y-7 pr-4">
+            <div className="pr-4">
+              <div className="space-y-7">
               {Object.entries(grouped).map(([dayLabel, entries]) => (
                 <div key={dayLabel}>
                   <div className="mb-3 text-[12px] font-medium text-[var(--creed-text-tertiary)]">
@@ -2938,12 +3010,13 @@ function ActivityRail({
                   </div>
                 </div>
               ))}
+              </div>
               {hasMore ? (
-                <div className="pt-2">
+                <div className="mt-3">
                   <button
                     type="button"
                     onClick={() => setVisibleCount((current) => current + 50)}
-                    className="w-full rounded-[12px] border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 py-2 text-[13px] font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+                    className="w-full rounded-[12px] border border-[var(--creed-border)] bg-[var(--creed-surface)] px-3 py-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
                   >
                     Load more · {filteredAll.length - visibleCount} remaining
                   </button>

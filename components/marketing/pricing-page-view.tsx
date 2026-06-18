@@ -188,7 +188,7 @@ function PricingCard({
             <span className="mt-[5px] inline-flex h-[14px] w-[14px] shrink-0 items-center justify-center">
               {feature.included ? (
                 <Check
-                  className="h-[14px] w-[14px] text-[#059669] dark:text-[#34D399]"
+                  className="h-[14px] w-[14px] text-[#16A34A]"
                   strokeWidth={2.75}
                 />
               ) : (
@@ -267,7 +267,7 @@ function HostedPurchaseCta() {
     return (
       <Link
         href="/file"
-        className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-[#10b981] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[#059669]"
+        className="inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md bg-[#16A34A] px-4 text-[14px] font-medium text-white transition-colors hover:bg-[#15803d]"
       >
         <Check className="h-4 w-4" strokeWidth={2.75} />
         Owned

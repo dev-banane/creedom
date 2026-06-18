@@ -84,7 +84,7 @@ export function ConnectionCard({
           <div className="text-[15px] font-medium text-[var(--creed-text-primary)]">
             {connection.name}
           </div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[12px] text-[var(--creed-text-secondary)]">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[13px] text-[var(--creed-text-secondary)]">
             <span
               className={cn(
                 "h-2 w-2 rounded-[3px]",

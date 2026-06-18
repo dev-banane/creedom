@@ -40,7 +40,7 @@ export function QualityToasts() {
     lastSeenId.current = id;
 
     if (!outcome.ok) {
-      toast.error(outcome.message || "Analysis failed.");
+      toast.error(outcome.message || "Analysis failed");
       return;
     }
     // A completed analysis recorded usage and (in credits mode) a debit. Drop
@@ -48,9 +48,9 @@ export function QualityToasts() {
     // next time Settings is opened, instead of showing stale figures.
     clearSettingsCreditsCache();
     clearSettingsUsageCache();
-    toast.success("Analysis complete.");
+    toast.success("Analysis complete");
     if (outcome.lowCredits) {
-      toast.warning("Running low on credits.");
+      toast.warning("Running low on credits");
     }
   }, [outcome]);
 

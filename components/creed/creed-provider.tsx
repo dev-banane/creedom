@@ -58,6 +58,9 @@ type CreedContextValue = {
   setSectionAccent: (sectionId: string, accent: AccentKey) => void;
   duplicateSection: (sectionId: string) => void;
   deleteSection: (sectionId: string) => void;
+  archiveSection: (sectionId: string) => void;
+  restoreSection: (sectionId: string) => void;
+  archiveCreed: () => void;
   clearSections: () => void;
   acceptProposal: (proposalId: string) => Promise<void>;
   acceptProposals: (proposalIds: string[]) => void;
@@ -338,7 +341,7 @@ export function CreedProvider({
       const finalState = shouldPersist
         ? {
             ...nextState,
-            syncLabel: "Saving...",
+            syncLabel: "Saving",
           }
         : nextState;
 
@@ -525,13 +528,18 @@ export function CreedProvider({
   function reorderSections(sectionIds: string[]) {
     commitState((current) => {
       const map = new Map(current.sections.map((section) => [section.id, section]));
-      const nextSections = sectionIds
+      const reordered = sectionIds
         .map((id) => map.get(id))
         .filter((section): section is CreedSection => Boolean(section));
+      // Preserve any sections not in the reordered list (archived sections are
+      // hidden from the editor, so they aren't part of the drag set). Without
+      // this they'd be dropped from state and then deleted on the next persist.
+      const reorderedIds = new Set(sectionIds);
+      const preserved = current.sections.filter((section) => !reorderedIds.has(section.id));
 
       return nextMutationTick({
         ...current,
-        sections: nextSections,
+        sections: [...reordered, ...preserved],
       });
     });
   }
@@ -660,6 +668,66 @@ export function CreedProvider({
         activity: current.activity.filter((entry) => entry.sectionId !== sectionId),
       })
     );
+  }
+
+  // Archive keeps the section in state (so it survives persistence) but flags it
+  // hidden from the editor, agent read, quality, and export. Pending proposals
+  // for it are dropped so nothing dangles against a hidden section; activity
+  // history is preserved. Restore simply clears the flag.
+  function archiveSection(sectionId: string) {
+    commitState((current) =>
+      nextMutationTick({
+        ...current,
+        syncLabel: "Saved just now",
+        sections: current.sections.map((section) =>
+          section.id === sectionId ? { ...section, archived: true } : section
+        ),
+        proposals: current.proposals.filter((proposal) => proposal.sectionId !== sectionId),
+      })
+    );
+  }
+
+  function restoreSection(sectionId: string) {
+    commitState((current) =>
+      nextMutationTick({
+        ...current,
+        syncLabel: "Saved just now",
+        sections: current.sections.map((section) =>
+          section.id === sectionId ? { ...section, archived: false } : section
+        ),
+      })
+    );
+  }
+
+  // Archiving the whole Creed archives every live section at once and drops in a
+  // single blank placeholder, so the file resets to a clean slate while every
+  // section stays recoverable from Settings -> Archived.
+  function archiveCreed() {
+    commitState((current) => {
+      const archived = current.sections.map((section) =>
+        section.archived ? section : { ...section, archived: true }
+      );
+      const placeholder: CreedSection = {
+        id: uniqueLocalId("section"),
+        kind: "rich-text",
+        template: "freeform",
+        name: "New section",
+        accent: "custom",
+        content:
+          "<p>Start fresh here. Your previous sections are saved in Settings, under Archived.</p>",
+        agentWritable: true,
+        agentPermission: "propose",
+        lastEditedBy: "You",
+        lastEditedType: "user",
+        lastEditedLabel: "just now",
+      };
+      return nextMutationTick({
+        ...current,
+        syncLabel: "Saved just now",
+        sections: [...archived, placeholder],
+        proposals: [],
+      });
+    });
   }
 
   function clearSections() {
@@ -1149,6 +1217,9 @@ export function CreedProvider({
       setSectionAccent,
       duplicateSection,
       deleteSection,
+      archiveSection,
+      restoreSection,
+      archiveCreed,
       clearSections,
       acceptProposal,
       acceptProposals,
@@ -1181,6 +1252,9 @@ export function CreedProvider({
       setSectionAccent,
       duplicateSection,
       deleteSection,
+      archiveSection,
+      restoreSection,
+      archiveCreed,
       clearSections,
       acceptProposal,
       acceptProposals,
