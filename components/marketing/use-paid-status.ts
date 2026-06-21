@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // Client-side "is the current user paid?" hook.
@@ -42,12 +42,23 @@ function writeCache(userId: string, status: "paid" | "unpaid") {
   }
 }
 
+// Last resolved value, kept at module scope so the header seeds from it on
+// every client-side navigation instead of flashing back to "unknown" and
+// reflowing its buttons. Per-user sessionStorage caching still applies; this
+// is just a faster in-memory seed, cleared to "unpaid" on sign-out.
+let cachedPaidStatus: PaidStatus | null = null;
+
 export function usePaidStatus(configured: boolean = true): PaidStatus {
-  const [status, setStatus] = useState<PaidStatus>("unknown");
+  const [status, setStatus] = useState<PaidStatus>(cachedPaidStatus ?? "unknown");
+
+  const commit = useCallback((next: PaidStatus) => {
+    cachedPaidStatus = next;
+    setStatus(next);
+  }, []);
 
   useEffect(() => {
     if (!configured) {
-      setStatus("unpaid");
+      commit("unpaid");
       return;
     }
 
@@ -56,12 +67,12 @@ export function usePaidStatus(configured: boolean = true): PaidStatus {
 
     async function refresh(userId: string | null) {
       if (!userId) {
-        if (active) setStatus("unpaid");
+        if (active) commit("unpaid");
         return;
       }
       const cached = readCache(userId);
       if (cached) {
-        if (active) setStatus(cached);
+        if (active) commit(cached);
         // Don't return - fall through and refresh in the background so a
         // user who just paid sees the green Owned pill within seconds of
         // returning to a marketing page.
@@ -72,15 +83,15 @@ export function usePaidStatus(configured: boolean = true): PaidStatus {
           cache: "no-store",
         });
         if (!res.ok) {
-          if (active && !cached) setStatus("unpaid");
+          if (active && !cached) commit("unpaid");
           return;
         }
         const data = (await res.json()) as { paid?: boolean };
         const next: "paid" | "unpaid" = data.paid ? "paid" : "unpaid";
         writeCache(userId, next);
-        if (active) setStatus(next);
+        if (active) commit(next);
       } catch {
-        if (active && !cached) setStatus("unpaid");
+        if (active && !cached) commit("unpaid");
       }
     }
 
@@ -124,7 +135,7 @@ export function usePaidStatus(configured: boolean = true): PaidStatus {
       active = false;
       subscription.unsubscribe();
     };
-  }, [configured]);
+  }, [configured, commit]);
 
   return status;
 }

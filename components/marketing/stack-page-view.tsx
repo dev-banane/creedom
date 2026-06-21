@@ -2,16 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import {
   ArrowUpRightIcon,
   type ArrowUpRightIconHandle,
 } from "@/components/ui/arrow-up-right";
 import { AnimatedPageTitle } from "@/components/marketing/animated-page-title";
-import { MarketingFooter, MarketingHeader } from "@/components/marketing/site-chrome";
-
-const lightApostlesImage = "/assets/landing/backgrounds/light-apostles.avif";
-const darkApostlesImage = "/assets/landing/backgrounds/dark-apostles.avif";
+import { MarketingFooter, MarketingHeroBanner } from "@/components/marketing/site-chrome";
 
 const lastUpdated = "8 April 2026";
 
@@ -58,34 +54,7 @@ export function StackPageView() {
 
   return (
     <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
-      <section className="relative h-60 overflow-hidden bg-[#e9e5de] dark:bg-[#0e0e0d] md:h-72">
-        <div className="absolute inset-x-0 top-0 h-screen">
-          <Image
-            src={lightApostlesImage}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover object-center dark:hidden"
-          />
-          <Image
-            src={darkApostlesImage}
-            alt=""
-            fill
-            sizes="100vw"
-            className="hidden object-cover object-center dark:block"
-          />
-        </div>
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,60,0.16)_0%,rgba(15,31,60,0.08)_28%,rgba(15,31,60,0.05)_56%,rgba(255,255,255,0)_76%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0.08)_56%,rgba(0,0,0,0)_76%)]" />
-        <div className="absolute -bottom-[22%] left-[-10%] h-[58%] w-[46%] rounded-[100%] bg-white/82 blur-[112px] dark:bg-[#0e0e0d]/82" />
-        <div className="absolute -bottom-[22%] right-[-10%] h-[58%] w-[46%] rounded-[100%] bg-white/82 blur-[112px] dark:bg-[#0e0e0d]/82" />
-        <div className="absolute left-1/2 bottom-[-14%] h-[34%] w-[64%] -translate-x-1/2 rounded-[100%] bg-white/40 blur-[128px] dark:bg-[#0e0e0d]/45" />
-        <div className="absolute inset-x-0 bottom-0 h-[72%] bg-[linear-gradient(180deg,rgba(255,255,255,0)_0%,rgba(249,249,248,0.025)_20%,rgba(249,249,248,0.14)_42%,rgba(249,249,248,0.48)_68%,rgba(249,249,248,0.86)_86%,#f9f9f8_100%)] dark:bg-[linear-gradient(180deg,rgba(14,14,13,0)_0%,rgba(14,14,13,0.04)_20%,rgba(14,14,13,0.18)_42%,rgba(14,14,13,0.52)_68%,rgba(14,14,13,0.88)_86%,#0e0e0d_100%)]" />
-        <div className="absolute left-1/2 bottom-[-24%] h-[54%] w-[148%] -translate-x-1/2 rounded-[50%_50%_0_0] bg-[var(--creed-background)]/82 blur-[26px]" />
-        <div className="relative z-10 flex flex-col px-6 py-5 md:px-10 md:py-7">
-          <MarketingHeader configured scrolled={scrolled} />
-        </div>
-      </section>
+      <MarketingHeroBanner configured scrolled={scrolled} />
 
       <motion.main className="mx-auto max-w-4xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0, ease: [0.16, 1, 0.3, 1] }}>
         <div className="border-b border-[var(--creed-border)] pb-8">

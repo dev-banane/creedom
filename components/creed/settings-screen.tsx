@@ -146,6 +146,33 @@ function formatGitHubAccessErrorForState(message: string, githubConnected: boole
   return formatGitHubAccessError(message);
 }
 
+// "x" is Supabase's X / Twitter (OAuth 2.0) provider; a linked identity may
+// still report the legacy "twitter" provider string, so detection matches both.
+type LoginProvider = "google" | "x";
+
+const LOGIN_PROVIDER_LABEL: Record<LoginProvider, string> = {
+  google: "Google",
+  x: "X",
+};
+
+function matchesProvider(identityProvider: string, provider: LoginProvider) {
+  if (provider === "x") return identityProvider === "x" || identityProvider === "twitter";
+  return identityProvider === provider;
+}
+
+// Providers that count as a way to sign in. A user must keep at least one, so
+// disconnecting the last sign-in method is blocked.
+const SIGN_IN_PROVIDERS = ["google", "x", "twitter", "email"];
+
+function identityAccountLabel(identity: UserIdentity | null): string | undefined {
+  const data = (identity?.identity_data ?? {}) as Record<string, unknown>;
+  for (const key of ["email", "user_name", "preferred_username", "name"]) {
+    const value = data[key];
+    if (typeof value === "string" && value.trim()) return value;
+  }
+  return undefined;
+}
+
 export function SettingsScreen() {
   const router = useRouter();
   const {
@@ -174,6 +201,11 @@ export function SettingsScreen() {
   const [deleting, setDeleting] = useState(false);
   const [connectingGitHub, setConnectingGitHub] = useState(false);
   const [disconnectingGitHub, setDisconnectingGitHub] = useState(false);
+  // Login identities (Google + X) shown in Integrations, loaded live from
+  // Supabase so connect / disconnect reflects the real account state.
+  const [identities, setIdentities] = useState<UserIdentity[] | null>(null);
+  const [linkingProvider, setLinkingProvider] = useState<LoginProvider | null>(null);
+  const [unlinkingProvider, setUnlinkingProvider] = useState<LoginProvider | null>(null);
   const [reposLoading, setReposLoading] = useState(false);
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [repos, setRepos] = useState<RepoOption[]>([]);
@@ -464,6 +496,78 @@ export function SettingsScreen() {
       await deleteAccount();
     } finally {
       setDeleting(false);
+    }
+  }
+
+  // Load the user's linked identities so the Google / X rows reflect the real
+  // account state, and refresh whenever auth changes (e.g. after a link).
+  useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
+    let active = true;
+
+    async function load() {
+      const { data, error } = await supabase.auth.getUserIdentities();
+      if (!active) return;
+      setIdentities(error ? [] : data.identities ?? []);
+    }
+
+    void load();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      void load();
+    });
+
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const googleIdentity = identities?.find((identity) => identity.provider === "google") ?? null;
+  const xIdentity = identities?.find((identity) => matchesProvider(identity.provider, "x")) ?? null;
+  const signInMethodCount = (identities ?? []).filter((identity) =>
+    SIGN_IN_PROVIDERS.includes(identity.provider)
+  ).length;
+
+  async function handleConnectIdentity(provider: LoginProvider) {
+    try {
+      setLinkingProvider(provider);
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.linkIdentity({
+        provider,
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/settings` },
+      });
+      if (error) throw error;
+      // On success the browser is navigating to the provider; nothing else runs.
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : `Couldn't connect ${LOGIN_PROVIDER_LABEL[provider]}`
+      );
+      setLinkingProvider(null);
+    }
+  }
+
+  async function handleDisconnectIdentity(provider: LoginProvider) {
+    const label = LOGIN_PROVIDER_LABEL[provider];
+    const identity = identities?.find((entry) => matchesProvider(entry.provider, provider)) ?? null;
+    if (!identity) return;
+    if (signInMethodCount <= 1) {
+      toast.error("Add another sign-in method before disconnecting this one.");
+      return;
+    }
+    try {
+      setUnlinkingProvider(provider);
+      const supabase = getSupabaseBrowserClient();
+      const { error } = await supabase.auth.unlinkIdentity(identity);
+      if (error) throw error;
+      const { data } = await supabase.auth.getUserIdentities();
+      setIdentities(data?.identities ?? []);
+      toast.success(`${label} disconnected`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : `Couldn't disconnect ${label}`);
+    } finally {
+      setUnlinkingProvider(null);
     }
   }
 
@@ -856,10 +960,40 @@ export function SettingsScreen() {
               <IntegrationRow
                 title="Google"
                 icon={<GoogleMark className="h-7 w-7" />}
-                status="connected"
-                statusLabel="Connected"
-                secondaryLabel={state.user.email}
-                action={null}
+                status={identities === null ? undefined : googleIdentity ? "connected" : "not-connected"}
+                statusLabel={
+                  identities === null ? undefined : googleIdentity ? "Connected" : "Not connected"
+                }
+                secondaryLabel={googleIdentity ? identityAccountLabel(googleIdentity) : undefined}
+                action={
+                  <IdentityAction
+                    loading={identities === null}
+                    connected={Boolean(googleIdentity)}
+                    label="Google"
+                    pending={linkingProvider === "google" || unlinkingProvider === "google"}
+                    onConnect={() => void handleConnectIdentity("google")}
+                    onDisconnect={() => void handleDisconnectIdentity("google")}
+                  />
+                }
+              />
+              <IntegrationRow
+                title="X"
+                icon={<XMark className="h-6 w-6 text-[#0F1419] dark:text-[var(--creed-text-primary)]" />}
+                status={identities === null ? undefined : xIdentity ? "connected" : "not-connected"}
+                statusLabel={
+                  identities === null ? undefined : xIdentity ? "Connected" : "Not connected"
+                }
+                secondaryLabel={xIdentity ? identityAccountLabel(xIdentity) : undefined}
+                action={
+                  <IdentityAction
+                    loading={identities === null}
+                    connected={Boolean(xIdentity)}
+                    label="X"
+                    pending={linkingProvider === "x" || unlinkingProvider === "x"}
+                    onConnect={() => void handleConnectIdentity("x")}
+                    onDisconnect={() => void handleDisconnectIdentity("x")}
+                  />
+                }
               />
               <IntegrationRow
                 title="GitHub"
@@ -877,37 +1011,17 @@ export function SettingsScreen() {
                 }
                 action={
                   githubConnected ? (
-                    <Button
-                      aria-label="Disconnect GitHub"
-                      className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+                    <DisconnectButton
+                      label="GitHub"
+                      loading={disconnectingGitHub}
                       onClick={() => void handleDisconnectGitHub()}
-                      disabled={disconnectingGitHub}
-                    >
-                      {disconnectingGitHub ? (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Unplug className="h-4 w-4 md:hidden" />
-                          <span className="hidden md:inline">Disconnect</span>
-                        </>
-                      )}
-                    </Button>
+                    />
                   ) : (
-                    <Button
-                      aria-label="Connect GitHub"
-                      className="rounded-md bg-[#16A34A] text-white hover:bg-[#15803d] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+                    <ConnectButton
+                      label="GitHub"
+                      loading={connectingGitHub}
                       onClick={() => void handleConnectGitHub()}
-                      disabled={connectingGitHub}
-                    >
-                      {connectingGitHub ? (
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Plug className="h-4 w-4 md:hidden" />
-                          <span className="hidden md:inline">Connect</span>
-                        </>
-                      )}
-                    </Button>
+                    />
                   )
                 }
               />
@@ -1441,6 +1555,89 @@ export function SettingsScreen() {
   );
 }
 
+function ConnectButton({
+  label,
+  loading,
+  onClick,
+}: {
+  label: string;
+  loading: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      aria-label={`Connect ${label}`}
+      className="rounded-md bg-[#16A34A] text-white hover:bg-[#15803d] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading ? (
+        <LoaderCircle className="h-4 w-4 animate-spin" />
+      ) : (
+        <>
+          <Plug className="h-4 w-4 md:hidden" />
+          <span className="hidden md:inline">Connect</span>
+        </>
+      )}
+    </Button>
+  );
+}
+
+function DisconnectButton({
+  label,
+  loading,
+  onClick,
+}: {
+  label: string;
+  loading: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      aria-label={`Disconnect ${label}`}
+      className="rounded-md bg-[#DC2626] text-white hover:bg-[#B91C1C] hover:text-white max-md:size-9 max-md:p-0 md:px-4 md:text-sm"
+      onClick={onClick}
+      disabled={loading}
+    >
+      {loading ? (
+        <LoaderCircle className="h-4 w-4 animate-spin" />
+      ) : (
+        <>
+          <Unplug className="h-4 w-4 md:hidden" />
+          <span className="hidden md:inline">Disconnect</span>
+        </>
+      )}
+    </Button>
+  );
+}
+
+// Connect / disconnect control for a login identity (Google, X). Shows a quiet
+// spinner while identities are still loading so the row never flips state.
+function IdentityAction({
+  loading,
+  connected,
+  label,
+  pending,
+  onConnect,
+  onDisconnect,
+}: {
+  loading: boolean;
+  connected: boolean;
+  label: string;
+  pending: boolean;
+  onConnect: () => void;
+  onDisconnect: () => void;
+}) {
+  if (loading) {
+    return <LoaderCircle className="h-4 w-4 animate-spin text-[var(--creed-text-tertiary)]" />;
+  }
+  return connected ? (
+    <DisconnectButton label={label} loading={pending} onClick={onDisconnect} />
+  ) : (
+    <ConnectButton label={label} loading={pending} onClick={onConnect} />
+  );
+}
+
 function IntegrationRow({
   title,
   icon,
@@ -1722,6 +1919,14 @@ function GoogleMark({ className }: { className?: string }) {
         d="M12 5.95c1.94 0 3.25.84 4 1.54l2.92-2.85C17.07 2.91 14.76 2 12 2a10.24 10.24 0 0 0-8.79 4.89l3.1 2.4C7.12 7.73 9.31 5.95 12 5.95Z"
         fill="#EA4335"
       />
+    </svg>
+  );
+}
+
+function XMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
 }

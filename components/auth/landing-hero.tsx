@@ -56,108 +56,110 @@ export function LandingHero({ configured }: { configured: boolean }) {
 
   return (
     <>
-      <section className="relative min-h-screen overflow-hidden bg-[#e9e5de] dark:bg-[#0e0e0d]">
-        {/* Theme-paired hero artwork. Both images render to the DOM but only
-            the active theme's image is shown - keeps Next/Image priority +
-            CDN caching while flipping cleanly with `.dark`. */}
-        <Image
-          src={lightApostlesImage}
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center dark:hidden"
-        />
-        <Image
-          src={darkApostlesImage}
-          alt=""
-          fill
-          sizes="100vw"
-          className="hidden object-cover object-center dark:block"
-        />
+      <section className="relative bg-[var(--creed-background)] p-2.5 md:p-3">
+        {/* The hero artwork sits inside a rounded card with a thin page-bg
+            gutter, so the image reads as cleanly cropped by the frame rather
+            than fading into the page. */}
+        <div className="relative flex min-h-[calc(100svh-1.25rem)] flex-col overflow-hidden rounded-[28px] bg-[#e9e5de] dark:bg-[#0e0e0d] md:min-h-[calc(100svh-1.5rem)]">
+          {/* Theme-paired hero artwork. Both images render to the DOM but only
+              the active theme's image is shown - keeps Next/Image priority +
+              CDN caching while flipping cleanly with `.dark`. */}
+          <Image
+            src={lightApostlesImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center dark:hidden"
+          />
+          <Image
+            src={darkApostlesImage}
+            alt=""
+            fill
+            sizes="100vw"
+            className="hidden object-cover object-center dark:block"
+          />
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,60,0.16)_0%,rgba(15,31,60,0.08)_28%,rgba(15,31,60,0.05)_56%,rgba(255,255,255,0)_76%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0.08)_56%,rgba(0,0,0,0)_76%)]" />
-        <div className="absolute -bottom-[17%] left-[-12%] h-[42%] w-[42%] rounded-[100%] bg-white/88 blur-[56px] dark:bg-[#0e0e0d]/88" />
-        <div className="absolute -bottom-[17%] right-[-12%] h-[42%] w-[42%] rounded-[100%] bg-white/88 blur-[56px] dark:bg-[#0e0e0d]/88" />
-        <div className="absolute left-1/2 bottom-[-10%] h-[18%] w-[54%] -translate-x-1/2 rounded-[100%] bg-white/38 blur-[72px] dark:bg-[#0e0e0d]/40" />
-        <div className="absolute inset-x-0 bottom-0 h-[20%] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(249,249,248,0.92)_72%,#f9f9f8_100%)] dark:bg-[linear-gradient(180deg,rgba(14,14,13,0),rgba(14,14,13,0.92)_72%,#0e0e0d_100%)]" />
+          {/* Top wash keeps the white header + headline legible over the art. */}
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,60,0.16)_0%,rgba(15,31,60,0.08)_28%,rgba(15,31,60,0.05)_56%,rgba(255,255,255,0)_76%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0.08)_56%,rgba(0,0,0,0)_76%)]" />
 
-        <div className="relative z-10 flex min-h-screen flex-col px-4 py-4 md:px-10 md:py-7">
-          <MarketingHeader configured={configured} scrolled={false} />
+          <div className="relative z-10 flex flex-1 flex-col px-4 py-4 md:px-10 md:py-7">
+            <MarketingHeader configured={configured} scrolled={false} />
 
-          <div className="flex flex-1 items-start justify-center pt-[16vh] text-center md:pt-[13vh]">
-            <div className="w-full max-w-3xl">
-              <AnimatedLandingHeadline
-                animate={animationReady}
-                simplifyMotion={reduceMotion}
-                text={"Your context file\nfor all agents"}
-                className="t-hero justify-center text-white"
-              />
+            <div className="flex flex-1 items-start justify-center pt-[16vh] text-center md:pt-[13vh]">
+              <div className="w-full max-w-3xl">
+                <AnimatedLandingHeadline
+                  animate={animationReady}
+                  simplifyMotion={reduceMotion}
+                  text={"Your context file\nfor all agents"}
+                  className="t-hero justify-center text-white"
+                />
 
-              <motion.div
-                initial={false}
-                animate={
-                  animationReady
-                    ? { opacity: 1, scaleX: 1, transformOrigin: "center" }
-                    : { opacity: 0, scaleX: 0, transformOrigin: "center" }
-                }
-                transition={{ delay: 1.55, duration: 0.54, ease: [0.16, 1, 0.3, 1] }}
-                className="mx-auto mt-7 h-px w-80 transform-gpu bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.34)_18%,rgba(255,255,255,0.34)_82%,rgba(255,255,255,0))]"
-                style={{ willChange: "transform, opacity" }}
-              />
+                <motion.div
+                  initial={false}
+                  animate={
+                    animationReady
+                      ? { opacity: 1, scaleX: 1, transformOrigin: "center" }
+                      : { opacity: 0, scaleX: 0, transformOrigin: "center" }
+                  }
+                  transition={{ delay: 1.55, duration: 0.54, ease: [0.16, 1, 0.3, 1] }}
+                  className="mx-auto mt-7 h-px w-80 transform-gpu bg-[linear-gradient(90deg,rgba(255,255,255,0),rgba(255,255,255,0.34)_18%,rgba(255,255,255,0.34)_82%,rgba(255,255,255,0))]"
+                  style={{ willChange: "transform, opacity" }}
+                />
 
-              <AnimatedFadeIn
-                animate={animationReady}
-                delay={1.95}
-                simplifyMotion={reduceMotion}
-                className="hero-subtext-sheen t-lede-hero mx-auto mt-6 max-w-[21rem] font-medium text-white/90 md:mt-7 md:max-w-2xl"
-              >
-                Your personal context, written once and kept polished by your agents. Every AI knows
-                you instantly.
-              </AnimatedFadeIn>
+                <AnimatedFadeIn
+                  animate={animationReady}
+                  delay={1.95}
+                  simplifyMotion={reduceMotion}
+                  className="hero-subtext-sheen t-lede-hero mx-auto mt-6 max-w-[21rem] font-medium text-white/90 md:mt-7 md:max-w-2xl"
+                >
+                  Your personal context, written once and kept polished by your agents. Every AI knows
+                  you instantly.
+                </AnimatedFadeIn>
 
-              <AnimatedFadeIn
-                animate={animationReady}
-                delay={2.18}
-                simplifyMotion={reduceMotion}
-                className="mt-7 flex justify-center"
-              >
-                {isPaid ? (
-                  <Link
-                    href="/file"
-                    onMouseEnter={heroArrow.start}
-                    onMouseLeave={heroArrow.settle}
-                    onPointerDown={(event) => {
-                      if (event.pointerType !== "mouse") heroArrow.start();
-                    }}
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white pl-4 pr-3 text-[14px] font-medium text-[#19345f] transition-colors hover:bg-[#f6f7fb]"
-                  >
-                    <span className="leading-none">Go to app</span>
-                    <ArrowRightIcon
-                      ref={heroArrow.iconRef}
-                      size={16}
-                      className="inline-flex shrink-0 items-center justify-center leading-none"
-                    />
-                  </Link>
-                ) : (
-                  <Link
-                    href={canResume ? "/onboarding" : "/pricing"}
-                    onMouseEnter={heroArrow.start}
-                    onMouseLeave={heroArrow.settle}
-                    onPointerDown={(event) => {
-                      if (event.pointerType !== "mouse") heroArrow.start();
-                    }}
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white pl-4 pr-3 text-[14px] font-medium text-[#19345f] transition-colors hover:bg-[#f6f7fb]"
-                  >
-                    <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
-                    <ArrowRightIcon
-                      ref={heroArrow.iconRef}
-                      size={16}
-                      className="inline-flex shrink-0 items-center justify-center leading-none"
-                    />
-                  </Link>
-                )}
-              </AnimatedFadeIn>
+                <AnimatedFadeIn
+                  animate={animationReady}
+                  delay={2.18}
+                  simplifyMotion={reduceMotion}
+                  className="mt-7 flex justify-center"
+                >
+                  {isPaid ? (
+                    <Link
+                      href="/file"
+                      onMouseEnter={heroArrow.start}
+                      onMouseLeave={heroArrow.settle}
+                      onPointerDown={(event) => {
+                        if (event.pointerType !== "mouse") heroArrow.start();
+                      }}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white pl-4 pr-3 text-[14px] font-medium text-[#19345f] transition-colors hover:bg-[#f6f7fb]"
+                    >
+                      <span className="leading-none">Go to app</span>
+                      <ArrowRightIcon
+                        ref={heroArrow.iconRef}
+                        size={16}
+                        className="inline-flex shrink-0 items-center justify-center leading-none"
+                      />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={canResume ? "/onboarding" : "/pricing"}
+                      onMouseEnter={heroArrow.start}
+                      onMouseLeave={heroArrow.settle}
+                      onPointerDown={(event) => {
+                        if (event.pointerType !== "mouse") heroArrow.start();
+                      }}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-white pl-4 pr-3 text-[14px] font-medium text-[#19345f] transition-colors hover:bg-[#f6f7fb]"
+                    >
+                      <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
+                      <ArrowRightIcon
+                        ref={heroArrow.iconRef}
+                        size={16}
+                        className="inline-flex shrink-0 items-center justify-center leading-none"
+                      />
+                    </Link>
+                  )}
+                </AnimatedFadeIn>
+              </div>
             </div>
           </div>
         </div>

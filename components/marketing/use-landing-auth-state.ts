@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // Single source of truth for "is the visitor signed in?" on marketing
@@ -9,10 +9,20 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // each spinning up its own auth listener.
 export type LandingAuthState = "loading" | "signed-in" | "signed-out";
 
+// Last resolved value, kept at module scope so the header seeds from it on
+// every client-side navigation instead of flashing back to "loading" and
+// reflowing its buttons. Background revalidation still runs on each mount.
+let cachedAuthState: LandingAuthState | null = null;
+
 export function useLandingAuthState(configured: boolean = true): LandingAuthState {
   const [authState, setAuthState] = useState<LandingAuthState>(
-    configured ? "loading" : "signed-out"
+    cachedAuthState ?? (configured ? "loading" : "signed-out")
   );
+
+  const commit = useCallback((next: LandingAuthState) => {
+    cachedAuthState = next;
+    setAuthState(next);
+  }, []);
 
   useEffect(() => {
     if (!configured) return;
@@ -33,7 +43,7 @@ export function useLandingAuthState(configured: boolean = true): LandingAuthStat
       };
       if (!active) return;
       if (!sessionResult.data.session) {
-        setAuthState("signed-out");
+        commit("signed-out");
         return;
       }
       try {
@@ -45,16 +55,16 @@ export function useLandingAuthState(configured: boolean = true): LandingAuthStat
         if (userResult.error || !userResult.data.user) {
           await supabase.auth.signOut();
           if (!active) return;
-          setAuthState("signed-out");
+          commit("signed-out");
           return;
         }
-        setAuthState("signed-in");
+        commit("signed-in");
       } catch {
         if (!active) return;
         // Network failure validating - leave the cached state as "signed-in"
         // rather than logging the user out on a transient error. The next
         // page load will re-attempt validation.
-        setAuthState("signed-in");
+        commit("signed-in");
       }
     })();
 
@@ -62,14 +72,14 @@ export function useLandingAuthState(configured: boolean = true): LandingAuthStat
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event: unknown, session: unknown) => {
       if (!active) return;
-      setAuthState(session ? "signed-in" : "signed-out");
+      commit(session ? "signed-in" : "signed-out");
     });
 
     return () => {
       active = false;
       subscription.unsubscribe();
     };
-  }, [configured]);
+  }, [configured, commit]);
 
   return authState;
 }

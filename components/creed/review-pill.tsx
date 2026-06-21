@@ -319,7 +319,7 @@ export function ReviewPill({
                           isDeleteProposal
                             ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                             : isNewSectionProposal
-                              ? "bg-[#047857] hover:bg-[#036249]"
+                              ? "bg-[#16A34A] hover:bg-[#15803d]"
                               : "bg-[#2563eb] hover:bg-[#1d4ed8]"
                         )}
                       >
@@ -484,7 +484,7 @@ function ReviewPillItem({
                     isDeleteProposal
                       ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                       : isNewSectionProposal
-                        ? "bg-[#047857] hover:bg-[#036249]"
+                        ? "bg-[#16A34A] hover:bg-[#15803d]"
                         : "bg-[#2563eb] hover:bg-[#1d4ed8]"
                   )}
                 >

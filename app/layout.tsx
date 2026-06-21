@@ -10,35 +10,16 @@ import { loadCreedState } from "@/lib/creed-backend";
 import { isSupabaseTableMissingError } from "@/lib/creed-backend-errors";
 import { getSiteUrl, isSupabaseConfigured } from "@/lib/supabase/env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { isMarketingPath } from "@/lib/marketing-routes";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
-// Marketing / static routes that don't read user state. Skipping the
-// Supabase fan-out for these makes them render in tens of ms instead of
-// hundreds-to-seconds while we wait on 9 round-trips that nothing on the
-// page would have used anyway.
-const MARKETING_PREFIXES = [
-  "/home",
-  "/docs",
-  "/pricing",
-  "/privacy",
-  "/terms",
-  "/stack",
-  "/mcp",
-  // OAuth surface for MCP connect. /authorize is a page that runs its own auth
-  // check and never needs the loadCreedState fan-out; the rest are route
-  // handlers that bypass the layout anyway, listed here for intent.
-  "/authorize",
-  "/token",
-  "/register",
-  "/.well-known",
-];
-
+// Marketing / static routes don't read user state, so we skip the Supabase
+// fan-out for them (rendering in tens of ms instead of waiting on round-trips
+// nothing on the page would use). The prefix list is shared with the proxy in
+// lib/marketing-routes.ts so the two can't drift.
 function shouldSkipCreedState(pathname: string | null) {
-  if (!pathname) return false;
-  return MARKETING_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
-  );
+  return isMarketingPath(pathname);
 }
 
 const geistSans = Geist({

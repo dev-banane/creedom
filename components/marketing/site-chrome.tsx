@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { CreedWordmark } from "@/components/creed/brand";
 import { SystemStatusPill } from "@/components/marketing/system-status";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
@@ -22,6 +22,53 @@ const navItems = [
   { label: "Pricing", href: "/pricing" },
   { label: "Contact", href: CONTACT_MAILTO },
 ] as const;
+
+const lightApostlesImage = "/assets/landing/backgrounds/light-apostles.avif";
+const darkApostlesImage = "/assets/landing/backgrounds/dark-apostles.avif";
+
+// Shared hero banner for the inner marketing pages (pricing, docs, privacy,
+// terms, stack). Same framed-card treatment as the landing hero, just shorter:
+// the artwork sits inside a rounded card with a thin page-bg gutter, cropped
+// cleanly by the frame instead of fading into the page.
+export function MarketingHeroBanner({
+  configured,
+  scrolled,
+}: {
+  configured: boolean;
+  scrolled: boolean;
+}) {
+  return (
+    <section className="relative bg-[var(--creed-background)] p-2.5 md:p-3">
+      <div className="relative h-[14.5rem] overflow-hidden rounded-[24px] bg-[#e9e5de] dark:bg-[#0e0e0d] md:h-[17.25rem]">
+        {/* The image covers a reference box matching the landing hero card
+            (same width + height), so the artwork scales identically; the
+            banner just windows the top slice of it. */}
+        <div className="absolute inset-x-0 top-0 h-[calc(100svh-1.25rem)] md:h-[calc(100svh-1.5rem)]">
+          <Image
+            src={lightApostlesImage}
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-center dark:hidden"
+          />
+          <Image
+            src={darkApostlesImage}
+            alt=""
+            fill
+            sizes="100vw"
+            className="hidden object-cover object-center dark:block"
+          />
+        </div>
+        {/* Top wash keeps the white header legible over the art. */}
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,60,0.16)_0%,rgba(15,31,60,0.08)_28%,rgba(15,31,60,0.05)_56%,rgba(255,255,255,0)_76%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0.08)_56%,rgba(0,0,0,0)_76%)]" />
+        <div className="relative z-10 flex flex-col px-6 py-5 md:px-10 md:py-7">
+          <MarketingHeader configured={configured} scrolled={scrolled} />
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function MarketingHeader({
   configured,
@@ -175,12 +222,13 @@ export function MarketingHeader({
                 ) : authState === "loading" ? null : (
                   <>
                     {authState === "signed-out" ? (
-                      <GoogleSignInButton
-                        configured={configured}
-                        label="Login"
-                        showIcon={false}
-                        className="h-9 rounded-md bg-transparent px-3.5 text-[14px] font-medium text-white/82 transition-all duration-200 hover:bg-white/10 hover:text-white"
-                      />
+                      <Link
+                        href="/login"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="flex h-9 items-center justify-end rounded-md px-3.5 text-[14px] font-medium leading-none text-white/82 transition-all duration-200 hover:bg-white/10 hover:text-white"
+                      >
+                        Login
+                      </Link>
                     ) : null}
                     <Button
                       asChild
@@ -195,7 +243,13 @@ export function MarketingHeader({
                       }}
                     >
                       <Link
-                        href={canResume ? "/onboarding" : "/pricing"}
+                        href={
+                          authState === "signed-out"
+                            ? "/signup"
+                            : canResume
+                              ? "/onboarding"
+                              : "/pricing"
+                        }
                         onClick={() => setMobileMenuOpen(false)}
                       >
                         {canResume ? "Resume" : "Get Started"}
@@ -307,16 +361,18 @@ function HeaderAuthActions({
     );
   }
 
-  // Signed out → Login (Google OAuth) + Get Started (Link to /pricing).
-  // The two-pill pair is the marketing-page default.
+  // Signed out → Login (-> /login) + Get Started (-> /signup). The two-pill
+  // pair is the marketing-page default. Login routes to the dedicated auth
+  // page rather than firing Google OAuth straight from the chrome.
   return (
     <div className="flex items-center gap-2">
-      <GoogleSignInButton
-        configured={configured}
-        label="Login"
-        showIcon={false}
+      <Button
+        asChild
+        variant="ghost"
         className="hidden h-9 rounded-md bg-transparent px-3.5 text-[14px] font-medium text-white/82 transition-all duration-200 hover:bg-white/10 hover:text-white md:inline-flex"
-      />
+      >
+        <Link href="/login">Login</Link>
+      </Button>
       <Button
         asChild
         variant="ghost"
@@ -324,7 +380,7 @@ function HeaderAuthActions({
         onMouseEnter={goToAppArrow.start}
         onMouseLeave={goToAppArrow.settle}
       >
-        <Link href="/pricing">
+        <Link href="/signup">
           Get Started
           <ArrowRightIcon ref={goToAppArrow.iconRef} className="h-3.5 w-3.5" size={14} />
         </Link>

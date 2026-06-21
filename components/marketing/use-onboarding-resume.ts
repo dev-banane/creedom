@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 // True when the signed-in user has already started onboarding (a Creed exists
@@ -8,8 +8,19 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
 // instead of "Get Started". Server-backed via /api/app/onboarding-status, so
 // it's correct on any device. Mirrors useLandingAuthState / usePaidStatus: a
 // tiny inline auth listener + fetch.
+
+// Last resolved value, kept at module scope so the CTA label seeds from it on
+// every client-side navigation instead of flipping "Resume" -> "Get Started"
+// and reflowing the button. Background revalidation still runs on each mount.
+let cachedCanResume = false;
+
 export function useOnboardingResume(configured: boolean = true): boolean {
-  const [canResume, setCanResume] = useState(false);
+  const [canResume, setCanResume] = useState(cachedCanResume);
+
+  const commit = useCallback((next: boolean) => {
+    cachedCanResume = next;
+    setCanResume(next);
+  }, []);
 
   useEffect(() => {
     if (!configured) return;
@@ -18,7 +29,7 @@ export function useOnboardingResume(configured: boolean = true): boolean {
 
     async function refresh(userId: string | null) {
       if (!userId) {
-        if (active) setCanResume(false);
+        if (active) commit(false);
         return;
       }
       try {
@@ -27,13 +38,13 @@ export function useOnboardingResume(configured: boolean = true): boolean {
           cache: "no-store",
         });
         if (!res.ok) {
-          if (active) setCanResume(false);
+          if (active) commit(false);
           return;
         }
         const data = (await res.json()) as { started?: boolean };
-        if (active) setCanResume(Boolean(data.started));
+        if (active) commit(Boolean(data.started));
       } catch {
-        if (active) setCanResume(false);
+        if (active) commit(false);
       }
     }
 
@@ -53,7 +64,7 @@ export function useOnboardingResume(configured: boolean = true): boolean {
       active = false;
       subscription.unsubscribe();
     };
-  }, [configured]);
+  }, [configured, commit]);
 
   return canResume;
 }

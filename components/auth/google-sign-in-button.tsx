@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
-import { getSupabaseBrowserClient } from "@/lib/supabase/browser";
+import { useOAuthSignIn } from "@/components/auth/use-oauth-sign-in";
 import { cn } from "@/lib/utils";
 
 export function GoogleSignInButton({
@@ -27,31 +26,9 @@ export function GoogleSignInButton({
   // (root redirect) applies.
   redirectTo?: string;
 }) {
-  const [loading, setLoading] = useState(false);
+  const { signIn, pendingProvider } = useOAuthSignIn(configured, redirectTo);
+  const loading = pendingProvider === "google";
   const arrowIcon = useAnimatedIconControls(80, undefined, 420);
-
-  async function handleSignIn() {
-    if (!configured) {
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const supabase = getSupabaseBrowserClient();
-      const callbackUrl = new URL("/auth/callback", window.location.origin);
-      if (redirectTo) {
-        callbackUrl.searchParams.set("next", redirectTo);
-      }
-      await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: callbackUrl.toString(),
-        },
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <Button
@@ -59,7 +36,7 @@ export function GoogleSignInButton({
         "rounded-md bg-[var(--creed-text-primary)] px-5 text-white hover:bg-[#2B2B28]",
         className
       )}
-      onClick={handleSignIn}
+      onClick={() => void signIn("google")}
       disabled={loading || !configured}
       onMouseEnter={arrowIcon.start}
       onMouseLeave={arrowIcon.settle}

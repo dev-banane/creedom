@@ -8,11 +8,24 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") || "/";
   const integration = searchParams.get("integration");
 
+  // Identity-link flows (reconnect GitHub, connect Google/X in Settings) come
+  // back through here with the user already signed in. We must not treat them
+  // like a fresh login or bounce them to /login on any hiccup.
+  const isLinkFlow = integration !== null || next.startsWith("/settings");
+
+  let exchangeFailed = false;
   if (code) {
     const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     const session = data.session;
     const user = data.user ?? session?.user;
+
+    // Only a real error means the link was invalid / expired (or opened in a
+    // browser that never held the PKCE verifier). A merely-absent session is
+    // normal for identity linking, so don't treat that as a failure.
+    if (error) {
+      exchangeFailed = true;
+    }
 
     if (integration === "github" && session?.provider_token && user) {
       const githubIdentity = (
@@ -58,5 +71,8 @@ export async function GET(request: Request) {
     }
   })();
 
-  return NextResponse.redirect(`${origin}${safeNext}`);
+  // Only a genuinely failed sign-in/confirmation goes to /login; link flows
+  // always return to where they came from (the user is still signed in).
+  const target = code && exchangeFailed && !isLinkFlow ? "/login" : safeNext;
+  return NextResponse.redirect(`${origin}${target}`);
 }
