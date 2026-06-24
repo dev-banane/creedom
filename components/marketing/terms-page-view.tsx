@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import { AnimatedPageTitle, AnimatedSectionHeading } from "@/components/marketing/animated-page-title";
 import { MarketingFooter, MarketingHeroBanner } from "@/components/marketing/site-chrome";
 import { CONTACT_EMAIL } from "@/lib/branding";
@@ -188,16 +187,15 @@ export function TermsPageView() {
     <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
-      <motion.main className="mx-auto max-w-3xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0, ease: [0.16, 1, 0.3, 1] }}>
+      <main className="mx-auto max-w-3xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
         <div className="border-b border-[var(--creed-border)] pb-8">
           <AnimatedPageTitle
-            delay={0.24}
             text="Terms and Conditions"
             className="t-section text-[var(--creed-text-primary)]"
           />
-          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.46, delay: 0.42, ease: [0.16, 1, 0.3, 1] }} className="mt-5 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
+          <p className="mt-5 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]">
             The rules that govern your use of Creed.
-          </motion.p>
+          </p>
         </div>
 
         <div className="border-b border-[var(--creed-border)] pb-8 pt-8 text-[14px] text-[var(--creed-text-secondary)]">
@@ -253,7 +251,7 @@ export function TermsPageView() {
             </section>
           ))}
         </div>
-      </motion.main>
+      </main>
 
       <MarketingFooter />
     </div>

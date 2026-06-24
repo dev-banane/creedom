@@ -1,18 +1,19 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
-import { motion } from "framer-motion";
+import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { CreedAppDemo } from "@/components/marketing/creed-app-demo";
+import { DirectEditDemo, ProposalDemo } from "@/components/marketing/governed-demos";
+import { ConnectDemo, CreateDemo, ReviewDemo } from "@/components/marketing/how-it-works-demos";
 import { MarketingFooter } from "@/components/marketing/site-chrome";
 import { useLandingAuthState } from "@/components/marketing/use-landing-auth-state";
 import { usePaidStatus } from "@/components/marketing/use-paid-status";
 import { useOnboardingResume } from "@/components/marketing/use-onboarding-resume";
 import { useAnimatedIconControls } from "@/components/creed/animated-icon-controls";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
-import { splitPreservingLigatures } from "@/lib/landing-text";
 import { homeFaqItems as faqItems } from "@/lib/marketing/faq";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,10 @@ const devinIcon = "/assets/agents/devin.svg";
 const grokIcon = "/assets/agents/grok.svg";
 const chatgptIcon = "/assets/agents/chatgpt.svg";
 const claudeIcon = "/assets/agents/claude.svg";
+const replitIcon = "/assets/agents/replit.svg";
+const whirlIcon = "/assets/agents/whirl.svg";
+const v0Icon = "/assets/agents/v0.svg";
+const customIcon = "/assets/agents/customagent.svg";
 
 type BrandLogoKey =
   | "chatgpt"
@@ -40,7 +45,11 @@ type BrandLogoKey =
   | "openclaw"
   | "notion"
   | "obsidian"
-  | "opencode";
+  | "opencode"
+  | "replit"
+  | "whirl"
+  | "v0"
+  | "custom";
 
 const brandLogoMap: Record<
   BrandLogoKey,
@@ -98,9 +107,23 @@ const brandLogoMap: Record<
     src: openCodeIcon,
     imageClassName: "scale-[0.9]",
   },
+  replit: {
+    src: replitIcon,
+    imageClassName: "scale-[0.92]",
+  },
+  whirl: {
+    src: whirlIcon,
+    imageClassName: "scale-[0.92]",
+  },
+  v0: {
+    src: v0Icon,
+    imageClassName: "scale-[0.82]",
+  },
+  custom: {
+    src: customIcon,
+    imageClassName: "scale-[0.94]",
+  },
 };
-
-const titleViewport = { once: true, amount: 0.86 } as const;
 
 export function BelowHeroSections({ configured }: { configured: boolean }) {
   return (
@@ -118,145 +141,112 @@ export function BelowHeroSections({ configured }: { configured: boolean }) {
 
 function CreedBentoSection() {
   return (
-    <section className="px-6 py-20 md:px-10 md:py-24 lg:px-12">
-      <div className="mx-auto max-w-7xl">
+    <section className="px-4 py-20 md:px-10 md:py-24 lg:px-12">
+      <div className="mx-auto max-w-6xl">
         <SectionHeading
           headline="The home for your personal context"
           subline="Everything that makes an AI useful to you, in one place."
         />
 
-        <ScreenshotStage />
+        <div className="mt-10">
+          <CreedAppDemo />
+        </div>
       </div>
     </section>
   );
 }
 
-function ScreenshotStage() {
-  return (
-    <MediaSlot
-      src="/assets/landing/screenshots/light-overview.png"
-      darkSrc="/assets/landing/screenshots/dark-overview.png"
-      filename="overview.png"
-      width={1480}
-      height={1080}
-      className="mx-auto mt-10 max-w-3xl rounded-[28px] md:rounded-[36px]"
-      imageClassName="object-cover object-top"
-    />
-  );
-}
-
-// Landing-asset naming convention (canonical - keep code references in sync):
-//
-//   /assets/landing/backgrounds/{light|dark}-<name>.avif  // hero backgrounds (apostles)
-//   /assets/landing/screenshots/{light|dark}-<name>.png   - UI shots (overview, review, propose)
-//   /assets/landing/graphics/{light|dark}-<name>.png      - step illustrations (create, connect, review)
-//   /assets/landing/brands/<name>.png                     - third-party logos (mono variants flipped via .creed-invert-on-dark)
-//
-// Every below-hero image is theme-paired. `MediaSlot` and `BrandImage` render
-// a clean placeholder (path + dimensions) when a referenced file isn't on
-// disk yet - so a missing image surfaces in dev as a visible card telling
-// you what to add, not a silent blank tile.
-function MediaSlot({
-  src,
-  darkSrc,
-  filename,
-  width,
-  height,
-  className,
-  imageClassName,
+// A bento tile whose media slot is a coloured gradient plate with an
+// interactive demo floating on it, and the explainer copy below. The two
+// cards stretch to equal height via the grid; the plate flexes to fill.
+function PlateCard({
+  lightBg,
+  darkBg,
+  number,
+  title,
+  body,
+  square = false,
+  children,
 }: {
-  src: string;
-  darkSrc?: string;
-  filename: string;
-  width: number;
-  height: number;
-  className?: string;
-  imageClassName?: string;
+  lightBg: string;
+  darkBg: string;
+  number?: string;
+  title: string;
+  body: string;
+  square?: boolean;
+  children: ReactNode;
 }) {
-  const [errored, setErrored] = useState(false);
-
   return (
-    <div
-      className={cn("relative w-full overflow-hidden", className)}
-      style={{ aspectRatio: `${width} / ${height}` }}
-    >
-      {errored ? (
-        <div className="flex h-full w-full flex-col items-center justify-center gap-1.5 bg-[var(--creed-surface-raised)] px-4 text-center text-[var(--creed-text-secondary)]">
-          <div className="t-meta break-all font-mono opacity-90">
-            {(() => {
-              const trimmed = src.replace(/^\/+/, "");
-              const lastSlash = trimmed.lastIndexOf("/");
-              if (lastSlash < 0) return trimmed;
-              return (
-                <>
-                  <span className="opacity-60">/{trimmed.slice(0, lastSlash)}/</span>
-                  {trimmed.slice(lastSlash + 1)}
-                </>
-              );
-            })()}
-          </div>
-          <div className="t-meta opacity-60">
-            {width} × {height}
-          </div>
-        </div>
-      ) : (
-        <>
-          <Image
-            src={src}
-            alt={filename}
-            fill
-            sizes="(min-width: 1024px) 768px, 100vw"
-            className={cn("object-cover", darkSrc && "dark:hidden", imageClassName)}
-            onError={() => setErrored(true)}
-          />
-          {darkSrc ? (
-            <Image
-              src={darkSrc}
-              alt={filename}
-              fill
-              sizes="(min-width: 1024px) 768px, 100vw"
-              className={cn("hidden object-cover dark:block", imageClassName)}
-              // If either variant fails to load (e.g. one of the new
-              // light-/dark- files isn't on disk yet) we still want the
-              // dev placeholder, not a silent blank tile.
-              onError={() => setErrored(true)}
-            />
-          ) : null}
-        </>
+    <article
+      className={cn(
+        "flex flex-col rounded-[26px] bg-[var(--creed-surface)] p-3 md:rounded-[30px] md:p-4",
+        !square && "h-full"
       )}
-    </div>
+    >
+      <div
+        className={cn(
+          "relative flex items-center justify-center overflow-hidden rounded-[16px] p-4 sm:p-6 md:rounded-[18px]",
+          // Square plate at the 3-up desktop width; auto height (content) when
+          // the grid collapses to one column so a full-width square isn't huge.
+          square ? "lg:aspect-square" : "min-h-[380px] flex-1"
+        )}
+      >
+        <Image
+          src={lightBg}
+          alt=""
+          fill
+          unoptimized
+          sizes="(min-width: 768px) 520px, 100vw"
+          className="object-cover dark:hidden"
+        />
+        <Image
+          src={darkBg}
+          alt=""
+          fill
+          unoptimized
+          sizes="(min-width: 768px) 520px, 100vw"
+          className="hidden object-cover dark:block"
+        />
+        <div className="relative w-full">{children}</div>
+      </div>
+      <div className="mt-4 px-1 md:mt-5">
+        <h3 className="t-step text-[var(--creed-text-primary)]">
+          {number ? <span className="mr-2 font-normal text-[var(--creed-text-tertiary)]">{number}</span> : null}
+          {title}
+        </h3>
+        <p className="t-body mt-2.5 text-[var(--creed-text-secondary)]">{body}</p>
+      </div>
+    </article>
   );
 }
 
 function GovernedCollaborationSection() {
   return (
     <section className="px-6 py-20 md:px-10 md:py-24 lg:px-12">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-5xl">
         <SectionHeading
           headline="Review everything or nothing"
           subline="Approve every agent edit, or let them write directly."
           align="left"
         />
 
-        <div className="mt-12 grid gap-5 md:grid-cols-2">
-          <MediaSlot
-            src="/assets/landing/screenshots/light-review.png"
-            darkSrc="/assets/landing/screenshots/dark-review.png"
-            filename="review.png"
-            width={870}
-            height={856}
-            className="rounded-[28px] md:rounded-[32px]"
-            imageClassName="object-cover object-top"
-          />
-          <MediaSlot
-            src="/assets/landing/screenshots/light-nothing.png"
-            darkSrc="/assets/landing/screenshots/dark-nothing.png"
-            filename="nothing.png"
-            width={870}
-            height={856}
-            className="rounded-[28px] md:rounded-[32px]"
-            imageClassName="object-cover object-top"
-          />
+        <div className="mt-12 grid items-stretch gap-5 md:grid-cols-2">
+          <PlateCard
+            lightBg="/assets/landing/backgrounds/light-proposal-bg.avif"
+            darkBg="/assets/landing/backgrounds/dark-proposal-bg.avif"
+            title="You control what gets remembered."
+            body="Agents propose updates in real time, but nothing changes until you approve it."
+          >
+            <ProposalDemo />
+          </PlateCard>
+          <PlateCard
+            lightBg="/assets/landing/backgrounds/light-direct-bg.avif"
+            darkBg="/assets/landing/backgrounds/dark-direct-bg.avif"
+            title="Let trusted agents write directly."
+            body="Agents can update your Creed without review, keeping your context current as you work."
+          >
+            <DirectEditDemo />
+          </PlateCard>
         </div>
       </div>
     </section>
@@ -264,30 +254,6 @@ function GovernedCollaborationSection() {
 }
 
 function HowItWorksSection() {
-  const steps = [
-    {
-      number: "1",
-      title: "Create your Creed",
-      body: "Answer a few sharp questions and generate your starter profile.",
-      imageSrc: "/assets/landing/graphics/light-create.png",
-      imageDarkSrc: "/assets/landing/graphics/dark-create.png",
-    },
-    {
-      number: "2",
-      title: "Connect your agents",
-      body: "Paste one prompt and they’ll read your profile before answering you.",
-      imageSrc: "/assets/landing/graphics/light-connect.png",
-      imageDarkSrc: "/assets/landing/graphics/dark-connect.png",
-    },
-    {
-      number: "3",
-      title: "Review what sticks",
-      body: "Approve the updates worth keeping and let your profile sharpen over time.",
-      imageSrc: "/assets/landing/graphics/light-improve.png",
-      imageDarkSrc: "/assets/landing/graphics/dark-improve.png",
-    },
-  ];
-
   return (
     <section className="px-6 py-24 md:px-10 md:py-30 lg:px-12">
       <SectionHeading
@@ -296,50 +262,95 @@ function HowItWorksSection() {
         className="max-w-[52rem]"
       />
 
-      <div className="mx-auto mt-14 grid max-w-6xl gap-14 lg:grid-cols-3">
-        {steps.map((step) => (
-          <article key={step.number} className="relative w-full">
-            <MediaSlot
-              src={step.imageSrc}
-              darkSrc={step.imageDarkSrc}
-              filename={step.imageSrc.split("/").pop() ?? ""}
-              width={600}
-              height={600}
-              className="rounded-[28px] bg-[#ECEDF1] dark:bg-[var(--creed-surface-raised)] md:rounded-[32px]"
-            />
-            <div className="mt-5 px-1">
-              <h3 className="t-step text-[var(--creed-text-primary)]">
-                <span className="mr-2 font-normal text-[var(--creed-text-tertiary)]">{step.number}</span>
-                {step.title}
-              </h3>
-              <p className="t-body mt-2.5 max-w-[20rem] text-[var(--creed-text-secondary)]">
-                {step.body}
-              </p>
-            </div>
-          </article>
-        ))}
+      <div className="mx-auto mt-14 grid max-w-6xl items-start gap-5 lg:grid-cols-3">
+        <PlateCard
+          lightBg="/assets/landing/backgrounds/light-create-bg.avif"
+          darkBg="/assets/landing/backgrounds/dark-create-bg.avif"
+          number="1"
+          title="Create your Creed"
+          body="Answer a few sharp questions and generate your starter profile."
+          square
+        >
+          <CreateDemo />
+        </PlateCard>
+        <PlateCard
+          lightBg="/assets/landing/backgrounds/light-connect-bg.avif"
+          darkBg="/assets/landing/backgrounds/dark-connect-bg.avif"
+          number="2"
+          title="Connect your agents"
+          body="Add the MCP server, click Allow, and every agent reads your profile."
+          square
+        >
+          <ConnectDemo />
+        </PlateCard>
+        <PlateCard
+          lightBg="/assets/landing/backgrounds/light-improve-bg.avif"
+          darkBg="/assets/landing/backgrounds/dark-improve-bg.avif"
+          number="3"
+          title="Review what sticks"
+          body="Approve the updates worth keeping and let your profile sharpen over time."
+          square
+        >
+          <ReviewDemo />
+        </PlateCard>
       </div>
     </section>
   );
 }
 
+// Each tile's name is coloured to match its icon's dominant brand colour.
+// Mono icons (ChatGPT, Grok, Cursor, OpenCode, Devin, v0, Custom, GitHub,
+// Notion) fall through to the primary text colour so the name reads as the
+// same monochrome as the glyph. Hermes' yellow is darkened in light mode so
+// it stays legible on the white card.
+const STACK_NAME_ACCENT: Partial<Record<BrandLogoKey, string>> = {
+  claude: "text-[#FF6200]",
+  claudecode: "text-[#FF6200]",
+  codex: "text-[#0066FF]",
+  openclaw: "text-[#FF0000]",
+  hermes: "text-[#B58900] dark:text-[#FFBB00]",
+  replit: "text-[#F26207]",
+  whirl: "text-[#0066FF]",
+  obsidian: "text-[#7C3AED]",
+};
+
+function StackTile({ brand, label }: { brand: BrandLogoKey; label: string }) {
+  return (
+    <div className="flex w-full flex-col items-center justify-center gap-2.5 rounded-2xl bg-[var(--creed-surface)] px-2 py-4">
+      <BrandImage brand={brand} label={label} className="h-10 w-10" />
+      <div
+        className={cn(
+          "text-center text-[12px] font-medium leading-tight tracking-[-0.01em]",
+          STACK_NAME_ACCENT[brand] ?? "text-[var(--creed-text-primary)]"
+        )}
+      >
+        {label}
+      </div>
+    </div>
+  );
+}
+
 function IntegrationsSection() {
-  const agents = [
-    { label: "ChatGPT", brand: "chatgpt" as const },
-    { label: "Claude", brand: "claude" as const },
-    { label: "Grok", brand: "grok" as const },
-    { label: "OpenClaw", brand: "openclaw" as const },
-    { label: "Hermes", brand: "hermes" as const },
-    { label: "Cursor", brand: "cursor" as const },
-    { label: "OpenCode", brand: "opencode" as const },
-    { label: "Devin", brand: "devin" as const },
-    { label: "Codex", brand: "codex" as const },
-    { label: "Claude Code", brand: "claudecode" as const },
+  const agents: Array<{ label: string; brand: BrandLogoKey }> = [
+    { label: "ChatGPT", brand: "chatgpt" },
+    { label: "Claude", brand: "claude" },
+    { label: "Grok", brand: "grok" },
+    { label: "OpenClaw", brand: "openclaw" },
+    { label: "Hermes", brand: "hermes" },
+    { label: "Cursor", brand: "cursor" },
+    { label: "OpenCode", brand: "opencode" },
+    { label: "Devin", brand: "devin" },
+    { label: "Codex", brand: "codex" },
+    { label: "Claude Code", brand: "claudecode" },
+    { label: "Replit", brand: "replit" },
+    { label: "Whirl", brand: "whirl" },
+    { label: "v0", brand: "v0" },
+    { label: "Custom", brand: "custom" },
   ];
-  const integrations = [
-    { label: "GitHub", brand: "github" as const },
-    { label: "Notion", brand: "notion" as const },
-    { label: "Obsidian", brand: "obsidian" as const },
+  const integrations: Array<{ label: string; brand: BrandLogoKey }> = [
+    { label: "GitHub", brand: "github" },
+    { label: "Notion", brand: "notion" },
+    { label: "Obsidian", brand: "obsidian" },
   ];
 
   return (
@@ -350,34 +361,23 @@ function IntegrationsSection() {
         className="max-w-[64rem]"
       />
 
-      {/* Both rows share the same column track so Integrations icons line up
-          directly under the first three Agents. Centred under the section
-          heading. */}
-      <div className="mx-auto mt-14 grid max-w-[44rem] gap-10">
+      {/* Both grids share the same 7-column track so the Integrations tiles
+          line up directly under the first Agents. Centred under the heading. */}
+      <div className="mx-auto mt-14 grid max-w-[46rem] gap-10">
         <div>
           <div className="t-body-lg font-medium text-[var(--creed-text-primary)]">Agents</div>
-          <div className="mt-6 grid grid-cols-3 justify-items-start gap-x-3 gap-y-7 md:grid-cols-5">
+          <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-5 md:grid-cols-7">
             {agents.map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-3">
-                <div className="flex h-[96px] w-[96px] items-center justify-center rounded-2xl bg-[var(--creed-surface)]">
-                  <BrandImage brand={item.brand} label={item.label} className="h-[52px] w-[52px]" />
-                </div>
-                <div className="t-body text-[var(--creed-text-secondary)]">{item.label}</div>
-              </div>
+              <StackTile key={item.label} brand={item.brand} label={item.label} />
             ))}
           </div>
         </div>
 
         <div>
           <div className="t-body-lg font-medium text-[var(--creed-text-primary)]">Integrations</div>
-          <div className="mt-6 grid grid-cols-3 justify-items-start gap-x-3 gap-y-7 md:grid-cols-5">
+          <div className="mt-6 grid grid-cols-3 gap-3 sm:grid-cols-5 md:grid-cols-7">
             {integrations.map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-3">
-                <div className="flex h-[96px] w-[96px] items-center justify-center rounded-2xl bg-[var(--creed-surface)]">
-                  <BrandImage brand={item.brand} label={item.label} className="h-[52px] w-[52px]" />
-                </div>
-                <div className="t-body text-[var(--creed-text-secondary)]">{item.label}</div>
-              </div>
+              <StackTile key={item.label} brand={item.brand} label={item.label} />
             ))}
           </div>
         </div>
@@ -393,7 +393,7 @@ function FaqSection() {
     <section className="px-6 py-24 md:px-10 md:py-30 lg:px-12">
       <SectionHeading headline="Questions" />
 
-      <div className="mx-auto mt-14 max-w-4xl">
+      <div className="mx-auto mt-14 max-w-[46rem]">
         {faqItems.map((item, index) => {
           const open = openIndex === index;
 
@@ -443,77 +443,53 @@ function ClosingCtaSection({ configured }: { configured: boolean }) {
   return (
     <section className="px-6 py-24 md:px-10 md:py-30 lg:px-12">
       <div className="mx-auto max-w-4xl text-center">
-        <AnimatedSectionTitle className="t-section justify-center text-[var(--creed-text-primary)]">
+        <SectionTitle className="t-section justify-center text-[var(--creed-text-primary)]">
           {"Give every agent\nthe same starting point"}
-        </AnimatedSectionTitle>
+        </SectionTitle>
 
-        <ClosingFadeIn delay={1.55}>
-          <p className="t-lede mx-auto mt-5 max-w-2xl text-[var(--creed-text-tertiary)]">
-            Try Creed today for completely free.
-          </p>
-        </ClosingFadeIn>
+        <p className="t-lede mx-auto mt-5 max-w-2xl text-[var(--creed-text-tertiary)]">
+          Try Creed today for completely free.
+        </p>
 
-        <ClosingFadeIn delay={1.85}>
-          <div className="mt-9 flex justify-center">
-            {isPaid ? (
-              <Link
-                href="/file"
-                onMouseEnter={closingArrow.start}
-                onMouseLeave={closingArrow.settle}
-                onPointerDown={(event) => {
-                  if (event.pointerType !== "mouse") closingArrow.start();
-                }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
-              >
-                <span className="leading-none">Go to app</span>
-                <ArrowRightIcon
-                  ref={closingArrow.iconRef}
-                  size={16}
-                  className="inline-flex shrink-0 items-center justify-center leading-none"
-                />
-              </Link>
-            ) : (
-              <Link
-                href={canResume ? "/onboarding" : "/pricing"}
-                onMouseEnter={closingArrow.start}
-                onMouseLeave={closingArrow.settle}
-                onPointerDown={(event) => {
-                  if (event.pointerType !== "mouse") closingArrow.start();
-                }}
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
-              >
-                <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
-                <ArrowRightIcon
-                  ref={closingArrow.iconRef}
-                  size={16}
-                  className="inline-flex shrink-0 items-center justify-center leading-none"
-                />
-              </Link>
-            )}
-          </div>
-        </ClosingFadeIn>
+        <div className="mt-9 flex justify-center">
+          {isPaid ? (
+            <Link
+              href="/file"
+              onMouseEnter={closingArrow.start}
+              onMouseLeave={closingArrow.settle}
+              onPointerDown={(event) => {
+                if (event.pointerType !== "mouse") closingArrow.start();
+              }}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+            >
+              <span className="leading-none">Go to app</span>
+              <ArrowRightIcon
+                ref={closingArrow.iconRef}
+                size={16}
+                className="inline-flex shrink-0 items-center justify-center leading-none"
+              />
+            </Link>
+          ) : (
+            <Link
+              href={canResume ? "/onboarding" : "/pricing"}
+              onMouseEnter={closingArrow.start}
+              onMouseLeave={closingArrow.settle}
+              onPointerDown={(event) => {
+                if (event.pointerType !== "mouse") closingArrow.start();
+              }}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+            >
+              <span className="leading-none">{canResume ? "Resume" : "Get Started"}</span>
+              <ArrowRightIcon
+                ref={closingArrow.iconRef}
+                size={16}
+                className="inline-flex shrink-0 items-center justify-center leading-none"
+              />
+            </Link>
+          )}
+        </div>
       </div>
     </section>
-  );
-}
-
-function ClosingFadeIn({
-  delay,
-  children,
-}: {
-  delay: number;
-  children: ReactNode;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 12, filter: "blur(10px)" }}
-      whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-      viewport={titleViewport}
-      transition={{ delay, duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-      style={{ willChange: "transform, opacity, filter" }}
-    >
-      {children}
-    </motion.div>
   );
 }
 
@@ -539,14 +515,14 @@ function SectionHeading({
         className
       )}
     >
-      <AnimatedSectionTitle
+      <SectionTitle
         className={cn(
           "t-section text-[var(--creed-text-primary)]",
           centered ? "justify-center" : "justify-center md:justify-start"
         )}
       >
         {headline}
-      </AnimatedSectionTitle>
+      </SectionTitle>
       {subline ? (
         <p
           className={cn(
@@ -570,6 +546,8 @@ const MONOCHROME_BRANDS = new Set<BrandLogoKey>([
   "devin",
   "grok",
   "chatgpt",
+  "v0",
+  "custom",
 ]);
 
 function BrandImage({
@@ -617,77 +595,34 @@ function BrandImage({
   );
 }
 
-function AnimatedSectionTitle({
+// Static section title. The per-glyph blur-in lives only on the landing hero
+// and onboarding now; below-hero titles render plainly (keeping the same
+// flex-wrap line handling so multi-line and single-line headings lay out the
+// same as before).
+function SectionTitle({
   children,
   className,
 }: {
   children: string;
   className?: string;
 }) {
-  const lines = useMemo(() => children.split("\n"), [children]);
+  const lines = children.split("\n");
   const hasExplicitBreak = lines.length > 1;
 
   return (
-    <motion.h2
-      initial="hidden"
-      whileInView="visible"
-      viewport={titleViewport}
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-            staggerChildren: 0.042,
-          },
-        },
-      }}
-      className={cn("flex flex-wrap", !hasExplicitBreak && "md:flex-nowrap", className)}
-    >
-      {lines.map((line, lineIndex) => {
-        const words = line.split(" ");
-        return (
-          <span
-            key={`${line}-${lineIndex}`}
-            className={cn(
-              hasExplicitBreak
-                ? "basis-full whitespace-nowrap"
-                : "basis-auto whitespace-normal md:basis-auto md:whitespace-nowrap"
-            )}
-          >
-            {words.map((word, wordIndex) => (
-              <span
-                key={`${word}-${lineIndex}-${wordIndex}`}
-                className="inline-block whitespace-nowrap"
-              >
-                {splitPreservingLigatures(word).map((glyph, glyphIndex) => (
-                  <motion.span
-                    key={`${glyph}-${lineIndex}-${wordIndex}-${glyphIndex}`}
-                    variants={{
-                      hidden: { opacity: 0, filter: "blur(10px)", y: 10 },
-                      visible: { opacity: 1, filter: "blur(0px)", y: 0 },
-                    }}
-                    transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-block whitespace-pre"
-                  >
-                    {glyph}
-                  </motion.span>
-                ))}
-                {wordIndex < words.length - 1 ? (
-                  <motion.span
-                    variants={{
-                      hidden: { opacity: 0, filter: "blur(10px)", y: 10 },
-                      visible: { opacity: 1, filter: "blur(0px)", y: 0 },
-                    }}
-                    transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-                    className="inline-block whitespace-pre"
-                  >
-                    {" "}
-                  </motion.span>
-                ) : null}
-              </span>
-            ))}
-          </span>
-        );
-      })}
-    </motion.h2>
+    <h2 className={cn("flex flex-wrap", !hasExplicitBreak && "md:flex-nowrap", className)}>
+      {lines.map((line, lineIndex) => (
+        <span
+          key={`${line}-${lineIndex}`}
+          className={
+            hasExplicitBreak
+              ? "basis-full whitespace-nowrap"
+              : "basis-auto whitespace-normal md:whitespace-nowrap"
+          }
+        >
+          {line}
+        </span>
+      ))}
+    </h2>
   );
 }

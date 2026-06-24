@@ -255,14 +255,18 @@ export function CreedShell({
       <div className="grid h-screen grid-cols-[48px_minmax(0,1fr)] overflow-hidden bg-[var(--creed-surface)] lg:grid-cols-[220px_minmax(0,1fr)]">
         <aside className="h-screen overflow-hidden border-r border-[var(--creed-border)] bg-[var(--creed-surface)] px-1.5 py-3 lg:px-5 lg:py-5">
           <div className="flex h-full flex-col">
-            <div className="flex justify-center lg:justify-start">
-              <div className="lg:hidden">
+            <Link
+              href="/home"
+              aria-label="Creed home"
+              className="mx-auto flex h-8 w-8 items-center justify-center rounded-[10px] transition-colors duration-150 hover:bg-[var(--creed-surface-raised)] lg:mx-0 lg:h-auto lg:w-auto lg:justify-start lg:px-2 lg:py-1.5"
+            >
+              <span className="lg:hidden">
                 <CreedMark />
-              </div>
-              <div className="hidden lg:block">
-                <CreedWordmark className="ml-2" />
-              </div>
-            </div>
+              </span>
+              <span className="hidden lg:block">
+                <CreedWordmark className="ml-0" />
+              </span>
+            </Link>
 
             <nav className="mt-5 space-y-1 lg:mt-8">
               {navItems.map((item) => {

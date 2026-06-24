@@ -71,39 +71,27 @@ export function PricingPageView() {
     <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
-      <motion.main
+      <main
         className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10"
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0, ease: [0.16, 1, 0.3, 1] }}
       >
         <div className="flex flex-col gap-6 border-b border-[var(--creed-border)] pb-8 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <AnimatedPageTitle
-              delay={0.24}
               text="Pricing"
               className="t-section text-[var(--creed-text-primary)]"
             />
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.46, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            <p
               className="mt-5 max-w-2xl text-[18px] leading-8 text-[var(--creed-text-secondary)]"
             >
               Run Creed yourself for free, or skip the setup and let us host it.
-            </motion.p>
+            </p>
           </div>
 
           {/* Sits on the right, baseline-aligned with the subtext above the
               separator. Stacks under the subtext on narrow screens. */}
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.46, delay: 0.52, ease: [0.16, 1, 0.3, 1] }}
-            className="shrink-0"
-          >
+          <div className="shrink-0">
             <BillingToggle cycle={cycle} onChange={setCycle} />
-          </motion.div>
+          </div>
         </div>
 
         <section className="py-10 md:py-12">
@@ -147,7 +135,7 @@ export function PricingPageView() {
             All plans let you use Creed credits or bring your own OpenRouter API key for model spend.
           </p>
         </section>
-      </motion.main>
+      </main>
 
       <MarketingFooter />
     </div>
@@ -167,7 +155,7 @@ function BillingToggle({
   ];
 
   return (
-    <div className="relative inline-flex items-center rounded-[10px] border border-[var(--creed-border)] bg-[var(--creed-surface)] p-1">
+    <div className="relative inline-flex items-center rounded-[10px] bg-[var(--creed-surface)] p-1">
       {options.map((option) => {
         const active = cycle === option.value;
         return (

@@ -19,7 +19,11 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
     <div className="relative flex min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
       <div className="flex w-full flex-col px-6 py-6 md:w-1/2 md:px-12 md:py-8 lg:px-20">
         <div className="flex items-center justify-between">
-          <Link href="/home" aria-label="Creed home" className="transition-opacity hover:opacity-80">
+          <Link
+            href="/home"
+            aria-label="Creed home"
+            className="-ml-2 inline-flex items-center rounded-[10px] px-2 py-1.5 transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
+          >
             <CreedWordmark className="ml-0" />
           </Link>
           {topRight ? <div>{topRight}</div> : null}

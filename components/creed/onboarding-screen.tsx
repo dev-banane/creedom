@@ -5,6 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, LoaderCircle, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { AnimatedCheckmark } from "@/components/ui/animated-checkmark";
 import { ArrowRightIcon } from "@/components/ui/arrow-right";
@@ -299,7 +300,13 @@ export function OnboardingScreen({
 
       <div className="flex min-h-[calc(100dvh-2px)] flex-col px-6 py-5 md:h-[calc(100vh-2px)] md:px-10 md:py-6">
         <div className="flex items-center justify-between">
-          <CreedWordmark />
+          <Link
+            href="/home"
+            aria-label="Creed home"
+            className="-ml-2 inline-flex items-center rounded-[10px] px-2 py-1.5 transition-colors duration-150 hover:bg-[var(--creed-surface-raised)]"
+          >
+            <CreedWordmark className="ml-0" />
+          </Link>
           <div className="text-[12px] text-[var(--creed-text-tertiary)]">{`${step + 1} of ${TOTAL_STEPS}`}</div>
         </div>
 

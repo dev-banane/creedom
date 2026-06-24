@@ -102,7 +102,6 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
         <div className="flex flex-col items-center text-center">
           <AnimatedPageTitle
             text="Link expired"
-            delay={0.08}
             className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
           />
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--creed-text-secondary)]">
@@ -119,7 +118,6 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
         <>
           <AnimatedPageTitle
             text="Set a new password"
-            delay={0.08}
             className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
           />
           <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-3">

@@ -907,16 +907,15 @@ export function DocsPageView() {
     <div className="min-h-screen bg-[var(--creed-background)] text-[var(--creed-text-primary)]">
       <MarketingHeroBanner configured scrolled={scrolled} />
 
-      <motion.main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0, ease: [0.16, 1, 0.3, 1] }}>
+      <main className="mx-auto max-w-6xl px-6 pb-20 pt-8 md:px-10 md:pb-24 md:pt-10">
         <div className="border-b border-[var(--creed-border)] pb-8">
           <AnimatedPageTitle
-            delay={0.24}
             text="Docs"
             className="t-section text-[var(--creed-text-primary)]"
           />
-          <motion.p initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.46, delay: 0.42, ease: [0.16, 1, 0.3, 1] }} className="mt-5 max-w-5xl text-[17px] leading-8 text-[var(--creed-text-secondary)] md:text-[18px]">
+          <p className="mt-5 max-w-5xl text-[17px] leading-8 text-[var(--creed-text-secondary)] md:text-[18px]">
             What Creed is, what goes in it, how to connect your agents, how they read and improve it, and the full tool and API reference.
-          </motion.p>
+          </p>
         </div>
 
         <div className="mt-8 block md:hidden">
@@ -1449,7 +1448,7 @@ export function DocsPageView() {
             ))}
           </div>
         </div>
-      </motion.main>
+      </main>
 
       <MarketingFooter />
     </div>

@@ -88,7 +88,7 @@ export function LandingHero({ configured }: { configured: boolean }) {
           {/* Top wash keeps the white header + headline legible over the art. */}
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,31,60,0.16)_0%,rgba(15,31,60,0.08)_28%,rgba(15,31,60,0.05)_56%,rgba(255,255,255,0)_76%)] dark:bg-[linear-gradient(180deg,rgba(0,0,0,0.32)_0%,rgba(0,0,0,0.18)_28%,rgba(0,0,0,0.08)_56%,rgba(0,0,0,0)_76%)]" />
 
-          <div className="relative z-10 flex flex-1 flex-col px-4 py-4 md:px-10 md:py-7">
+          <div className="relative z-10 flex flex-1 flex-col px-6 py-5 md:px-10 md:py-7">
             <MarketingHeader configured={configured} scrolled={false} />
 
             <div className="flex flex-1 items-start justify-center pt-[16vh] text-center md:pt-[13vh]">

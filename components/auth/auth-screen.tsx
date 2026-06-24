@@ -276,7 +276,6 @@ export function AuthScreen({
         <>
           <AnimatedPageTitle
             text={t.heading}
-            delay={0.08}
             className="text-[30px] font-medium leading-tight tracking-[-0.02em] md:text-[34px]"
           />
 
