@@ -24,6 +24,7 @@ import { getSiteUrl, isSupabaseAdminConfigured } from "@/lib/supabase/env";
 import { readLatestQualityReport, validateQualityReport } from "@/lib/ai/quality";
 import type { CreedQualityReport } from "@/lib/ai/quality";
 import { markdownToRichHtml } from "@/lib/rich-text";
+import { getAgentIconKind } from "@/lib/agent-icon";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -504,6 +505,43 @@ function getClientName(request: JsonRpcRequest, args?: Record<string, unknown>) 
   return null;
 }
 
+function isGenericAgentName(value?: string | null) {
+  const normalized = value?.trim().toLowerCase();
+  return (
+    !normalized ||
+    normalized === "agent" ||
+    normalized === "connected agent" ||
+    normalized === "custom agent" ||
+    normalized === "mcp client"
+  );
+}
+
+function isKnownSpecificAgentName(value?: string | null) {
+  return !isGenericAgentName(value) && getAgentIconKind(value) !== "custom";
+}
+
+function resolveMcpAgentName(
+  request: JsonRpcRequest,
+  args: Record<string, unknown> | undefined,
+  authenticatedClientName: string | null,
+) {
+  const requestClientName = getClientName(request, args);
+
+  // The OAuth client name is the connected app's identity. Prefer it whenever
+  // it resolves to a known agent so a vague tool arg like "Claude" cannot make
+  // a Claude Code connection render with the Claude icon, and a ChatGPT session
+  // cannot accidentally claim Codex attribution.
+  if (isKnownSpecificAgentName(authenticatedClientName)) {
+    return authenticatedClientName!.trim();
+  }
+
+  if (isKnownSpecificAgentName(requestClientName)) {
+    return requestClientName!.trim();
+  }
+
+  return requestClientName ?? authenticatedClientName;
+}
+
 function stringArg(args: Record<string, unknown>, key: string) {
   const value = args[key];
   return typeof value === "string" ? value : "";
@@ -782,7 +820,8 @@ async function handleToolCall(
   // resolved connection name (then a generic label) so every proposal/write body
   // has a non-null author - otherwise /api/creed/proposals 400s "Malformed
   // proposal" and direct writes lose attribution.
-  const agentName = getClientName(rpcRequest, args) ?? fallbackAgentName ?? "Connected agent";
+  const agentName =
+    resolveMcpAgentName(rpcRequest, args, fallbackAgentName) ?? "Connected agent";
 
   if (name === "read_creed") {
     return textToolResult(
@@ -1914,7 +1953,8 @@ export async function POST(request: Request) {
       : undefined;
 
   const clientName =
-    getClientName(firstRequest ?? {}, firstToolArgs) ?? resolved.clientName;
+    resolveMcpAgentName(firstRequest ?? {}, firstToolArgs, resolved.clientName) ??
+    resolved.clientName;
   await recordMcpClientUsage(admin as never, userId, clientName, state.creedId);
 
   const results = (
