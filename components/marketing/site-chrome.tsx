@@ -798,7 +798,7 @@ export function MarketingFooter() {
         <div className="t-meta flex flex-wrap items-center gap-x-2 gap-y-1 text-[var(--creed-text-tertiary)]">
           <span>© 2026 Creed</span>
           <span aria-hidden="true">·</span>
-          <span>Buy</span>
+          <span>by</span>
           <Link
             href={HPBRN_URL}
             target="_blank"
