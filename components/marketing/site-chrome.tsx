@@ -803,7 +803,7 @@ export function MarketingFooter() {
             href={HPBRN_URL}
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8] dark:text-[#60A5FA] dark:hover:text-[#93C5FD]"
+            className="font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
           >
             hpbrn
           </Link>
