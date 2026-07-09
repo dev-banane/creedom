@@ -255,7 +255,7 @@ function AnimatedStatNumber({
         ) : null}
         {suffix}
       </span>
-      <span className="mb-[0.2em] ml-[0.08em] text-[0.34em] font-medium leading-none tracking-[-0.02em] text-white">
+      <span className="mb-[0.2em] ml-[0.08em] text-[0.34em] font-medium leading-none tracking-[-0.02em] text-[var(--creed-text-tertiary)]">
         {cadence}
       </span>
     </span>
@@ -275,7 +275,7 @@ function WhyUseItSection() {
         {WHY_USE_IT_STATS.map((stat) => (
           <article
             key={stat.label}
-            className="flex h-full min-h-[250px] flex-col rounded-2xl bg-[#111827] p-6 text-white dark:bg-[var(--creed-surface)] md:p-7"
+            className="flex h-full min-h-[250px] flex-col rounded-2xl bg-[var(--creed-surface)] p-6 md:p-7"
           >
             <div
               className="text-[4rem] font-semibold leading-[0.9] tracking-[-0.045em] md:text-[5.25rem]"
@@ -290,10 +290,10 @@ function WhyUseItSection() {
               />
             </div>
             <div className="mt-5">
-              <h3 className="text-[1.35rem] font-medium leading-tight tracking-[-0.025em] text-white">
+              <h3 className="text-[1.35rem] font-medium leading-tight tracking-[-0.025em] text-[var(--creed-text-primary)]">
                 {stat.label}
               </h3>
-              <p className="t-body mt-3 text-white/65">{stat.body}</p>
+              <p className="t-body mt-3 text-[var(--creed-text-secondary)]">{stat.body}</p>
             </div>
           </article>
         ))}
