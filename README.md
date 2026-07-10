@@ -4,9 +4,14 @@
 
 **One file across every agent.**
 
-Your personal context, written once and kept polished by your agents — so every AI you talk to knows you instantly.
+Write yourself down once. Every AI you use reads it before answering,
+and proposes updates as it learns you. You approve the good ones.
 
-[Website](https://creed.md) · [Docs](https://creed.md/docs) · [Privacy](https://creed.md/privacy) · [Stack](https://creed.md/stack)
+[creed.md](https://creed.md) · [Docs](https://creed.md/docs) · [Pricing](https://creed.md/pricing) · [Stack](https://creed.md/stack) · [Privacy](https://creed.md/privacy)
+
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org)
+[![MCP](https://img.shields.io/badge/protocol-MCP%20%2B%20OAuth%202.1-8A2BE2)](https://creed.md/docs)
 
 </div>
 
@@ -14,36 +19,15 @@ Your personal context, written once and kept polished by your agents — so ever
 
 ## What is Creed?
 
-Anyone using AI seriously hits the same tax: re-explaining themselves every chat, every tool, every session.
+Anyone using AI seriously pays the same tax: re-explaining themselves every chat, every tool, every session. Creed (creed.md) kills that tax with one file.
 
-Creed kills that tax with one file.
+Your Creed is a curated personal context profile in plain Markdown, sized to read in under a minute. Connected agents (Claude, ChatGPT, Codex, Cursor, Devin, and any MCP client) read it before they answer you, and propose edits as they learn new things. The file sharpens over time instead of rotting in your notes.
 
-You write yourself down once — your role, goals, preferences, routines, the people who matter, anything you want every AI to know — and connected agents read that file before they answer you. As they learn new things about you, they propose updates. You approve the good ones. The file sharpens over time.
-
-It's not a notes app. It's not a journal. It's not a memory dump. It's a curated personal-context profile, sized to fit on one page, that travels with you across Claude, ChatGPT, Codex, Cursor, OpenClaw, Hermes, OpenCode, and any custom agent you wire up.
-
----
-
-## Why Creed exists
-
-There's a small set of tools every AI-native person re-invents for themselves: a "system prompt" that grows in their notes, a `CLAUDE.md` they paste into every project, a list of "things ChatGPT keeps getting wrong about me." Creed is what happens when you decide that file should be **a real product**, not a hack.
-
-The file is plain Markdown. The app exists to:
-
-- help you write the first draft (4-vibe onboarding tuned to who you are)
-- score quality and surface gaps (a monthly AI allowance, or bring your own OpenRouter key)
-- let agents read and propose updates without you copy-pasting
-- keep one canonical version across every tool you use
-
-If you've ever maintained a personal `creed.md` by hand, this is that, with the boring parts solved.
-
----
-
-## How it works
+It is not a notes app, a journal, or a memory dump. If you already maintain a hand-rolled `CLAUDE.md` or a "things ChatGPT gets wrong about me" list, Creed is that file as a real product: first draft written for you, quality scored, one canonical version everywhere, agent edits gated behind your approval.
 
 ```
 ┌──────────────────────┐         ┌────────────────────┐
-│  You — onboarding    │ ──────► │  Your Creed file   │
+│  You (onboarding)    │ ──────► │  Your Creed file   │
 │  (one short pass)    │         │  10 sections, MD   │
 └──────────────────────┘         └─────────┬──────────┘
                                            │
@@ -55,196 +39,124 @@ If you've ever maintained a personal `creed.md` by hand, this is that, with the 
                   └─────────────────────┘    └──────────────────────┘
 ```
 
-The file has 10 sections — five core, five optional — sized so the whole thing reads in under a minute:
+Ten sections, five always-on (Identity, Goals, Work, Preferences, Routines) and five optional (Beliefs, Constraints, People, Health, Context). Every section is agent-writable, per-section permissions decide whether edits apply directly or wait for review.
 
-| Always-on   | Optional      |
-|-------------|---------------|
-| Identity    | Beliefs       |
-| Goals       | Constraints   |
-| Work        | People        |
-| Preferences | Health        |
-| Routines    | Context       |
-
-Every section is agent-writable. Every change goes through the review (or direct-edit, if you trust it).
+**Personal** is the core one-user product. **Company** extends the same file model into a shared workspace: roles, per-section permissions, attribution, invites, pooled AI credits, seat billing.
 
 ---
 
-## Status
+## Quickstart
 
-Creed is in active development. Personal Creed is the core one-user product. Creed Company extends the same file model into a shared workspace with roles, per-section permissions, attribution, invitations, pooled AI credits, and seat billing.
-
-Paid hosted plans include a monthly AI allowance for first-party features like quality analysis, billed as prepaid credits, with an optional bring-your-own-OpenRouter-key mode. Self-hosted development can run the app locally with your own Supabase, Stripe, and OpenRouter configuration.
-
----
-
-## Run it locally
-
-You'll need:
-
-- **Node.js 20+**
-- **a Supabase project** (free tier is fine)
-- **an OpenRouter API key** (only needed for the AI-powered features — onboarding synthesis, quality analysis, refinement)
-- **a Stripe account** (only needed for hosted-style paid plans, Company seats, and webhooks)
-
-### 1. Clone and install
+Prerequisites: **Node 20+** and a free **Supabase** project. (OpenRouter key only for AI features, Stripe only for paid-plan flows.)
 
 ```bash
-git clone https://github.com/<your-fork>/creed.git
-cd creed
-npm install
+git clone https://github.com/connorhpbrn/creed.git
+cd creed && npm install
+cp .env.example .env.local   # fill in the five required vars below
+supabase link --project-ref <your-project-ref> && supabase db push
+npm run dev                  # → http://localhost:3000
 ```
 
-### 2. Configure environment
-
-Copy the template and fill in values:
-
-```bash
-cp .env.example .env.local
-```
-
-`.env.example` documents every variable Creed reads. The minimum to boot the app:
+Minimum `.env.local` to boot:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<your-supabase-publishable-key>
-SUPABASE_SECRET_KEY=<your-supabase-service-role-key>
-CREED_ENCRYPTION_SECRET=<base64-encoded-32-byte-secret>
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<publishable-key>
+SUPABASE_SECRET_KEY=<service-role-key>
+CREED_ENCRYPTION_SECRET=$(openssl rand -base64 32)
 ```
 
-Generate the encryption secret with `openssl rand -base64 32`.
+Every other variable (OpenRouter, Stripe, GitHub sync, branding, feedback) is documented inline in [`.env.example`](./.env.example). `supabase db push` creates the full schema: sections, proposals, activity, tokens, MCP, GitHub, AI usage, audit log, rate limits, entitlements, all behind row-level security.
 
-Optional (branding shown in the public chrome, payments, GitHub integration, feedback widget) are all documented inline in `.env.example` — copy whichever ones you want to enable.
+<details>
+<summary><b>Wire up Stripe for the paid flows (optional)</b></summary>
 
-### 3. Run database migrations
+The hosted app gates `/file` behind a paid entitlement. Locally you can skip Stripe entirely (unentitled users land on `/pricing`), or run the full flow: set the four `STRIPE_*` vars from `.env.example` with sandbox keys, then
 
 ```bash
-# install Supabase CLI if you don't have it: brew install supabase/tap/supabase
-supabase link --project-ref <your-project-ref>
-supabase db push
+stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
-This creates every table Creed needs (sections, proposals, activity, tokens, MCP, GitHub, AI usage, audit log, rate limits, Stripe entitlements) plus the row-level-security policies that make sure users only ever see their own data.
+and copy the printed `whsec_…` into `STRIPE_WEBHOOK_SECRET`. Test payments then auto-grant entitlements.
 
-### 4. (Optional) Wire up Stripe
+</details>
 
-The hosted Creed gates `/file` and `/onboarding` behind a paid entitlement (Personal is $12/mo, $99/yr, or $199 lifetime). For local development you can either:
+<details>
+<summary><b>Deploy your own hosted instance</b></summary>
 
-- **Skip it** — leave `STRIPE_*` env vars unset. The app still boots; signed-in users without an entitlement row are redirected to `/pricing` by the layout guard. Useful when you only want to work on marketing pages or non-paid flows.
-- **Run the full flow** — add the four `STRIPE_*` variables from `.env.example` using your sandbox/test keys, then in a second terminal run:
-  ```bash
-  stripe listen --forward-to localhost:3000/api/stripe/webhook
-  ```
-  Copy the `whsec_…` it prints into `STRIPE_WEBHOOK_SECRET`. The webhook auto-grants entitlements when test payments complete.
+- Set `NEXT_PUBLIC_SITE_URL` to your deployed origin so OAuth and Stripe redirects resolve.
+- Set `CREED_CSP_ENFORCE=1` after watching one deploy cycle in Report-Only mode.
+- Create a live Stripe webhook endpoint at `https://<your-domain>/api/stripe/webhook` and use its signing secret.
+- Example agent prompts referencing `https://creed.md` are illustrative; real URLs derive from your `NEXT_PUBLIC_SITE_URL`.
 
-### 5. Start the dev server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000). Sign in with Google and you'll land on `/pricing` (or `/onboarding` if you've granted yourself an entitlement row manually for development).
-
-### Deploying your own
-
-If you're standing up a separate hosted Creed (not contributing back to this repo):
-
-- Set `NEXT_PUBLIC_SITE_URL` to your deployed origin so OAuth callback and Stripe redirect URLs resolve correctly.
-- Set `CREED_CSP_ENFORCE=1` in production once you've watched one deploy cycle in Report-Only mode.
-- The Stripe webhook signing secret in production differs from your local `whsec_…` — create a webhook endpoint in the live Stripe dashboard pointing at `https://<your-domain>/api/stripe/webhook` and use that secret.
-- The dormant example agent prompts in `lib/creed-data.ts` reference `https://creed.md` purely as illustration; real users see URLs derived from your `NEXT_PUBLIC_SITE_URL` at request time.
+</details>
 
 ---
 
 ## Connect an agent
 
-Once you have a Creed, open `/connections` and add the Creed MCP URL to your agent as a custom connector. The client opens a browser, you click **Allow** on the Creed consent screen, and it's connected. No tokens to copy. We have first-class flows for:
+Open `/connections` and add the Creed MCP URL to your agent as a custom connector. The client opens a browser, you click **Allow**, done. No tokens to copy.
 
-- Claude Code (a one-line `claude mcp add` command)
-- Codex
-- OpenClaw
-- Hermes
-- OpenCode
-- Cursor (one-click "Add to Cursor")
-- Custom Agent (any client that speaks MCP)
+Creed is its own OAuth 2.1 authorization server (`/authorize`, `/token`, `/register`, `/.well-known/*`), so any spec-compliant MCP client connects from the server URL alone. First-class connect flows exist for Claude Code (one-line `claude mcp add`), Codex, Cursor (one-click), ChatGPT, Devin, OpenClaw, Hermes, OpenCode, Factory, Manus, and custom agents. Clients that do not speak MCP can use the documented `/api/creed` HTTP API.
 
-MCP uses OAuth 2.1: Creed is its own authorization server (`/authorize`, `/token`, `/register`, `/.well-known/*`), so any spec-compliant client connects from the server URL alone. The agent verifies it can read your file and starts shaping replies around it from the next message forward. For clients that don't speak MCP, the `/api/creed` HTTP API is the documented fallback.
+Agents get three verbs: read the file, propose an update, or direct-edit where you have granted it. A health dashboard tracks per-agent reads, writes, and errors.
 
 ---
 
 ## Stack
 
-- **Next.js 16** (App Router, Turbopack)
-- **React 19** + **TypeScript**
-- **Tailwind CSS v4** + **shadcn/ui**
-- **Tiptap** for the rich-text editor
-- **Framer Motion** for the calmer-than-normal interactions
-- **Supabase** for auth, Postgres, RLS, realtime
-- **OpenRouter** for first-party AI (managed credits or BYOK)
-- **Stripe** for hosted Personal and Company billing
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack), React 19, TypeScript |
+| UI | Tailwind CSS v4, shadcn/ui, Tiptap editor, Framer Motion |
+| Backend | Supabase (auth, Postgres, RLS, realtime), pg_cron retention jobs |
+| AI | OpenRouter (managed credits or BYOK), per-feature model routing |
+| Billing | Stripe (Personal and Company plans, seats, webhooks) |
+| Sync | GitHub push/pull of `creed.md`, lossless Markdown round-trip |
 
-A complete tour of the public stack lives at [creed.md/stack](https://creed.md/stack).
+Full tour at [creed.md/stack](https://creed.md/stack).
 
 ---
 
-## Repository tour
+## Repository map
 
 ```
-app/                    Next.js routes (marketing, app, API)
+app/
 ├── (creed-app)/        signed-in product (/file, /connections, /settings)
-├── api/                session-authed and token-authed APIs
-├── auth/callback/      OAuth callback
-├── home/               public landing
-├── onboarding/         7-step onboarding flow
-└── proxy.ts            request-id + path-aware request forwarding
-
+├── api/                session-authed + token-authed APIs (incl. /api/creed, MCP, OAuth)
+├── home/, onboarding/  public landing and first-run flow
 components/
-├── creed/              the product UI
-├── marketing/          the public site
-├── auth/               sign-in / hero
-└── ui/                 shadcn primitives + animated icons
-
+├── creed/              product UI        marketing/   public site
+├── auth/               sign-in           ui/          shadcn primitives
 lib/
-├── creed-data.ts       types, section IDs, agent contract
+├── creed-data.ts       types, sections, agent contract
 ├── creed-backend.ts    Supabase reads/writes
-├── company-*.ts        Company roles, seats, billing, invites, writes
-├── ai/                 OpenRouter, model catalog, quality
-├── onboarding/         the synthesizer pipeline
-└── supabase/           browser + server clients
-
-supabase/migrations/    canonical schema
-public/                 static assets
+├── creed-markdown.ts   push/pull Markdown parser (lossless round-trip)
+├── ai/                 OpenRouter client, model catalog, quality scoring
+├── company-*.ts        Company roles, seats, billing, invites
+supabase/migrations/    canonical schema (RLS everywhere)
+tests/                  node:test suites
 ```
-
----
 
 ## Commands
 
 ```bash
-npm run dev      # local dev server (Turbopack)
-npm run build    # production build
-npm run lint     # ESLint
-npm run start    # serve a built app
-
-npx tsc --noEmit -p .   # typecheck only
+npm run dev          # dev server (Turbopack)
+npm test             # test suite (node:test)
+npx tsc --noEmit     # typecheck
+npm run lint         # ESLint
+npm run build        # production build
 ```
 
 ---
 
 ## Contributing
 
-We'd love contributions. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a PR — it's short and saves both of us time.
+PRs welcome. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md) first; it is short and saves us both time. **AI agents**: read [`AGENTS.md`](./AGENTS.md) instead, it is the same information written for you.
 
-If you're an AI agent picking up this codebase to make changes, read [`AGENTS.md`](./AGENTS.md) first instead. It's the same information, written for you.
-
----
-
-## Security
-
-Found a vulnerability? Please don't open a public issue. See [`SECURITY.md`](./SECURITY.md) for the responsible-disclosure path.
-
----
+Found a vulnerability? Do not open a public issue; see [`SECURITY.md`](./SECURITY.md).
 
 ## License
 
-[MIT](./LICENSE).
+[MIT](./LICENSE)
