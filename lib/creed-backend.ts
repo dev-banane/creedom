@@ -1220,15 +1220,15 @@ export function createBlankCreedState(
 }
 
 /**
- * Cheap "has this user persisted any sections yet?" probe used by
- * `app/page.tsx` to decide between `/file` (already onboarded) and
- * `/onboarding` (fresh user). Reads a single row's `section_id` rather
- * than fanning out the full `loadCreedState`, which is overkill for a
- * binary decision.
+ * Cheap "has this user been through onboarding?" probe used by
+ * `app/page.tsx` and the (creed-app) layout to decide between `/file`
+ * (already onboarded) and `/onboarding` (fresh user).
  *
- * NB: we deliberately don't use `head: true` + `count` - the structural
- * `SupabaseLikeClient` type doesn't expose `count` and the row-payload
- * approach is cheaper to type and just as fast on a single-row read.
+ * The signal is the personal `creeds` row itself: the only thing that
+ * creates one is the onboarding claim step (`/api/app/claim` via
+ * `ensurePersonalCreedId`). Deliberately NOT a section-count probe - a
+ * user who deletes or archives every section still has a Creed and must
+ * not be bounced back into first-run onboarding.
  */
 export async function hasPersistedCreed(
   client: unknown,
@@ -1236,20 +1236,7 @@ export async function hasPersistedCreed(
 ): Promise<boolean> {
   const db = client as SupabaseLikeClient;
   const creedId = await getPersonalCreedId(db, userId);
-  if (!creedId) {
-    return false;
-  }
-  const { data, error } = (await db
-    .from("creed_sections")
-    .select("section_id")
-    .eq("creed_id", creedId)
-    .limit(1)) as {
-    data: Array<{ section_id: string }> | null;
-    error: { message: string } | null;
-  };
-
-  assertNoError(error, "Could not check for existing Creed.");
-  return Array.isArray(data) && data.length > 0;
+  return creedId !== null;
 }
 
 // Per-request dedup via React's `cache()`. If multiple server components or
@@ -1344,21 +1331,11 @@ async function loadCreedStateImpl(
   assertNoError(activityError, "Could not load Creed activity.");
   assertNoError(connectionError, "Could not load Creed connections.");
 
-  const hasSections = Array.isArray(sectionRows) && sectionRows.length > 0;
-  if (!hasSections) {
-    return {
-      state: createBlankCreedState(
-        resolvedUser,
-        tokenRow,
-        mcpClients,
-        githubIntegration,
-        versionControl,
-        { ignoreLinkedGitHubIdentity: true },
-      ),
-      hasPersistedCreed: false,
-    };
-  }
-
+  // No early return when the section list is empty: a creed row with zero
+  // sections is a real, onboarded Creed whose sections were all deleted or
+  // archived. It must load (and keep persisting) as an empty file, not fall
+  // back to the blank pre-onboarding state - that disabled autosave and let
+  // the routing gates bounce the user back into first-run onboarding.
   const readToken = tokenRow.read_token ?? "";
   const proposalToken = tokenRow.proposal_token ?? "";
   const directEditToken = tokenRow.direct_edit_token ?? "";

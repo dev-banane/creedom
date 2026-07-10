@@ -19,14 +19,15 @@ import { isSupabaseConfigured } from "@/lib/supabase/env";
 // route group (/file, /connections, /settings). Three-layer check:
 //   1. signed in? if not → /pricing
 //   2. has a paid creed_entitlements row? if not → /onboarding
-//   3. has any persisted sections? if not → /onboarding
+//   3. has a persisted personal Creed row? if not → /onboarding
 //
 // The app is the paid product, so unpaid users are sent to /onboarding
 // (where they can finish onboarding and hit "Get Creed"), never into the
 // app. Step 3 catches users who deep-link to /file (or come back via a
-// stale browser tab) without having completed onboarding yet. Without it
-// they'd see the seed initialCreedState (placeholder sections, blank
-// name) instead of being routed through the proper first-run flow.
+// stale browser tab) without having completed onboarding yet. It checks
+// the Creed row (created by the onboarding claim step), NOT the section
+// count - a user who deletes every section still has a Creed and must
+// not be bounced back into first-run onboarding.
 //
 // Marketing routes and /payment/* don't pass through here so they remain
 // reachable to anyone. The check uses the user's own session client +
@@ -75,7 +76,7 @@ export default async function CreedAppLayout({ children }: { children: ReactNode
   }
 
   // Personal-only users still pass the personal onboarding gate: a paid user
-  // with no persisted sections is routed to /onboarding to finish first-run.
+  // with no persisted Creed is routed to /onboarding to finish first-run.
   // Company members skip this (their active company Creed decides what loads);
   // the company onboarding flow handles a company Creed that is still being set
   // up. Treat a missing-tables error as "not onboarded".

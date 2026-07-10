@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 
 // Root-page router. Branches on three signals: Supabase configured?
 // (otherwise marketing-only), signed in?, paid?. Only then do we ask
-// whether the user has any sections to decide `/file` vs `/onboarding`.
+// whether a personal Creed row exists to decide `/file` vs `/onboarding`
+// (the row, not the section count - an emptied Creed is still onboarded).
 //
 // We deliberately use the lightweight `hasPersistedCreed` probe rather
 // than the full `loadCreedState` fan-out - this route is a redirect, not
@@ -74,9 +75,9 @@ export default async function Home() {
   // logs it as a phantom error, and re-throws in a way that surfaces
   // app/error.tsx with a digest instead of actually redirecting. Keep
   // the redirect OUTSIDE the try; only the DB probe is wrapped.
-  let hasSections: boolean;
+  let hasCreed: boolean;
   try {
-    hasSections = await hasPersistedCreed(supabase, user.id);
+    hasCreed = await hasPersistedCreed(supabase, user.id);
   } catch (error) {
     if (isSupabaseTableMissingError(error)) {
       return (
@@ -92,5 +93,5 @@ export default async function Home() {
     throw error;
   }
 
-  redirect(hasSections ? "/file" : "/onboarding");
+  redirect(hasCreed ? "/file" : "/onboarding");
 }
