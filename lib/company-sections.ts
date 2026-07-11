@@ -13,10 +13,17 @@ import {
   minPermission,
   type CreedRole,
 } from "@/lib/creed-permissions";
-import type { AgentPermission } from "@/lib/creed-data";
+import {
+  normalizeLegacyProposalDraft,
+  type AgentPermission,
+  type ProposalDraft,
+} from "@/lib/creed-data";
 import { actorLabel } from "@/lib/creed-attribution";
 import { getDisplayName } from "@/lib/user-name";
-import { richTextContentEquivalent } from "@/lib/rich-text";
+import {
+  normalizeRichTextInput,
+  richTextContentEquivalent,
+} from "@/lib/rich-text";
 
 // Write path for company Creeds.
 //
@@ -42,7 +49,14 @@ const MAX_VERSIONS_PER_SECTION = 200;
 
 export type SectionWriteError = {
   ok: false;
-  code: "forbidden" | "frozen" | "conflict" | "not_found" | "exists" | "failed";
+  code:
+    | "forbidden"
+    | "frozen"
+    | "conflict"
+    | "not_found"
+    | "exists"
+    | "failed"
+    | "stale";
   error: string;
   currentRevision?: number;
 };
@@ -53,6 +67,12 @@ export type SectionWriteOk = {
   // Set when a proposal was filed, so callers (e.g. the panel agent) can link
   // the result card to the pending proposal.
   proposalId?: string;
+  // Set by proposal accepts so the client can reconcile the affected section
+  // from the response instead of refetching the whole Creed state.
+  sectionId?: string;
+  sectionName?: string;
+  accent?: string;
+  contentHtml?: string;
 };
 export type SectionWriteResult = SectionWriteOk | SectionWriteError;
 
@@ -1269,7 +1289,9 @@ export async function reviewCompanyProposal(params: {
 
   const { data: proposal } = (await db
     .from("creed_proposals")
-    .select("id, section_id, section_name, accent, draft, status, author_user_id")
+    .select(
+      "id, section_id, section_name, accent, draft, status, author_user_id, base_revision",
+    )
     .eq("creed_id", creedId)
     .eq("id", proposalId)
     .maybeSingle()) as {
@@ -1281,6 +1303,7 @@ export async function reviewCompanyProposal(params: {
       draft: CompanyDraft;
       status: string;
       author_user_id: string | null;
+      base_revision: number | null;
     } | null;
   };
   if (!proposal)
@@ -1358,6 +1381,49 @@ export async function reviewCompanyProposal(params: {
     return { ok: true, revision: 0 };
   }
 
+  // Optimistic concurrency for accepts: the proposal was drafted against a
+  // specific section revision. If the section has moved on since (a direct
+  // edit, another accepted proposal), applying the draft would silently
+  // clobber the newer content - the same hazard the direct-edit path guards
+  // with baseRevision. Mark the proposal stale (kept for the audit trail,
+  // like accepted/rejected) and tell the caller.
+  if (
+    proposal.draft.kind === "rich-text" &&
+    proposal.base_revision != null
+  ) {
+    const { data: section } = (await db
+      .from("creed_sections")
+      .select("revision")
+      .eq("creed_id", creedId)
+      .eq("section_id", proposal.section_id)
+      .maybeSingle()) as { data: { revision: number } | null };
+    if (section && section.revision !== proposal.base_revision) {
+      await db
+        .from("creed_proposals")
+        .update({ status: "stale", updated_at: new Date().toISOString() })
+        .eq("id", proposalId)
+        .eq("creed_id", creedId)
+        .eq("status", "pending");
+      await writeActivity({
+        creedId,
+        sectionId: proposal.section_id,
+        sectionName: proposal.section_name,
+        accent: proposal.accent,
+        actorUserId: user.id,
+        actorType: "user",
+        actorName,
+        summary: `A proposed edit to ${proposal.section_name} went stale (the section changed after it was proposed)`,
+        status: "stale",
+        eventKind: "proposal",
+      });
+      return {
+        ok: false,
+        code: "stale",
+        error: "The section changed since this was proposed.",
+      };
+    }
+  }
+
   // Accept: apply the draft to the section rows, resolve the proposal, log it.
   const applied = await applyDraft({
     creedId,
@@ -1374,8 +1440,16 @@ export async function reviewCompanyProposal(params: {
     .eq("id", proposalId)
     .eq("creed_id", creedId)
     .eq("status", "pending");
+  const acceptResult: SectionWriteOk = {
+    ok: true,
+    revision: applied.revision,
+    sectionId: applied.sectionId,
+    sectionName: applied.sectionName,
+    accent: applied.accent,
+    contentHtml: applied.after,
+  };
   if (applied.noop) {
-    return { ok: true, revision: applied.revision };
+    return acceptResult;
   }
   await writeActivity({
     creedId,
@@ -1391,7 +1465,131 @@ export async function reviewCompanyProposal(params: {
     beforeText: applied.before,
     afterText: applied.after,
   });
-  return { ok: true, revision: applied.revision };
+  return acceptResult;
+}
+
+// Personal-Creed proposal review: the durable, server-authoritative half of a
+// personal accept/reject. The client applies the draft to its local state
+// instantly (and its autosave later persists sections/activity as usual); this
+// makes the RESOLUTION itself durable at click time, so a browser refresh can
+// never resurrect an already-reviewed proposal (the old failure mode: accept ->
+// refresh inside the autosave window -> the proposal is back, and now stale).
+//
+// Scope, deliberately:
+// - reject: delete the proposal row. Personal proposals don't keep an audit
+//   row (the activity entry the client persists is the record).
+// - accept, content drafts (rich-text / rename / recolor): apply server-side
+//   via the shared applyDraft, then delete the row. No base-revision re-check:
+//   the client already ran the staleness guard against the same revisions, and
+//   a personal Creed has a single writer.
+// - accept, structural drafts (new/delete/reorder-section): delete the row
+//   only. The client applies the structure locally and its full-state PUT
+//   persists it - applying server-side too would race that PUT (e.g. the
+//   client and server would mint different ids for a new section).
+// - no activity writes: the client's activity entry persists through the
+//   normal full-state path; writing one here would duplicate the sidebar row.
+export async function reviewPersonalProposal(params: {
+  creedId: string;
+  user: User;
+  proposalId: string;
+  decision: "accept" | "reject";
+}): Promise<SectionWriteResult> {
+  const { creedId, user, proposalId } = params;
+  const db = admin();
+
+  const { data: proposal } = (await db
+    .from("creed_proposals")
+    .select("id, section_id, draft, status")
+    .eq("creed_id", creedId)
+    .eq("id", proposalId)
+    .maybeSingle()) as {
+    data: {
+      id: string;
+      section_id: string;
+      draft: ProposalDraft;
+      status: string;
+    } | null;
+  };
+  if (!proposal) {
+    return { ok: false, code: "not_found", error: "Proposal not found." };
+  }
+  if (proposal.status !== "pending") {
+    return {
+      ok: false,
+      code: "conflict",
+      error: "This proposal was already reviewed.",
+    };
+  }
+
+  const removeRow = async () => {
+    await db
+      .from("creed_proposals")
+      .delete()
+      .eq("id", proposalId)
+      .eq("creed_id", creedId);
+  };
+
+  if (params.decision === "reject") {
+    await removeRow();
+    return { ok: true, revision: 0 };
+  }
+
+  const draft = translatePersonalDraft(proposal.draft);
+  if (!draft) {
+    // Structural drafts: resolve the proposal now, let the client's full-state
+    // persist land the structure.
+    await removeRow();
+    return { ok: true, revision: 0 };
+  }
+
+  const applied = await applyDraft({
+    creedId,
+    sectionId: proposal.section_id,
+    draft,
+    actor: describeActor(user, null),
+    cause: "proposal",
+  });
+  if (!applied.ok) {
+    // Even when the apply fails (section vanished mid-flight), the review
+    // decision stands - resolve the proposal rather than leave it pending.
+    await removeRow();
+    return applied;
+  }
+  await removeRow();
+  return {
+    ok: true,
+    revision: applied.revision,
+    sectionId: applied.sectionId,
+    sectionName: applied.sectionName,
+    accent: applied.accent,
+    contentHtml: applied.after,
+  };
+}
+
+// Personal proposals carry a wider draft vocabulary than company ones
+// (rename-section / recolor-section are their own kinds). Raw jsonb is first
+// coerced through normalizeLegacyProposalDraft - the same helper the state
+// loader uses - so legacy draft shapes can't slip past the kind switch.
+// Content-shaped drafts translate onto the shared applyDraft's rich-text
+// branch; structural drafts return null (handled client-side, see
+// reviewPersonalProposal).
+function translatePersonalDraft(raw: ProposalDraft): CompanyDraft | null {
+  const draft = normalizeLegacyProposalDraft(raw);
+  if (draft.kind === "rich-text") {
+    const contentHtml = normalizeRichTextInput(draft);
+    // An empty string here means "no usable content", not "clear the
+    // section": applyDraft treats undefined as keep-current but "" as an
+    // explicit wipe, so a blank/malformed draft must not reach it as "".
+    if (!contentHtml) return null;
+    return { kind: "rich-text", contentHtml };
+  }
+  if (draft.kind === "rename-section") {
+    return { kind: "rich-text", name: draft.name };
+  }
+  if (draft.kind === "recolor-section") {
+    return { kind: "rich-text", accent: draft.accent };
+  }
+  return null;
 }
 
 /** Permanently delete a section (owner/admin, from the app). */

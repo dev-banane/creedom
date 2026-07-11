@@ -31,6 +31,7 @@ import {
   inferAgentSectionAccent,
   initialOnboardingState,
   initialCreedState,
+  isAccentKey,
   normalizeLegacyProposalDraft,
   normalizeProposalForSection,
   permissionToWritable,
@@ -148,7 +149,32 @@ function mergeExternalState(
   current: CreedState,
   incoming: CreedState,
   canReplaceSections: boolean,
+  // Proposal ids resolved locally (accepted / rejected / gone-stale) whose
+  // resolution may not have reached the server yet. The server copy of these
+  // is still "pending", so taking `incoming.proposals` verbatim used to
+  // resurrect a just-accepted proposal whenever a focus/visibility/poll sync
+  // raced the persist - and the resurrected copy then failed the revision
+  // guard and got marked stale. An id is confirmed (removed from the set)
+  // once the server stops listing it as pending. Confirmation is derived from
+  // the incoming payload alone - never from the set's own prior state - so
+  // re-running this merge (React StrictMode double-invokes updaters) yields
+  // the same result.
+  resolvedProposalIds: Set<string>,
 ) {
+  const incomingPendingIds = new Set(
+    incoming.proposals
+      .filter((proposal) => proposal.status === "pending")
+      .map((proposal) => proposal.id),
+  );
+  for (const id of Array.from(resolvedProposalIds)) {
+    if (!incomingPendingIds.has(id)) {
+      resolvedProposalIds.delete(id);
+    }
+  }
+  const proposals = incoming.proposals.filter(
+    (proposal) => !resolvedProposalIds.has(proposal.id),
+  );
+
   return {
     ...current,
     // Company / switcher context always reflects the server (which Creed is
@@ -168,7 +194,11 @@ function mergeExternalState(
     mcpLastClientName: incoming.mcpLastClientName,
     mcpClients: incoming.mcpClients,
     sections: canReplaceSections ? incoming.sections : current.sections,
-    proposals: incoming.proposals,
+    // Server proposals win (minus the locally-resolved set above): preferring
+    // local copies while edits were unpersisted masked genuine server-side
+    // transitions (an agent revising a draft, a teammate's accept marking a
+    // sibling proposal stale).
+    proposals,
     activity: incoming.activity,
     settings: canReplaceSections ? incoming.settings : current.settings,
     connections: incoming.connections,
@@ -349,6 +379,9 @@ export function CreedProvider({
   const latestStateRef = useRef(initialState);
   const saveTimerRef = useRef<number | null>(null);
   const lastPersistedTickRef = useRef(initialState.mutationTick);
+  // Proposal ids resolved locally whose resolution hasn't been confirmed by
+  // the server yet - see mergeExternalState. Cleared wholesale on Creed switch.
+  const resolvedProposalIdsRef = useRef<Set<string>>(new Set());
   // Company mode saves per section (not the full-state PUT). One debounce timer
   // per section id.
   const companySaveTimers = useRef<Map<string, number>>(new Map());
@@ -709,28 +742,11 @@ export function CreedProvider({
         current,
         payload.state!,
         canReplaceSections,
+        resolvedProposalIdsRef.current,
       );
       latestStateRef.current = nextState;
       return nextState;
     });
-  }, [persistenceEnabled]);
-
-  const fetchServerState = useCallback(async () => {
-    if (!persistenceEnabled) {
-      return null;
-    }
-
-    const response = await fetch("/api/app/state", {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const payload = (await response.json()) as { state?: CreedState };
-    return payload.state ?? null;
   }, [persistenceEnabled]);
 
   // Switch the active Creed instantly, client-side. We deliberately do NOT use
@@ -758,6 +774,8 @@ export function CreedProvider({
         window.clearTimeout(timer);
       }
       companySaveTimers.current.clear();
+      // Locally-resolved proposal ids belong to the Creed we're leaving.
+      resolvedProposalIdsRef.current.clear();
 
       const activate = await fetch("/api/app/creeds/activate", {
         method: "POST",
@@ -1358,13 +1376,20 @@ export function CreedProvider({
   }
 
   // Company mode: proposals are reviewed through the per-Creed API (the personal
-  // full-state path is disabled). Refreshes from the server on success.
+  // full-state path is disabled). On success the response carries the applied
+  // section (revision + content), so the common rich-text accept reconciles
+  // from the response alone instead of refetching the whole Creed state; the
+  // company poll delivers the server-written activity row moments later.
+  // Structural accepts (new/delete/reorder) pass syncAfter, since their
+  // effects span the sections list.
   async function reviewCompanyProposalRemote(
     proposalId: string,
     decision: "accept" | "reject" | "withdraw",
+    opts?: { syncAfter?: boolean },
   ) {
     const creedId = latestStateRef.current.creedId;
     if (!creedId) return;
+    resolvedProposalIdsRef.current.add(proposalId);
     try {
       const response = await fetch(
         `/api/app/proposals/${encodeURIComponent(proposalId)}`,
@@ -1377,17 +1402,122 @@ export function CreedProvider({
       if (!response.ok) {
         const data = (await response.json().catch(() => ({}))) as {
           error?: string;
+          code?: string;
         };
-        toast.error(data.error ?? "Could not review the proposal.");
+        toast.error(
+          data.code === "stale"
+            ? "That proposal went stale - the section changed after it was proposed."
+            : (data.error ?? "Could not review the proposal."),
+        );
         // Reconcile: the caller already applied the change optimistically, so
-        // pull the server truth back in to undo it.
+        // pull the server truth back in to undo it. Release the suppression
+        // first - with the id still in the resolved set, the merge would
+        // filter the still-pending proposal out and the card could never
+        // come back on this client.
+        resolvedProposalIdsRef.current.delete(proposalId);
         await syncFromServer();
         return;
       }
-      await syncFromServer();
+      if (opts?.syncAfter) {
+        await syncFromServer();
+        return;
+      }
+      const result = (await response.json().catch(() => null)) as {
+        revision?: number;
+        sectionId?: string;
+        sectionName?: string;
+        accent?: string;
+        contentHtml?: string;
+      } | null;
+      if (!result?.sectionId) return; // reject/withdraw: nothing to fold in
+      // Fold the authoritative section back in quietly (no mutation tick - this
+      // is reconciliation, not an edit to persist).
+      setState((c) => {
+        const next = {
+          ...c,
+          sections: c.sections.map((section) =>
+            section.id === result.sectionId
+              ? {
+                  ...section,
+                  content: result.contentHtml ?? section.content,
+                  name: result.sectionName ?? section.name,
+                  accent: isAccentKey(result.accent)
+                    ? result.accent
+                    : section.accent,
+                }
+              : section,
+          ),
+          sectionRevisions:
+            typeof result.revision === "number" && result.revision > 0
+              ? {
+                  ...c.sectionRevisions,
+                  [result.sectionId!]: result.revision,
+                }
+              : c.sectionRevisions,
+        };
+        latestStateRef.current = next;
+        return next;
+      });
     } catch {
       toast.error("Could not review the proposal.");
+      resolvedProposalIdsRef.current.delete(proposalId);
       await syncFromServer();
+    }
+  }
+
+  // Personal mode: resolve the proposal server-side at click time (delete the
+  // row, apply content drafts) so a browser refresh can never resurrect an
+  // already-reviewed proposal. Local state was already updated optimistically;
+  // on accept, the response's revision becomes the section's authoritative
+  // revision - the local +1 bump can drift from the server's content-diff
+  // recompute, which is what used to strand later proposals as false-stale.
+  // Failures are deliberately quiet: the debounced full-state persist carries
+  // the same resolution, so the old client-authoritative path remains the
+  // fallback.
+  async function reviewPersonalProposalRemote(
+    proposalId: string,
+    decision: "accept" | "reject",
+    sectionId?: string,
+  ) {
+    const creedId = latestStateRef.current.creedId;
+    if (!creedId) return;
+    resolvedProposalIdsRef.current.add(proposalId);
+    try {
+      const response = await fetch(
+        `/api/app/proposals/${encodeURIComponent(proposalId)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ creedId, decision }),
+        },
+      );
+      if (!response.ok) return;
+      const result = (await response.json().catch(() => null)) as {
+        revision?: number;
+        sectionId?: string;
+      } | null;
+      const targetId = result?.sectionId ?? sectionId;
+      if (
+        decision === "accept" &&
+        targetId &&
+        typeof result?.revision === "number" &&
+        result.revision > 0
+      ) {
+        setState((c) => {
+          const next = {
+            ...c,
+            sectionRevisions: {
+              ...c.sectionRevisions,
+              [targetId]: result.revision!,
+            },
+          };
+          latestStateRef.current = next;
+          return next;
+        });
+      }
+    } catch {
+      // Offline / transient: the scheduled autosave PUT persists the same
+      // resolution and the persist path removes the server row.
     }
   }
 
@@ -1406,6 +1536,9 @@ export function CreedProvider({
 
   async function acceptProposal(proposalId: string) {
     if (latestStateRef.current.creedType === "company") {
+      const pending = latestStateRef.current.proposals.find(
+        (item) => item.id === proposalId,
+      );
       // Optimistic: apply a rich-text edit to the section and drop the card
       // immediately, then persist + reconcile in the background.
       setState((c) => {
@@ -1426,174 +1559,47 @@ export function CreedProvider({
         latestStateRef.current = next;
         return next;
       });
-      void reviewCompanyProposalRemote(proposalId, "accept");
+      void reviewCompanyProposalRemote(proposalId, "accept", {
+        // Rich-text accepts reconcile from the response; structural drafts
+        // reshape the sections list, so pull the full state once.
+        syncAfter: pending ? pending.draft.kind !== "rich-text" : true,
+      });
       return;
     }
-    const serverState = await fetchServerState();
 
-    if (serverState) {
-      setState((current) => {
-        const canReplaceSections =
-          current.mutationTick === lastPersistedTickRef.current;
-        const merged = mergeExternalState(
-          current,
-          serverState,
-          canReplaceSections,
-        );
-        latestStateRef.current = merged;
-        return merged;
-      });
-    }
-
-    commitState((current) => {
-      const rawProposal = current.proposals.find(
-        (item) => item.id === proposalId,
-      );
-
-      if (!rawProposal) {
-        return current;
-      }
-
-      const targetSection = current.sections.find(
-        (section) => section.id === rawProposal.sectionId,
-      );
-      const proposal = normalizeProposalForSection(rawProposal, targetSection);
-
-      const currentRevision =
-        current.sectionRevisions[proposal.sectionId] ?? null;
-      if (
-        proposal.baseRevision != null &&
-        currentRevision != null &&
-        proposal.baseRevision !== currentRevision
-      ) {
-        return nextMutationTick({
-          ...current,
-          proposals: current.proposals.map((item) =>
-            item.id === proposalId ? { ...item, status: "stale" } : item,
-          ),
-          activity: [
-            buildActivityEntry(
-              { ...proposal, status: "stale" },
-              current,
-              "stale",
-            ),
-            ...current.activity.filter(
-              (entry) => entry.proposalId !== proposal.id,
-            ),
-          ],
-        });
-      }
-
-      if (proposal.draft.kind === "new-section") {
-        const newSectionDraft = proposal.draft;
-        const newSection = createSectionFromProposalDraft(proposal);
-        if (!newSection) {
-          return current;
-        }
-
-        const insertAfterIndex = newSectionDraft.insertAfterSectionId
-          ? current.sections.findIndex(
-              (section) => section.id === newSectionDraft.insertAfterSectionId,
-            )
-          : -1;
-        const nextSections = [...current.sections];
-        if (insertAfterIndex === -1) {
-          nextSections.push(newSection);
-        } else {
-          nextSections.splice(insertAfterIndex + 1, 0, newSection);
-        }
-
-        return nextMutationTick({
-          ...current,
-          sectionRevisions: bumpSectionRevisionMap(
-            current.sectionRevisions,
-            newSection.id,
-          ),
-          sections: nextSections,
-          proposals: current.proposals.filter((item) => item.id !== proposalId),
-          activity: [
-            buildActivityEntry(proposal, current, "accepted"),
-            ...current.activity.filter(
-              (entry) => entry.proposalId !== proposal.id,
-            ),
-          ],
-        });
-      }
-
-      if (proposal.draft.kind === "delete-section") {
-        // Delete the targeted section and drop any other pending proposals
-        // that targeted it - they're meaningless once the section is gone.
-        const targetId = proposal.sectionId;
-        return nextMutationTick({
-          ...current,
-          sections: current.sections.filter(
-            (section) => section.id !== targetId,
-          ),
-          proposals: current.proposals.filter(
-            (item) => item.id !== proposalId && item.sectionId !== targetId,
-          ),
-          activity: [
-            buildActivityEntry(proposal, current, "accepted"),
-            ...current.activity.filter(
-              (entry) => entry.proposalId !== proposal.id,
-            ),
-          ],
-        });
-      }
-
-      if (proposal.draft.kind === "reorder-section") {
-        // Reorder is a sections-array mutation, not a per-section field
-        // change, so it can't flow through applyProposalToSection.
-        return nextMutationTick({
-          ...current,
-          sections: applyReorderDraft(
-            current.sections,
-            proposal.sectionId,
-            proposal.draft,
-          ),
-          proposals: current.proposals.filter((item) => item.id !== proposalId),
-          activity: [
-            buildActivityEntry(proposal, current, "accepted"),
-            ...current.activity.filter(
-              (entry) => entry.proposalId !== proposal.id,
-            ),
-          ],
-        });
-      }
-
-      return nextMutationTick({
-        ...current,
-        sectionRevisions: bumpSectionRevisionMap(
-          current.sectionRevisions,
-          proposal.sectionId,
-        ),
-        sections: current.sections.map((section) =>
-          section.id === proposal.sectionId
-            ? applyProposalToSection(section, proposal)
-            : section,
-        ),
-        proposals: current.proposals.filter((item) => item.id !== proposalId),
-        activity: [
-          buildActivityEntry(proposal, current, "accepted"),
-          ...current.activity.filter(
-            (entry) => entry.proposalId !== proposal.id,
-          ),
-        ],
-      });
-    });
+    // Personal: a single accept is a batch of one. acceptProposals owns the
+    // staleness check, the state commit, and the durable server resolution,
+    // so the single and Accept-all paths can never diverge.
+    acceptProposals([proposalId]);
   }
 
-  // Accept many proposals in a single state commit. Bypasses the
-  // per-proposal `fetchServerState` round-trip on purpose: that server
-  // fetch was re-introducing already-accepted proposals because the
-  // local persist hadn't synced yet, which is why "Accept all" used to
-  // only land one accept per click. Trust the local state, drain
-  // everything, let the persist effect push to the server in one pass.
+  // Accept many proposals in a single state commit, then resolve each one
+  // server-side in the background (sequentially - parallel applies to the
+  // same section would race the revision recompute).
   function acceptProposals(proposalIds: string[]) {
     if (proposalIds.length === 0) return;
+    if (latestStateRef.current.creedType === "company") {
+      // Company reviews are per-proposal server calls with their own
+      // optimistic handling and error reconciliation; the personal
+      // full-state commit below would neither persist nor reconcile there.
+      for (const id of proposalIds) {
+        void acceptProposal(id);
+      }
+      return;
+    }
     const idsToAccept = new Set(proposalIds);
+    const acceptedIds: Array<{ id: string; sectionId: string }> = [];
+    const staleIds: string[] = [];
 
-    commitState((current) => {
+    // Compute the batch outcome from the live snapshot rather than inside the
+    // setState updater: React defers updaters when the hook already has a
+    // queued update, so side-channels filled inside one can be empty by the
+    // time the code after commitState runs - the server-resolution queue
+    // would silently come out empty (and updaters must stay pure regardless).
+    // latestStateRef tracks every commit synchronously, so this snapshot is
+    // exactly the state the commit below replaces.
+    const current = latestStateRef.current;
+    {
       let nextSections = [...current.sections];
       let nextRevisions = current.sectionRevisions;
       const newActivityEntries: ActivityEntry[] = [];
@@ -1620,6 +1626,7 @@ export function CreedProvider({
           proposal.baseRevision !== currentRevision;
 
         if (isStale) {
+          staleIds.push(id);
           newActivityEntries.push(
             buildActivityEntry(
               { ...proposal, status: "stale" },
@@ -1629,6 +1636,7 @@ export function CreedProvider({
           );
           continue;
         }
+        acceptedIds.push({ id, sectionId: proposal.sectionId });
 
         if (proposal.draft.kind === "new-section") {
           const newSectionDraft = proposal.draft;
@@ -1690,14 +1698,51 @@ export function CreedProvider({
         (entry) => !entry.proposalId || !idsToAccept.has(entry.proposalId),
       );
 
-      return nextMutationTick({
+      const nextState = nextMutationTick({
         ...current,
         sections: nextSections,
         sectionRevisions: nextRevisions,
         proposals: remainingProposals,
         activity: [...newActivityEntries, ...remainingActivity],
       });
-    });
+
+      // Suppress resurrection for the whole batch BEFORE any network runs,
+      // so a focus/poll sync during the sequential resolution below can't
+      // re-merge the still-pending tail of the queue.
+      for (const entry of acceptedIds) {
+        resolvedProposalIdsRef.current.add(entry.id);
+      }
+      for (const id of staleIds) {
+        resolvedProposalIdsRef.current.add(id);
+      }
+
+      commitState(() => nextState);
+
+      // Resolve server-side in the background. Stale ones are resolved as
+      // rejects (the stale activity entry is the record; the row must not
+      // stay pending).
+      const queue = [
+        ...acceptedIds.map((entry) => ({
+          id: entry.id,
+          decision: "accept" as const,
+          sectionId: entry.sectionId as string | undefined,
+        })),
+        ...staleIds.map((id) => ({
+          id,
+          decision: "reject" as const,
+          sectionId: undefined as string | undefined,
+        })),
+      ];
+      void (async () => {
+        for (const item of queue) {
+          await reviewPersonalProposalRemote(
+            item.id,
+            item.decision,
+            item.sectionId,
+          );
+        }
+      })();
+    }
   }
 
   function rejectProposal(proposalId: string) {
@@ -1724,6 +1769,7 @@ export function CreedProvider({
         ],
       });
     });
+    void reviewPersonalProposalRemote(proposalId, "reject");
   }
 
   // Company Proposal-only members delete their OWN pending proposal (they can't

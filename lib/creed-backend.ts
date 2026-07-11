@@ -1972,7 +1972,14 @@ export async function persistCreedState(
     };
   });
 
-  const proposalRows = state.proposals.map((proposal) => ({
+  // Stale proposals are resolved, not persisted: they used to be written back
+  // with status "stale" forever (removable only covered accepted/rejected), so
+  // every refresh reloaded them and they accumulated. The client now drops
+  // them from its list on resolution; this filter is the belt-and-braces.
+  const persistableProposals = state.proposals.filter(
+    (proposal) => proposal.status !== "stale",
+  );
+  const proposalRows = persistableProposals.map((proposal) => ({
     id: proposal.id,
     creed_id: creedId,
     user_id: userId,
@@ -1991,7 +1998,7 @@ export async function persistCreedState(
     updated_at: now,
   }));
 
-  const proposalIds = state.proposals.map((proposal) => proposal.id);
+  const proposalIds = persistableProposals.map((proposal) => proposal.id);
   const knownProposalIds = new Set(proposalIds);
   const activityRows = state.activity
     .filter((entry) => !isNoopActivityEntry(entry))
@@ -2097,7 +2104,9 @@ export async function persistCreedState(
     state.activity
       .filter(
         (entry) =>
-          (entry.status === "accepted" || entry.status === "rejected") &&
+          (entry.status === "accepted" ||
+            entry.status === "rejected" ||
+            entry.status === "stale") &&
           Boolean(entry.proposalId),
       )
       .map((entry) => entry.proposalId as string),
