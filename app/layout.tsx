@@ -3,9 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/creed/theme-provider";
 import { WelcomeDevPreview } from "@/components/creed/welcome-dev-preview";
-import { AppVersionNotifier } from "@/components/creed/app-version-notifier";
 import { getSiteUrl } from "@/lib/supabase/env";
-import { getAppVersion } from "@/lib/app-version";
 import { Toaster } from "@/components/ui/toaster";
 import "./globals.css";
 
@@ -67,7 +65,6 @@ export default function RootLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const appVersion = getAppVersion();
 
   return (
     <html
@@ -93,7 +90,6 @@ export default function RootLayout({
         <ThemeProvider>
           {children}
           <Toaster />
-          <AppVersionNotifier initialVersion={appVersion} />
           <WelcomeDevPreview />
         </ThemeProvider>
       </body>

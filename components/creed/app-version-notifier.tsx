@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 const UPDATE_TOAST_ID = "creed-app-version-update";
-const VERSION_CHECK_INTERVAL_MS = 60_000;
+// The version only changes on deploy, and /api/version is CDN-cached for
+// 5 minutes - polling faster than that just re-reads the same cached body.
+const VERSION_CHECK_INTERVAL_MS = 300_000;
 
 type AppVersionNotifierProps = {
   initialVersion: string;
@@ -54,9 +56,7 @@ export function AppVersionNotifier({
 
   const checkForUpdate = useCallback(async () => {
     try {
-      const response = await fetch(`/api/version?ts=${Date.now()}`, {
-        cache: "no-store",
-      });
+      const response = await fetch("/api/version");
       if (!response.ok) {
         return;
       }
@@ -77,25 +77,41 @@ export function AppVersionNotifier({
   }, [initialVersion, showVersionNotice]);
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(
-      checkForUpdate,
-      VERSION_CHECK_INTERVAL_MS,
-    );
-    const intervalId = window.setInterval(
-      checkForUpdate,
-      VERSION_CHECK_INTERVAL_MS,
-    );
+    // Poll only while the tab is visible. Hidden/backgrounded tabs stop
+    // entirely; a visibility-gain checks once and restarts the interval,
+    // so a stale tab still learns about a new deploy the moment it's seen.
+    let intervalId: number | null = null;
+
+    function stopPolling() {
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      intervalId = window.setInterval(
+        checkForUpdate,
+        VERSION_CHECK_INTERVAL_MS,
+      );
+    }
 
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
         void checkForUpdate();
+        startPolling();
+      } else {
+        stopPolling();
       }
     }
 
+    if (document.visibilityState === "visible") {
+      startPolling();
+    }
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
-      window.clearTimeout(timeoutId);
-      window.clearInterval(intervalId);
+      stopPolling();
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [checkForUpdate]);

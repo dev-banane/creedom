@@ -110,9 +110,19 @@ const CreedContext = createContext<CreedContextValue | null>(null);
 const AUTOSAVE_DELAY_MS = 500;
 const EXTERNAL_SYNC_INTERVAL_MS = 30_000;
 // Company Creeds are multi-user, so changes (proposals, edits, reviews) need to
-// surface on everyone's screen quickly - poll far more often than the personal
-// single-user case. Focus/visibility refetches still make tab-switches instant.
+// surface on everyone's screen quickly. Member edits arrive instantly over the
+// realtime channel (see broadcastStateChanged); the poll only backstops writes
+// that can't broadcast (MCP agents hitting the API). It runs fast while the
+// creed is active and decays when nothing has happened for a while - idle open
+// tabs were the dominant source of function invocations.
 const COMPANY_SYNC_INTERVAL_MS = 5_000;
+const COMPANY_IDLE_SYNC_INTERVAL_MS = 30_000;
+// How recently something must have happened (local save, remote broadcast,
+// refocus) for a company creed to keep polling at the fast cadence.
+const SYNC_ACTIVE_WINDOW_MS = 120_000;
+// Collapse bursts: focus + visibilitychange both fire on a tab switch, and
+// broadcasts can arrive mid-poll. One sync inside this gap serves them all.
+const SYNC_MIN_GAP_MS = 1_500;
 // How long after a local company mutation syncs keep the full local-sections
 // freeze (covers optimistic structural POSTs still in flight).
 const COMPANY_MUTATION_QUIET_MS = 8_000;
@@ -474,6 +484,14 @@ export function CreedProvider({
   >({});
   const presenceChannelRef = useRef<RealtimeChannel | null>(null);
   const presenceIdleTimerRef = useRef<number | null>(null);
+  // Sync plumbing: in-flight/min-gap dedupe, the activity clock that drives
+  // the adaptive poll cadence, and a ref so the presence channel (created
+  // earlier in the component) can trigger syncs without a TDZ on
+  // syncFromServer.
+  const syncInFlightRef = useRef(false);
+  const lastSyncAtRef = useRef(0);
+  const syncActivityRef = useRef(Date.now());
+  const syncFromServerRef = useRef<() => void>(() => {});
   // The section we've announced (null once idle-cleared). Presence state
   // persists server-side until untrack/leave, so we only re-track when the
   // section actually changes - keystrokes merely push the idle deadline out,
@@ -520,6 +538,18 @@ export function CreedProvider({
       presenceLastJsonRef.current = json;
       setSectionPresence(next);
     };
+    // Another member saved: pull their change now instead of waiting out the
+    // poll. Trailing-debounced - a typing burst broadcasts per autosave, one
+    // GET after it settles delivers the same freshness.
+    let broadcastDebounce: number | null = null;
+    channel.on("broadcast", { event: "state-changed" }, () => {
+      syncActivityRef.current = Date.now();
+      if (broadcastDebounce !== null) window.clearTimeout(broadcastDebounce);
+      broadcastDebounce = window.setTimeout(() => {
+        broadcastDebounce = null;
+        syncFromServerRef.current();
+      }, 1_000);
+    });
     channel.on("presence", { event: "sync" }, recompute).subscribe((status: string) => {
       // If the user started typing before the join handshake finished, that
       // early track() was dropped - announce again now that we're joined.
@@ -534,6 +564,10 @@ export function CreedProvider({
       presenceChannelRef.current = null;
       presenceTrackedSectionRef.current = null;
       presenceLastJsonRef.current = "";
+      if (broadcastDebounce !== null) {
+        window.clearTimeout(broadcastDebounce);
+        broadcastDebounce = null;
+      }
       if (presenceIdleTimerRef.current !== null) {
         window.clearTimeout(presenceIdleTimerRef.current);
         presenceIdleTimerRef.current = null;
@@ -577,10 +611,21 @@ export function CreedProvider({
   const broadcastStateChanged = useCallback(() => {
     const creedId = latestStateRef.current.creedId;
     if (!creedId) return;
+    // A local save is activity: keep this tab's poll on the fast cadence.
+    syncActivityRef.current = Date.now();
     try {
       syncChannelRef.current?.postMessage({ creedId });
     } catch {
       // Channel closed mid-teardown; the other tab's poll still covers it.
+    }
+    // Company creeds also announce to the other members' browsers over the
+    // realtime channel, so their screens update now, not at the next poll.
+    if (latestStateRef.current.creedType === "company") {
+      void presenceChannelRef.current
+        ?.send({ type: "broadcast", event: "state-changed", payload: { creedId } })
+        .catch(() => {
+          // Channel not joined yet or transient network error; polling covers it.
+        });
     }
   }, []);
   // Company mode saves per section (not the full-state PUT). One debounce timer
@@ -993,11 +1038,27 @@ export function CreedProvider({
     if (!persistenceEnabled) {
       return;
     }
+    // Dedupe bursts: focus + visibilitychange fire together on a tab switch,
+    // and broadcasts can land mid-poll. One request inside the gap is enough.
+    const now = Date.now();
+    if (syncInFlightRef.current || now - lastSyncAtRef.current < SYNC_MIN_GAP_MS) {
+      return;
+    }
+    syncInFlightRef.current = true;
+    lastSyncAtRef.current = now;
 
-    const response = await fetch("/api/app/state", {
-      method: "GET",
-      cache: "no-store",
-    });
+    let response: Response;
+    try {
+      response = await fetch("/api/app/state", {
+        method: "GET",
+        cache: "no-store",
+      });
+    } catch {
+      // Offline / network blip; the next poll retries.
+      return;
+    } finally {
+      syncInFlightRef.current = false;
+    }
 
     if (!response.ok) {
       return;
@@ -1082,6 +1143,13 @@ export function CreedProvider({
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, [persistenceEnabled, flushPendingState]);
+
+  // Keep the presence channel's broadcast handler pointed at the current
+  // syncFromServer (the channel effect runs earlier in the component than the
+  // callback's declaration, so it goes through this ref).
+  useEffect(() => {
+    syncFromServerRef.current = () => void syncFromServer();
+  }, [syncFromServer]);
 
   // Listen for other tabs' save announcements (see broadcastStateChanged).
   // The resync is trailing-debounced: a typing burst in the other tab
@@ -1204,9 +1272,17 @@ export function CreedProvider({
     // personal Creeds stay lazy. Reads creedType fresh each tick so switching
     // Creeds adapts without restarting the effect.
     function scheduleNext(myEpoch: number) {
+      // Company creeds poll fast only while something is happening (a local
+      // save, a member's broadcast, a refocus); an idle tab decays to the
+      // slow cadence. Member edits still land instantly via broadcast, so
+      // the fast poll mainly covers MCP agent writes during active use.
+      const companyActive =
+        Date.now() - syncActivityRef.current < SYNC_ACTIVE_WINDOW_MS;
       const delay =
         latestStateRef.current.creedType === "company"
-          ? COMPANY_SYNC_INTERVAL_MS
+          ? companyActive
+            ? COMPANY_SYNC_INTERVAL_MS
+            : COMPANY_IDLE_SYNC_INTERVAL_MS
           : EXTERNAL_SYNC_INTERVAL_MS;
       interval = window.setTimeout(() => {
         void syncFromServer().finally(() => {
@@ -1229,12 +1305,14 @@ export function CreedProvider({
     }
 
     function onWindowFocus() {
+      syncActivityRef.current = Date.now();
       void syncFromServer();
       startInterval();
     }
 
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
+        syncActivityRef.current = Date.now();
         void syncFromServer();
         startInterval();
       } else {

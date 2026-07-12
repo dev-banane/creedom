@@ -437,7 +437,13 @@ export function CompanySettings() {
   useEffect(() => {
     const onFocus = () => void refreshState();
     window.addEventListener("focus", onFocus);
-    const interval = window.setInterval(() => void refreshState(), 5000);
+    // 15s, visible tabs only: an invite accept surfacing within a few seconds
+    // of the manager looking at the screen is what matters, not a hidden tab
+    // polling all day.
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void refreshState();
+    }, 15000);
     return () => {
       window.removeEventListener("focus", onFocus);
       window.clearInterval(interval);

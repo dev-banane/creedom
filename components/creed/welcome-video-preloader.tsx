@@ -31,7 +31,7 @@ export function WelcomeVideoPreloader({
       className="pointer-events-none fixed h-0 w-0 overflow-hidden opacity-0"
     >
       {keys.map((key) => (
-        <video key={key} muted playsInline preload="auto" tabIndex={-1}>
+        <video key={key} muted playsInline preload="metadata" tabIndex={-1}>
           <source src={`${base}/${key}.webm?v=${WELCOME_MEDIA_VERSION}`} type="video/webm" />
           <source src={`${base}/${key}.mp4?v=${WELCOME_MEDIA_VERSION}`} type="video/mp4" />
         </video>

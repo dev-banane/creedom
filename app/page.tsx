@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { BackendSetupScreen } from "@/components/auth/backend-setup-screen";
 import { hasPersistedCreed } from "@/lib/creed-backend";
@@ -22,6 +23,18 @@ export const dynamic = "force-dynamic";
 // (creed-app) layout will load real state on the next request.
 export default async function Home() {
   if (!isSupabaseConfigured()) {
+    redirect("/home");
+  }
+
+  // Fast path for signed-out visitors (and every crawler that hits `/`):
+  // no Supabase auth cookie means no session, so skip the client setup and
+  // the auth/entitlement round-trips entirely. Anyone holding a cookie -
+  // even an expired one - falls through to the real getUser() check below.
+  const cookieStore = await cookies();
+  const hasAuthCookie = cookieStore
+    .getAll()
+    .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token"));
+  if (!hasAuthCookie) {
     redirect("/home");
   }
 

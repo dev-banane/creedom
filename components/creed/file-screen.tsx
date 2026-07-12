@@ -1205,13 +1205,23 @@ export function FileScreen() {
 
     void loadAiReadiness();
 
-    function onWindowFocus() {
+    // Focus and visibilitychange both fire on a tab switch; collapse the
+    // pair (and any other burst) into one request.
+    let lastCheckAt = Date.now();
+    function recheck() {
+      const now = Date.now();
+      if (now - lastCheckAt < 2_000) return;
+      lastCheckAt = now;
       void loadAiReadiness();
+    }
+
+    function onWindowFocus() {
+      recheck();
     }
 
     function onVisibilityChange() {
       if (document.visibilityState === "visible") {
-        void loadAiReadiness();
+        recheck();
       }
     }
 
@@ -1331,7 +1341,12 @@ export function FileScreen() {
         // A transient read failure just leaves the current report in place.
       }
     }
-    const interval = window.setInterval(() => void syncSharedReport(), 20000);
+    // 60s cadence, visible tabs only - a shared report refresh isn't
+    // latency-sensitive, and the focus refetch covers "just switched back".
+    const interval = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void syncSharedReport();
+    }, 60000);
     const onFocus = () => void syncSharedReport();
     window.addEventListener("focus", onFocus);
     return () => {

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { AppShellLayout } from "@/components/creed/app-shell-layout";
+import { AppVersionNotifier } from "@/components/creed/app-version-notifier";
+import { getAppVersion } from "@/lib/app-version";
 import { AuthedProviders } from "@/components/creed/authed-providers";
 import { hasPersistedCreed } from "@/lib/creed-backend";
 import { isSupabaseTableMissingError } from "@/lib/creed-backend-errors";
@@ -48,6 +50,7 @@ export default async function CreedAppLayout({ children }: { children: ReactNode
         <AppShellLayout showWelcome={false} welcomePaidAt={null}>
           {children}
         </AppShellLayout>
+        <AppVersionNotifier initialVersion={getAppVersion()} />
       </AuthedProviders>
     );
   }
@@ -137,6 +140,7 @@ export default async function CreedAppLayout({ children }: { children: ReactNode
       <AppShellLayout showWelcome={showWelcome} welcomePaidAt={paidAt}>
         {children}
       </AppShellLayout>
+      <AppVersionNotifier initialVersion={getAppVersion()} />
     </AuthedProviders>
   );
 }

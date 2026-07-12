@@ -7,6 +7,8 @@
 export const MARKETING_PREFIXES = [
   "/home",
   "/docs",
+  "/learn",
+  "/changelog",
   "/bench",
   "/examples",
   "/pricing",

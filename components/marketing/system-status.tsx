@@ -102,8 +102,10 @@ export function SystemStatusPill({
     let cancelled = false;
 
     async function loadStatus() {
+      // Skip while hidden; the next visible poll (or refocus) catches up.
+      if (document.visibilityState !== "visible") return;
       try {
-        const response = await fetch(STATUS_ENDPOINT, { cache: "no-store" });
+        const response = await fetch(STATUS_ENDPOINT);
         if (!response.ok) return;
 
         const data = (await response.json()) as LiveStatusResponse;
@@ -119,7 +121,9 @@ export function SystemStatusPill({
     }
 
     void loadStatus();
-    const intervalId = window.setInterval(loadStatus, 60_000);
+    // 5 min cadence: the route is CDN-cached for 60s anyway, and a status
+    // pill in the footer doesn't need sub-minute freshness.
+    const intervalId = window.setInterval(loadStatus, 300_000);
 
     return () => {
       cancelled = true;

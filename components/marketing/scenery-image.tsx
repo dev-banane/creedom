@@ -63,19 +63,26 @@ export function SceneryImage({
     );
   }
 
+  // Prefer the AVIF sibling (~40x smaller than the PNG masters); browsers
+  // without AVIF support, or a missing .avif file, fall back to the PNG <img>.
+  const avifSrc = src.endsWith(".png") ? src.replace(/\.png$/, ".avif") : null;
+
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      ref={imgRef}
-      src={src}
-      alt=""
-      decoding="async"
-      fetchPriority={priority ? "high" : undefined}
-      onError={() => setErrored(true)}
-      onLoad={(event) => {
-        if (event.currentTarget.naturalWidth === 0) setErrored(true);
-      }}
-      className={cn("absolute inset-0 h-full w-full object-cover object-center", className)}
-    />
+    <picture>
+      {avifSrc ? <source srcSet={avifSrc} type="image/avif" /> : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        ref={imgRef}
+        src={src}
+        alt=""
+        decoding="async"
+        fetchPriority={priority ? "high" : undefined}
+        onError={() => setErrored(true)}
+        onLoad={(event) => {
+          if (event.currentTarget.naturalWidth === 0) setErrored(true);
+        }}
+        className={cn("absolute inset-0 h-full w-full object-cover object-center", className)}
+      />
+    </picture>
   );
 }
