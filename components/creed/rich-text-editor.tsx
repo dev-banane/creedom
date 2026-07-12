@@ -44,6 +44,7 @@ import {
   InlineTagMark,
   type SectionTagTarget,
 } from "@/components/creed/extensions/inline-tag";
+import { TabComplete } from "@/components/creed/extensions/tab-complete";
 import {
   SECTION_REFERENCE_PICKER_GAP,
   SECTION_REFERENCE_PICKER_MAX_ROWS,
@@ -491,6 +492,26 @@ export function RichTextEditor({
     [],
   );
 
+  const sectionIdRef = useRef(sectionId);
+  useEffect(() => {
+    sectionIdRef.current = sectionId;
+  }, [sectionId]);
+
+  const tabCompleteExtension = useMemo(
+    () =>
+      TabComplete.configure({
+        getSectionId: () => sectionIdRef.current,
+        // The slash menu and # picker own Tab while their popover is open;
+        // the ghost never fights them for the key.
+        shouldDeferKey: (state) =>
+          Boolean(
+            slashPluginKey.getState(state)?.active ||
+              sectionTagPluginKey.getState(state)?.active,
+          ),
+      }),
+    [],
+  );
+
   // We mirror the slash items + active index into refs *synchronously*
   // inside `updateSlashMenu` (below) and the index setters, instead of via
   // a useEffect. The previous version was racing: if you typed `/h` and
@@ -914,6 +935,7 @@ export function RichTextEditor({
       inlineTagExtension,
       slashCommandExtension,
       sectionTagExtension,
+      tabCompleteExtension,
     ],
     content,
     editorProps: {

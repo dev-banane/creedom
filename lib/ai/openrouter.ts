@@ -80,6 +80,7 @@ export async function streamOpenRouter({
   timeoutMs = 90000,
   responseFormat,
   providerPreferences,
+  reasoning,
   onDelta,
   signal,
 }: {
@@ -91,6 +92,11 @@ export async function streamOpenRouter({
   timeoutMs?: number;
   responseFormat?: Record<string, unknown>;
   providerPreferences?: Record<string, unknown>;
+  // Optional OpenRouter reasoning config (e.g. { effort: "low", exclude:
+  // true }). Reasoning models like gpt-oss spend completion tokens on hidden
+  // reasoning by default; latency-critical callers with small max_tokens must
+  // rein that in or the content can come back empty.
+  reasoning?: Record<string, unknown>;
   onDelta?: (chunk: string) => void;
   signal?: AbortSignal;
 }): Promise<OpenRouterCallResult> {
@@ -121,6 +127,7 @@ export async function streamOpenRouter({
         usage: { include: true },
         ...(responseFormat ? { response_format: responseFormat } : {}),
         ...(providerPreferences ? { provider: providerPreferences } : {}),
+        ...(reasoning ? { reasoning } : {}),
       }),
       signal: controller.signal,
       cache: "no-store",

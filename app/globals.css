@@ -756,6 +756,87 @@
   cursor: text;
 }
 
+/* Tab autocomplete ghost text. Rendered as a ProseMirror widget decoration
+ * (never document content), tinted toward the section accent so it reads as
+ * proposed, not written. */
+.creed-tab-ghost-wrapper {
+  user-select: none;
+  pointer-events: none;
+}
+
+.creed-tab-ghost {
+  color: color-mix(
+    in srgb,
+    var(--section-accent, #6b7280) 34%,
+    var(--creed-text-tertiary)
+  );
+  white-space: pre-wrap;
+}
+
+/* While a ghost occupies the first empty paragraph, hide the editor
+ * placeholder so the two never overlap. */
+.ProseMirror p.is-editor-empty.has-tab-ghost::before {
+  content: none;
+}
+
+/* Keycap hint trailing the ghost: Tab accept, Esc dismiss. Matches the
+ * shared ShortcutKey styling (border, raised surface, 10px caps). */
+.creed-tab-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
+.creed-tab-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 16px;
+  padding: 0 4px;
+  border: 1px solid var(--creed-border);
+  border-radius: 4px;
+  background: var(--creed-surface-raised);
+  font-family: var(--font-geist-sans), sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--creed-text-secondary);
+}
+
+.creed-tab-hint span {
+  font-size: 11px;
+  line-height: 1;
+  color: var(--creed-text-tertiary);
+}
+
+.creed-tab-hint span + kbd {
+  margin-left: 4px;
+}
+
+/* Small ring spinner while the suggestion is in flight. Kept subtle: the
+ * fast models land in well under a second, so it mostly never gets noticed. */
+.creed-tab-spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 4px;
+  vertical-align: -1px;
+  border-radius: 9999px;
+  border: 1.5px solid
+    color-mix(in srgb, var(--creed-text-tertiary) 30%, transparent);
+  border-top-color: var(--creed-text-tertiary);
+  animation: creed-tab-spin 700ms linear infinite;
+}
+
+@keyframes creed-tab-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Cursor-style inline diff for proposal review. */
 .creed-diff-block {
   font-family: var(--font-geist-sans), sans-serif;

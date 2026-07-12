@@ -11,6 +11,7 @@ import { personalContextFileTemplate } from "./personal-context-file-template";
 import { claudeMdForYourLife } from "./claude-md-for-your-life";
 import { personalClaudeMdTemplate } from "./personal-claude-md-template";
 import { aboutMeMd } from "./about-me-md";
+import { tabAutocomplete } from "./tab-autocomplete";
 // Problem
 import { whyChatgptForgetsYou } from "./why-chatgpt-forgets-you";
 import { chatgptCustomInstructionsLimit } from "./chatgpt-custom-instructions-limit";
@@ -41,6 +42,7 @@ export const learnArticles: Article[] = [
   claudeMdForYourLife,
   personalClaudeMdTemplate,
   aboutMeMd,
+  tabAutocomplete,
   whyChatgptForgetsYou,
   chatgptCustomInstructionsLimit,
   stopRepeatingYourselfToAi,

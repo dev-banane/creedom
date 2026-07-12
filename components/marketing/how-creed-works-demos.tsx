@@ -15,7 +15,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ArrowUp, Check, ChevronDown, X } from "lucide-react";
+import { ArrowUp, Check, ChevronDown } from "lucide-react";
 import { AgentIconStack } from "@/components/creed/agent-icon-stack";
 import {
   DiffBadge,
@@ -356,16 +356,14 @@ function MiniProposalDiff({
             onClick={onReject}
             className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
           >
-            <X className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Reject</span>
+            Reject
           </button>
           <button
             type="button"
             onClick={onAccept}
             className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
           >
-            <Check className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Accept</span>
+            Accept
           </button>
         </div>
       </div>

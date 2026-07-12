@@ -10,7 +10,10 @@
 // /public/assets/popups/<variant>/<key>.mp4 (+ optional .webm). The company
 // variant adds the members slide and pulls from the company folder.
 
-import type { WelcomeVariant } from "@/lib/welcome-preview";
+import {
+  WELCOME_MEDIA_VERSION,
+  type WelcomeVariant,
+} from "@/lib/welcome-preview";
 
 const PERSONAL_KEYS = ["file", "connect", "analysis", "panel", "tab", "discord"];
 const COMPANY_KEYS = ["file", "members", "connect", "analysis", "panel", "tab", "discord"];
@@ -29,8 +32,8 @@ export function WelcomeVideoPreloader({
     >
       {keys.map((key) => (
         <video key={key} muted playsInline preload="auto" tabIndex={-1}>
-          <source src={`${base}/${key}.webm`} type="video/webm" />
-          <source src={`${base}/${key}.mp4`} type="video/mp4" />
+          <source src={`${base}/${key}.webm?v=${WELCOME_MEDIA_VERSION}`} type="video/webm" />
+          <source src={`${base}/${key}.mp4?v=${WELCOME_MEDIA_VERSION}`} type="video/mp4" />
         </video>
       ))}
     </div>

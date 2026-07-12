@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import type { StaticImageData } from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import {
   DirectEditDemo,
@@ -255,7 +254,7 @@ function AnimatedStatNumber({
         ) : null}
         {suffix}
       </span>
-      <span className="mb-[0.2em] ml-[0.08em] text-[0.34em] font-medium leading-none tracking-[-0.02em] text-[var(--creed-text-tertiary)]">
+      <span className="mb-[0.2em] ml-[0.08em] text-[0.34em] font-medium leading-none tracking-[-0.02em] text-[var(--creed-text-primary)]">
         {cadence}
       </span>
     </span>
@@ -597,55 +596,89 @@ function PanelFeatureDemo() {
   );
 }
 
-function ComingSoonDemo() {
-  const particles = [
-    { x: -62, y: -48, delay: 0 },
-    { x: 56, y: -58, delay: 0.24 },
-    { x: -72, y: 20, delay: 0.48 },
-    { x: 68, y: 18, delay: 0.72 },
-    { x: -34, y: 68, delay: 0.96 },
-    { x: 38, y: 64, delay: 1.2 },
-    { x: 4, y: -76, delay: 1.44 },
-    { x: 78, y: -14, delay: 1.68 },
-  ] as const;
+// The Tab demo loop: a section line types out, the Tab keycap appears, ghost
+// text streams in, Tab flashes, and the ghost solidifies into the line. Built
+// to mirror the real in-editor ghost (tinted suggestion + Tab / Esc hint).
+const TAB_DEMO_PREFIX = "Keep replies short and";
+const TAB_DEMO_GHOST = " lead with the answer, not the setup.";
+
+type TabDemoPhase = "typing" | "waiting" | "streaming" | "accepted";
+
+function TabFeatureDemo() {
+  const [phase, setPhase] = useState<TabDemoPhase>("typing");
+  const [typedChars, setTypedChars] = useState(0);
+  const [ghostWords, setGhostWords] = useState(0);
+  const ghostParts = TAB_DEMO_GHOST.split(/(?<= )/);
+
+  useEffect(() => {
+    if (phase === "typing") {
+      setGhostWords(0);
+      if (typedChars >= TAB_DEMO_PREFIX.length) {
+        const id = window.setTimeout(() => setPhase("waiting"), 420);
+        return () => window.clearTimeout(id);
+      }
+      const id = window.setTimeout(() => setTypedChars((c) => c + 1), 46);
+      return () => window.clearTimeout(id);
+    }
+    if (phase === "waiting") {
+      const id = window.setTimeout(() => setPhase("streaming"), 900);
+      return () => window.clearTimeout(id);
+    }
+    if (phase === "streaming") {
+      if (ghostWords >= ghostParts.length) {
+        const id = window.setTimeout(() => setPhase("accepted"), 950);
+        return () => window.clearTimeout(id);
+      }
+      const id = window.setTimeout(() => setGhostWords((w) => w + 1), 90);
+      return () => window.clearTimeout(id);
+    }
+    // accepted: hold the finished line, then restart the loop.
+    const id = window.setTimeout(() => {
+      setTypedChars(0);
+      setGhostWords(0);
+      setPhase("typing");
+    }, 2400);
+    return () => window.clearTimeout(id);
+  }, [ghostParts.length, ghostWords, phase, typedChars]);
+
+  const showGhost = phase === "streaming";
+  const ghostText = ghostParts.slice(0, ghostWords).join("");
 
   return (
-    <div className="flex min-h-[260px] w-full items-center justify-center">
-      <div className="relative flex h-36 w-36 items-center justify-center text-white/88 dark:text-[#052e16]/78">
-        {particles.map((particle, index) => (
-          <motion.span
-            key={`${particle.x}-${particle.y}`}
-            aria-hidden="true"
-            className="absolute z-10 text-[22px] font-medium leading-none tracking-[-0.08em] text-current"
-            initial={{
-              x: 0,
-              y: 0,
-              opacity: 0.48,
-              scale: 0.72,
-              rotate: 0,
-            }}
-            animate={{
-              x: [0, particle.x],
-              y: [0, particle.y],
-              opacity: [0.48, 0.86, 0.42],
-              scale: [0.72, 1.05, 0.78],
-              rotate: index % 2 === 0 ? [0, -12] : [0, 12],
-            }}
-            transition={{
-              duration: 2.4,
-              delay: particle.delay,
-              repeat: Infinity,
-              repeatDelay: 0,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            ?
-          </motion.span>
-        ))}
-        <span className="absolute h-28 w-28 animate-pulse rounded-full bg-white/8 blur-xl dark:bg-[#052e16]/10" />
-        <span className="relative z-20 text-[88px] font-medium leading-none tracking-[-0.08em]">
-          ?
+    <div className="mx-auto w-full max-w-[390px] overflow-hidden rounded-[16px] border border-[var(--creed-border)] bg-[var(--creed-surface)] shadow-[0_10px_30px_rgba(28,28,26,0.10)]">
+      <div className="flex items-center gap-2 border-b border-[var(--creed-border)] px-3.5 py-3">
+        <span className="h-4 w-1 shrink-0 rounded-[3px] bg-[#06B6D4]" />
+        <div className="min-w-0 flex-1 text-[13px] font-medium text-[var(--creed-text-primary)]">
+          Preferences
+        </div>
+        <span
+          className={cn(
+            "rounded-[6px] border border-[var(--creed-border)] bg-[var(--creed-surface-raised)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--creed-text-secondary)] transition-all duration-150",
+            (phase === "waiting" || phase === "accepted") &&
+              "border-[#22C55E]/50 text-[#16A34A] dark:text-[#4ade80]",
+          )}
+        >
+          Tab
         </span>
+      </div>
+
+      <div className="min-h-[132px] p-4 text-[14px] leading-[1.7] text-[var(--creed-text-primary)]">
+        <span>{TAB_DEMO_PREFIX.slice(0, typedChars)}</span>
+        {phase === "accepted" ? <span>{TAB_DEMO_GHOST}</span> : null}
+        {showGhost ? (
+          <span className="text-[var(--creed-text-tertiary)]">{ghostText}</span>
+        ) : null}
+        {phase !== "accepted" ? (
+          <span className="ml-[1px] inline-block h-[1.05em] w-[1.5px] translate-y-[0.18em] animate-pulse rounded-full bg-[var(--creed-text-secondary)]" />
+        ) : null}
+        {showGhost && ghostWords >= ghostParts.length ? (
+          <span className="ml-2 inline-flex items-center gap-1 align-middle text-[11px] text-[var(--creed-text-tertiary)]">
+            <kbd className="inline-flex h-4 items-center rounded border border-[var(--creed-border)] bg-[var(--creed-surface-raised)] px-1 text-[10px] font-medium leading-none text-[var(--creed-text-secondary)]">
+              Tab
+            </kbd>
+            accept
+          </span>
+        ) : null}
       </div>
     </div>
   );
@@ -680,10 +713,10 @@ function AiFeaturesSection() {
         <PlateCard
           plateColor="#22C55E"
           title="Tab"
-          body="Tab is in development and will be coming soon."
+          body="Press Tab and it finishes the thought in your voice, drawn from your whole file."
           square
         >
-          <ComingSoonDemo />
+          <TabFeatureDemo />
         </PlateCard>
       </div>
     </section>

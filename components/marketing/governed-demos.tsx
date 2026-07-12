@@ -11,9 +11,9 @@
 // reads "[agent] proposed") so the shared app component stays untouched.
 // Client-only mock state, no backend.
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Check, ChevronDown, RotateCcw, X } from "lucide-react";
+import { Check, ChevronDown, RotateCcw } from "lucide-react";
 import { DiffBadge, computeDiffParts, summarizeDiff } from "@/components/creed/inline-proposal-diff";
 import { AgentIconStack } from "@/components/creed/agent-icon-stack";
 import { type AccentKey, type Proposal, getProposalPreviewText } from "@/lib/creed-data";
@@ -143,19 +143,17 @@ function DemoProposalDiff({
             type="button"
             onClick={onReject}
             aria-label="Reject"
-            className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
+            className="inline-flex h-7 items-center rounded-md px-2 text-sm font-medium text-[var(--creed-text-secondary)] transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)]"
           >
-            <X className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Reject</span>
+            Reject
           </button>
           <button
             type="button"
             onClick={onAccept}
             aria-label="Accept"
-            className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
+            className="inline-flex h-7 items-center rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
           >
-            <Check className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline">Accept</span>
+            Accept
           </button>
         </div>
       </div>
@@ -193,6 +191,23 @@ export function ProposalDemo() {
 
   const remove = (id: string) => setPresent((prev) => prev.filter((p) => p !== id));
   const reset = () => setPresent(SEED.map((s) => s.proposal.id));
+
+  // Auto-loop like the other landing demos: each proposal resolves on a timer
+  // and the caught-up state replays, while clicks still work and simply jump
+  // the loop ahead.
+  const activeId = active?.proposal.id ?? null;
+  useEffect(() => {
+    const id = window.setTimeout(
+      () =>
+        setPresent((prev) =>
+          activeId
+            ? prev.filter((p) => p !== activeId)
+            : SEED.map((s) => s.proposal.id),
+        ),
+      activeId ? 3600 : 2600,
+    );
+    return () => window.clearTimeout(id);
+  }, [activeId]);
 
   return (
     <div className="w-full">
@@ -274,6 +289,13 @@ export function DirectEditDemo() {
   const parts = useMemo(() => computeDiffParts(DIRECT_BASE, DIRECT_NEXT), []);
   const stats = useMemo(() => summarizeDiff(parts), [parts]);
   const pending = approval;
+
+  // Auto-loop the approval toggle so the Direct / Pending swap plays on its
+  // own; a manual click flips it early and the loop continues from there.
+  useEffect(() => {
+    const id = window.setTimeout(() => setApproval((v) => !v), 3200);
+    return () => window.clearTimeout(id);
+  }, [approval]);
 
   return (
     <div className="w-full space-y-3">

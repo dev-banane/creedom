@@ -62,25 +62,23 @@ export const AI_MODEL_QUALITY_META: Record<
 export const DEFAULT_AI_MODEL_ID = "openai/gpt-5.5";
 
 // Server-selected model per feature, hidden from the user (there is no in-app
-// model picker). Analysis and Panel are wired today; Tab reads its env var once
-// the feature ships. Any unset var falls back to the per-feature default. See
-// project-context/roadmap.md.
+// model picker). Any unset var falls back to the per-feature default.
 const FEATURE_MODEL_ENV: Record<AiFeature, string> = {
   analysis: "ANALYSIS_MODEL",
   tab: "TAB_MODEL",
   panel: "PANEL_MODEL",
 };
 
-// Panel resolves a query into a handful of navigation actions - it lives or
-// dies on latency, so it defaults to a strong open-weights model that Groq and
-// Cerebras both serve (the panel route requests throughput-sorted routing, so
-// OpenRouter lands on that fast silicon). The flagship default stays for the
-// deeper features.
+// Panel and Tab live or die on latency, so they default to a strong
+// open-weights model that Groq and Cerebras both serve (their routes request
+// throughput-sorted routing, so OpenRouter lands on that fast silicon). Tab
+// especially is judged on time-to-first-token: it streams one small block of
+// ghost text per press.
 const FEATURE_MODEL_DEFAULT: Record<AiFeature, string> = {
   // Analysis runs on Haiku: near-flagship quality on structured extraction at a
   // fraction of the cost and latency. Override with ANALYSIS_MODEL.
   analysis: "anthropic/claude-haiku-4.5",
-  tab: DEFAULT_AI_MODEL_ID,
+  tab: "openai/gpt-oss-120b",
   panel: "openai/gpt-oss-120b",
 };
 

@@ -7,6 +7,12 @@
 
 export type WelcomeVariant = "personal" | "company";
 
+// Cache-buster for the tour's slide videos. /assets/* ships an immutable
+// year-long Cache-Control, so replacing a clip in place never reaches
+// returning browsers; bump this when a video file changes. Shared by the
+// dialog and the preloader so the warmed URLs match the played ones.
+export const WELCOME_MEDIA_VERSION = "2";
+
 let current: WelcomeVariant = "personal";
 
 export function setWelcomePreviewVariant(variant: WelcomeVariant) {

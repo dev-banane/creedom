@@ -48,6 +48,9 @@ yarn-error.log*
 .cursor/
 .aider*
 
+# launch video workspace (Remotion) - local only, never pushed
+/video/
+
 # private project notes — not shipped publicly
 /project-context/
 /creed.md

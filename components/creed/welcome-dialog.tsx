@@ -55,7 +55,11 @@ import { TextCursorInputIcon } from "@/components/ui/text-cursor-input";
 import { UsersIcon } from "@/components/ui/users";
 import { DISCORD_URL } from "@/lib/branding";
 import { fireWelcomeConfetti } from "@/lib/confetti";
-import { getWelcomePreviewVariant, type WelcomeVariant } from "@/lib/welcome-preview";
+import {
+  getWelcomePreviewVariant,
+  WELCOME_MEDIA_VERSION,
+  type WelcomeVariant,
+} from "@/lib/welcome-preview";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "creed:welcomed";
@@ -109,16 +113,8 @@ const PERSONAL_SLIDES: Slide[] = [
   {
     key: "tab",
     icon: TextCursorInput,
-    title: "Tab is coming",
-    body: (
-      <>
-        It drafts the next line in your voice as you type.{" "}
-        <a href="/roadmap" className={LINK_CLASS}>
-          See the roadmap
-        </a>{" "}
-        for what is next.
-      </>
-    ),
+    title: "Tab finishes the thought",
+    body: "Press Tab in any section and it completes the line in your voice, drawn from your whole Creed.",
     hasVideo: true,
   },
   {
@@ -334,8 +330,8 @@ function MediaFrame({
             onCanPlay={() => setReady(true)}
             onError={() => setReady(false)}
           >
-            <source src={`${base}.webm`} type="video/webm" />
-            <source src={`${base}.mp4`} type="video/mp4" />
+            <source src={`${base}.webm?v=${WELCOME_MEDIA_VERSION}`} type="video/webm" />
+            <source src={`${base}.mp4?v=${WELCOME_MEDIA_VERSION}`} type="video/mp4" />
           </video>
         ) : null}
       </div>

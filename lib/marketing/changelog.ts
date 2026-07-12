@@ -13,6 +13,17 @@ export type ChangelogEntry = {
 
 export const changelog: ChangelogEntry[] = [
   {
+    date: "2026-07-12",
+    title: "Tab autocomplete",
+    body: "Press Tab while editing and Creed finishes the thought in your voice, drawn from your whole file. One suggestion per press, streamed as ghost text in a few hundred milliseconds.",
+    highlights: [
+      "Tab once for a suggestion, Tab again to accept, Escape or keep typing to dismiss.",
+      "Never invents facts: it only recombines what your file already says.",
+      "Empty sections get a short drafted opening synthesized from the rest of your Creed.",
+      "One metered generation per press against your usage allowance; accepting and dismissing are free.",
+    ],
+  },
+  {
     date: "2026-07-07",
     title: "Company Creeds",
     body: "Creed now works for a whole team, not just one person. The Company plan adds a shared Company Creed that every member's agents read before they act.",
