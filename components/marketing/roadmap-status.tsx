@@ -13,7 +13,7 @@ export const ROADMAP_STATUS_STYLE: Record<
 > = {
   next: {
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[#1D4ED8] dark:text-[#60A5FA]",
+    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
   },
   in_progress: {
     fill: "bg-[#FFFBEB] dark:bg-[#3a2a12]/50",

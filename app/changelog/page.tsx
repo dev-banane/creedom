@@ -81,7 +81,7 @@ export default function ChangelogPage() {
                     {entry.highlights.map((h, i) => (
                       <li
                         key={i}
-                        className="relative pl-5 text-[15px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[#2563EB]"
+                        className="relative pl-5 text-[15px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--creed-accent)]"
                       >
                         {h}
                       </li>

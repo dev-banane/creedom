@@ -171,7 +171,7 @@ export default async function AuthorizePage({
 
         <div className="mt-7 flex justify-center">
           <Link href="/">
-            <Button className="h-9 rounded-md bg-[#2563EB] px-6 text-white hover:bg-[#1D4ED8]">
+            <Button className="h-9 rounded-md bg-[var(--creed-accent)] px-6 text-white hover:bg-[var(--creed-accent-hover)]">
               Go to Creed
             </Button>
           </Link>
@@ -241,7 +241,7 @@ export default async function AuthorizePage({
             type="submit"
             name="decision"
             value="allow"
-            className="h-9 flex-1 rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+            className="h-9 flex-1 rounded-md bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
           >
             Allow
           </Button>

@@ -88,7 +88,7 @@ function sectionAccent(accent: string): string {
 // Role pill colours: owner blue, admin green, member amber. Same shape as the
 // personal integration status pills (rounded-[6px] px-1.5 py-0.5 text-[12px]).
 const ROLE_PILL: Record<"owner" | "admin" | "member", string> = {
-  owner: "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#172554]/50 dark:text-[#60A5FA]",
+  owner: "bg-[#EFF6FF] text-[var(--creed-accent-hover)] dark:bg-[#172554]/50 dark:text-[#60A5FA]",
   admin: "bg-[#ECFDF5] text-[#047857] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
   member:
     "bg-[#FFFBEB] text-[#B45309] dark:bg-[#422006]/50 dark:text-[#FBBF24]",
@@ -108,7 +108,7 @@ function RolePill({ role }: { role: "owner" | "admin" | "member" }) {
 }
 
 const INVITE_BUTTON =
-  "rounded-xl bg-[#2563EB] px-6 text-white hover:bg-[#1D4ED8] hover:text-white";
+  "rounded-xl bg-[var(--creed-accent)] px-6 text-white hover:bg-[var(--creed-accent-hover)] hover:text-white";
 
 // Company-mode /settings, built to match the personal settings screen exactly:
 // a single scrolling column of sections, each a bare card under an outside H2,
@@ -1226,7 +1226,7 @@ export function CompanySettings() {
                   </Button>
                 ) : null}
                 <Button
-                  className="rounded-md bg-[#2563EB] px-4 text-white hover:bg-[#1D4ED8] hover:text-white"
+                  className="rounded-md bg-[var(--creed-accent)] px-4 text-white hover:bg-[var(--creed-accent-hover)] hover:text-white"
                   onClick={() => setBuySeatsOpen(true)}
                 >
                   Buy
@@ -1753,7 +1753,7 @@ export function CompanySettings() {
                   target="_blank"
                   rel="noopener noreferrer"
                   title={state.settings.versionControl.lastRemoteMessage}
-                  className="truncate font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8]"
+                  className="truncate font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
                 >
                   {state.settings.versionControl.lastRemoteMessage}
                 </a>

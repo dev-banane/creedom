@@ -415,7 +415,7 @@ function NavRail({
               />
               <span className="hidden truncate lg:inline">{s.name}</span>
               {pending > 0 ? (
-                <span className="ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[#2563EB] px-1.5 text-[10px] font-medium leading-none tabular-nums text-white lg:inline-flex">
+                <span className="ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[var(--creed-accent)] px-1.5 text-[10px] font-medium leading-none tabular-nums text-white lg:inline-flex">
                   {pending}
                 </span>
               ) : null}
@@ -434,8 +434,8 @@ function NavRail({
       <div className="mt-auto">
         <div className="my-4 h-px bg-[var(--creed-border)] lg:my-6" />
         <div className="flex items-center justify-center gap-2.5 rounded-[10px] px-1 py-1 lg:justify-start lg:px-[7px]">
-          <Avatar className="h-6 w-6 overflow-hidden rounded-[8px] bg-[#2563EB]">
-            <AvatarFallback className="bg-[#2563EB] text-xs font-medium text-white">S</AvatarFallback>
+          <Avatar className="h-6 w-6 overflow-hidden rounded-[8px] bg-[var(--creed-accent)]">
+            <AvatarFallback className="bg-[var(--creed-accent)] text-xs font-medium text-white">S</AvatarFallback>
           </Avatar>
           <span className="hidden min-w-0 flex-1 truncate text-sm font-medium text-[var(--creed-text-primary)] lg:inline">Steve</span>
         </div>

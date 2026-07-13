@@ -301,7 +301,7 @@ function StepRow({
         className={cn(
           "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
           done
-            ? "scale-100 border-transparent bg-[#2563EB]"
+            ? "scale-100 border-transparent bg-[var(--creed-accent)]"
             : "border-[var(--creed-border-strong)] bg-transparent",
         )}
       >

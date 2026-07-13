@@ -88,7 +88,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
       topRight={
         <Link
           href="/login"
-          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]"
+          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
         >
           Sign in
         </Link>
@@ -109,7 +109,7 @@ export function ResetPasswordScreen({ configured = true }: { configured?: boolea
           </p>
           <Link
             href="/login"
-            className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]"
+            className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
           >
             Back to sign in
           </Link>

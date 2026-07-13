@@ -40,7 +40,7 @@ export function ContinueButton({
           arrow.start();
         }
       }}
-      className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-6 pr-5 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+      className="mt-8 inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[var(--creed-accent)] pl-6 pr-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
     >
       <span className="leading-none">Continue</span>
       <ArrowRightIcon

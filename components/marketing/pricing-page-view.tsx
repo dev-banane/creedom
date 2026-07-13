@@ -137,7 +137,7 @@ export function PricingPageView({ reference }: { reference?: ReactNode }) {
             />
             <PricingCard
               name="Personal"
-              nameClassName="text-[#2563EB]"
+              nameClassName="text-[var(--creed-accent)]"
               price={personal.price}
               cadence={personal.cadence}
               tagline={personal.tagline}
@@ -203,7 +203,7 @@ function BillingToggle({
             {active ? (
               <motion.span
                 layoutId="billing-toggle-pill"
-                className="absolute inset-0 -z-10 rounded-[7px] bg-[#2563EB]"
+                className="absolute inset-0 -z-10 rounded-[7px] bg-[var(--creed-accent)]"
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
               />
             ) : null}
@@ -328,7 +328,7 @@ function OwnedCorner({ tone }: { tone: "blue" | "amber" }) {
   const colorClassName =
     tone === "amber"
       ? "bg-[#F59E0B] dark:bg-[#F5A623]"
-      : "bg-[#2563EB]";
+      : "bg-[var(--creed-accent)]";
   return (
     <div
       className={cn(
@@ -710,7 +710,7 @@ function ctaClass(
     const color =
       tone === "amber"
         ? "bg-[#F59E0B] hover:bg-[#D97706] dark:bg-[#F5A623] dark:hover:bg-[#E0951E]"
-        : "bg-[#2563EB] hover:bg-[#1D4ED8]";
+        : "bg-[var(--creed-accent)] hover:bg-[var(--creed-accent-hover)]";
     return `inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md ${color} px-4 text-[14px] font-medium text-white transition-colors disabled:opacity-70`;
   }
   return "inline-flex h-10 w-full items-center justify-center gap-1.5 rounded-md border border-[var(--creed-border)] bg-transparent px-4 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:bg-[var(--creed-surface-raised)]";

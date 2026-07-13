@@ -19,7 +19,7 @@ const ROLES = [
     name: "Owner",
     body: "Manages billing, members, and content. Every team has one.",
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[#1D4ED8] dark:text-[#60A5FA]",
+    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
   },
   {
     name: "Admin",
@@ -75,7 +75,7 @@ export function CompanyPageView() {
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
               href="/pricing"
-              className="inline-flex h-10 items-center justify-center rounded-md bg-[#2563EB] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+              className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
             >
               See Company pricing
             </Link>
@@ -176,7 +176,7 @@ export function CompanyPageView() {
           <div className="mt-7">
             <Link
               href="/pricing"
-              className="text-[15px] font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8]"
+              className="text-[15px] font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
             >
               Full pricing and checkout
             </Link>

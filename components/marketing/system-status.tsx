@@ -58,8 +58,8 @@ const STATUS_VARIANTS: Record<SystemStatus, StatusVariant> = {
   },
   maintenance: {
     label: "Scheduled maintenance",
-    dot: "bg-[#2563EB]",
-    pulse: "bg-[#2563EB]/60",
+    dot: "bg-[var(--creed-accent)]",
+    pulse: "bg-[var(--creed-accent)]/60",
     text: "text-[var(--creed-text-secondary)]",
   },
   outage: {

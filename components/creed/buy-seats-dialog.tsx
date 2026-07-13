@@ -179,7 +179,7 @@ export function BuySeatsDialog({
             Cancel
           </Button>
           <Button
-            className="rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+            className="rounded-md bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
             onClick={() => void handleBuy()}
             disabled={!valid || busy}
           >

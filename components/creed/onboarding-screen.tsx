@@ -809,7 +809,7 @@ function ProposalCard() {
             <X className="h-3.5 w-3.5" />
             Reject
           </span>
-          <span className="inline-flex h-7 items-center gap-1 rounded-md bg-[#2563eb] px-2.5 text-sm font-medium text-white">
+          <span className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white">
             <Check className="h-3.5 w-3.5" />
             Accept
           </span>

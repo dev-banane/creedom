@@ -57,7 +57,7 @@ export function Toaster() {
           error:
             "!bg-[#FEF2F2] !text-[#B91C1C] !border-[#FCA5A5] dark:!bg-[#3F1212] dark:!text-[#fca5a5] dark:!border-[#7F1D1D]",
           info:
-            "!bg-[#EFF6FF] !text-[#1D4ED8] !border-[#BFDBFE] dark:!bg-[#0B1F4A] dark:!text-[#93C5FD] dark:!border-[#1E3A8A]",
+            "!bg-[#EFF6FF] !text-[var(--creed-accent-hover)] !border-[#BFDBFE] dark:!bg-[#0B1F4A] dark:!text-[#93C5FD] dark:!border-[#1E3A8A]",
         },
       }}
     />

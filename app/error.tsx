@@ -45,7 +45,7 @@ export default function RouteError({
         <button
           type="button"
           onClick={reset}
-          className="inline-flex h-10 items-center justify-center rounded-md bg-[#2563EB] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-[var(--creed-accent)] px-5 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
         >
           Try again
         </button>

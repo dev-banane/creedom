@@ -123,7 +123,7 @@ function ChipRowView({ node, updateAttributes, editor }: NodeViewProps) {
             <input
               type="text"
               placeholder="Add tag"
-              className="h-9 min-w-[120px] rounded-full border border-dashed border-[var(--creed-border-strong)] bg-[var(--creed-surface)] px-3 font-sans text-[12px] text-[var(--creed-text-primary)] outline-none transition-colors placeholder:text-[var(--creed-text-tertiary)] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/15"
+              className="h-9 min-w-[120px] rounded-full border border-dashed border-[var(--creed-border-strong)] bg-[var(--creed-surface)] px-3 font-sans text-[12px] text-[var(--creed-text-primary)] outline-none transition-colors placeholder:text-[var(--creed-text-tertiary)] focus:border-[var(--creed-accent)] focus:ring-2 focus:ring-[var(--creed-accent)]/15"
               onKeyDown={(event) => {
                 if (event.key === "Enter" || event.key === ",") {
                   event.preventDefault();

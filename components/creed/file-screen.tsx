@@ -203,7 +203,7 @@ const EMPTY_PROPOSALS: Proposal[] = [];
 
 function getProposalStatusStyles(status: ActivityStatus) {
   if (status === "pending") {
-    return "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]";
+    return "bg-[#EFF6FF] text-[var(--creed-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]";
   }
 
   if (status === "direct") {
@@ -279,7 +279,7 @@ function ActivityFilterPill({
           ? "border-[#F59E0B] bg-[#FFF7ED] text-[#C26A00] shadow-[inset_0_0_0_1px_#F59E0B] dark:border-[#fbbf24] dark:bg-[#451a03]/40 dark:text-[#fbbf24] dark:shadow-[inset_0_0_0_1px_#fbbf24]"
           : tone === "purple"
             ? "border-[#8B5CF6] bg-[#F5F3FF] text-[#7C3AED] shadow-[inset_0_0_0_1px_#8B5CF6] dark:border-[#c4b5fd] dark:bg-[#2e1065]/40 dark:text-[#c4b5fd] dark:shadow-[inset_0_0_0_1px_#c4b5fd]"
-            : "border-[#2563EB] bg-[#EFF6FF] text-[#1447E6] shadow-[inset_0_0_0_1px_#2563EB] dark:border-[#93c5fd] dark:bg-[#1e3a8a]/30 dark:text-[#93c5fd] dark:shadow-[inset_0_0_0_1px_#93c5fd]";
+            : "border-[var(--creed-accent)] bg-[#EFF6FF] text-[#1447E6] shadow-[inset_0_0_0_1px_#2563EB] dark:border-[#93c5fd] dark:bg-[#1e3a8a]/30 dark:text-[#93c5fd] dark:shadow-[inset_0_0_0_1px_#93c5fd]";
 
   return (
     <motion.button

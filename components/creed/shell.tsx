@@ -507,7 +507,7 @@ export function CreedShell({
                     {pendingCount > 0 ? (
                       <span
                         className={cn(
-                          "ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[#2563EB] px-1.5 text-[10px] font-medium leading-none text-white tabular-nums",
+                          "ml-auto hidden h-[18px] min-w-[18px] items-center justify-center rounded-[5px] bg-[var(--creed-accent)] px-1.5 text-[10px] font-medium leading-none text-white tabular-nums",
                           !collapsed && "lg:inline-flex"
                         )}
                         aria-label={`${pendingCount} pending proposal${pendingCount === 1 ? "" : "s"}`}

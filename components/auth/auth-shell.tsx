@@ -36,10 +36,10 @@ export function AuthShell({ topRight, children }: { topRight?: ReactNode; childr
         <div className="flex items-center justify-between text-[13px] text-[var(--creed-text-tertiary)]">
           <span>© 2026 Creed</span>
           <div className="flex items-center gap-5">
-            <a href={CONTACT_MAILTO} className="transition-colors hover:text-[#2563EB]">
+            <a href={CONTACT_MAILTO} className="transition-colors hover:text-[var(--creed-accent)]">
               Contact
             </a>
-            <Link href="/docs" className="transition-colors hover:text-[#2563EB]">
+            <Link href="/docs" className="transition-colors hover:text-[var(--creed-accent)]">
               Docs
             </Link>
           </div>

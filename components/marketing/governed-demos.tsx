@@ -295,7 +295,7 @@ export function DirectEditDemo() {
               className={cn(
                 "ml-auto inline-flex items-center rounded-[6px] px-1.5 py-0.5 text-[10px] font-medium",
                 pending
-                  ? "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#172554]/55 dark:text-[#93c5fd]"
+                  ? "bg-[#EFF6FF] text-[var(--creed-accent-hover)] dark:bg-[#172554]/55 dark:text-[#93c5fd]"
                   : "bg-[#FFF7ED] text-[#C2410C] dark:bg-[#431407]/55 dark:text-[#fdba74]"
               )}
             >

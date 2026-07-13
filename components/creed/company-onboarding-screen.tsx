@@ -59,7 +59,7 @@ type PreviewSection = { id: string; name: string; accent: AccentKey; content: st
 type InviteRow = { id: string; email: string };
 
 const INVITE_BUTTON =
-  "rounded-xl bg-[#2563EB] px-6 text-white hover:bg-[#1D4ED8] hover:text-white";
+  "rounded-xl bg-[var(--creed-accent)] px-6 text-white hover:bg-[var(--creed-accent-hover)] hover:text-white";
 
 export function CompanyOnboardingScreen({
   creedId,
@@ -778,7 +778,7 @@ const ATTRIBUTION_ENTRIES: AttributionEntry[] = [
 // The exact activity-pill tokens from the app (getProposalStatusStyles): blue
 // for a pending proposal, amber for a direct edit, green for an accepted one.
 const ATTRIBUTION_STATUS_STYLES: Record<AttributionEntry["status"], string> = {
-  Proposed: "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
+  Proposed: "bg-[#EFF6FF] text-[var(--creed-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
   Direct: "bg-[#FFF6E8] text-[#C26A00] dark:bg-[#451a03]/40 dark:text-[#fbbf24]",
   Accepted: "bg-[#F0FDF4] text-[#15803D] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
 };
@@ -857,7 +857,7 @@ function ProposalCard() {
             <X className="h-3.5 w-3.5" />
             Reject
           </span>
-          <span className="inline-flex h-7 items-center gap-1 rounded-md bg-[#2563eb] px-2.5 text-sm font-medium text-white">
+          <span className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white">
             <Check className="h-3.5 w-3.5" />
             Accept
           </span>
@@ -992,7 +992,7 @@ const CONTROL_ACTIVITY_ITEMS = [
 
 const CONTROL_STATUS_STYLES: Record<(typeof CONTROL_ACTIVITY_ITEMS)[number]["status"], string> = {
   Direct: "bg-[#FFF6E8] text-[#C26A00] dark:bg-[#451a03]/40 dark:text-[#fbbf24]",
-  Proposed: "bg-[#EFF6FF] text-[#1D4ED8] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
+  Proposed: "bg-[#EFF6FF] text-[var(--creed-accent-hover)] dark:bg-[#1e3a8a]/25 dark:text-[#93c5fd]",
   Accepted: "bg-[#F0FDF4] text-[#15803D] dark:bg-[#052e1a]/50 dark:text-[#4ade80]",
 };
 

@@ -138,7 +138,7 @@ export function InviteAcceptCard({
         </Button>
         <Button
           type="button"
-          className="h-9 flex-1 rounded-md bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
+          className="h-9 flex-1 rounded-md bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
           onClick={accept}
           disabled={busy}
         >

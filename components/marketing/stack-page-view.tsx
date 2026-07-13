@@ -115,7 +115,7 @@ function StackLink({ href, label }: { href: string; label: string }) {
       rel="noreferrer"
       onMouseEnter={() => arrowRef.current?.startAnimation()}
       onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className="inline-flex items-center gap-1.5 text-[15px] font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8] md:text-[16px]"
+      className="inline-flex items-center gap-1.5 text-[15px] font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)] md:text-[16px]"
     >
       {label}
       <ArrowUpRightIcon ref={arrowRef} size={16} className="inline-flex h-4 w-4 items-center justify-center" />

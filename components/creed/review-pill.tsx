@@ -382,7 +382,7 @@ export function ReviewPill({
                                 ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                                 : isNewSectionProposal
                                   ? "bg-[#16A34A] hover:bg-[#15803d]"
-                                  : "bg-[#2563eb] hover:bg-[#1d4ed8]",
+                                  : "bg-[var(--creed-accent)] hover:bg-[var(--creed-accent-hover)]",
                             )}
                           >
                             <Check className="h-3.5 w-3.5 sm:hidden" />
@@ -416,7 +416,7 @@ export function ReviewPill({
             type="button"
             onClick={onAcceptAll}
             aria-label="Accept all"
-            className="inline-flex h-7 items-center gap-1 rounded-md bg-[#2563eb] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[#1d4ed8]"
+            className="inline-flex h-7 items-center gap-1 rounded-md bg-[var(--creed-accent)] px-2.5 text-sm font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
           >
             <Check className="h-3.5 w-3.5 sm:hidden" />
             <span className="hidden sm:inline">Accept all</span>
@@ -595,7 +595,7 @@ function ReviewPillItem({
                         ? "bg-[#dc2626] hover:bg-[#b91c1c]"
                         : isNewSectionProposal
                           ? "bg-[#16A34A] hover:bg-[#15803d]"
-                          : "bg-[#2563eb] hover:bg-[#1d4ed8]",
+                          : "bg-[var(--creed-accent)] hover:bg-[var(--creed-accent-hover)]",
                     )}
                   >
                     <Check className="h-3.5 w-3.5 sm:hidden" />

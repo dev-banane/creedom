@@ -793,7 +793,7 @@ const STACK_TILE_STYLE: Record<BrandLogoKey, { fill: string; text: string }> = {
   },
   codex: {
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[#1D4ED8] dark:text-[#60A5FA]",
+    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
   },
   cursor: {
     fill: "bg-[#F3F4F6] dark:bg-[#1f1f1d]",
@@ -841,7 +841,7 @@ const STACK_TILE_STYLE: Record<BrandLogoKey, { fill: string; text: string }> = {
   },
   whirl: {
     fill: "bg-[#EFF6FF] dark:bg-[#102341]/60",
-    text: "text-[#1D4ED8] dark:text-[#60A5FA]",
+    text: "text-[var(--creed-accent-hover)] dark:text-[#60A5FA]",
   },
   v0: {
     fill: "bg-[#F3F4F6] dark:bg-[#1f1f1d]",

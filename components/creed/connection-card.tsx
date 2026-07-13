@@ -92,7 +92,7 @@ function getAgentButtonClasses(connectionId: string) {
   switch (connectionId) {
     case "codex":
     case "whirl":
-      return "bg-[#2563EB] text-white transition-colors hover:bg-[#1D4ED8]";
+      return "bg-[var(--creed-accent)] text-white transition-colors hover:bg-[var(--creed-accent-hover)]";
     case "claude":
     case "claudecode":
       return "bg-[#FF6200] text-white hover:bg-[#E65A00]";

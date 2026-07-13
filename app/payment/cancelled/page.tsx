@@ -17,7 +17,7 @@ export default function PaymentCancelledPage() {
         </p>
         <Link
           href="/pricing"
-          className="mt-8 inline-flex h-11 items-center justify-center rounded-md bg-[#2563EB] px-6 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+          className="mt-8 inline-flex h-11 items-center justify-center rounded-md bg-[var(--creed-accent)] px-6 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
         >
           Back to pricing
         </Link>

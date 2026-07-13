@@ -217,7 +217,7 @@ export function FeedbackMenuItem() {
                     Need help?{" "}
                     <a
                       href={CONTACT_MAILTO}
-                      className="font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8]"
+                      className="font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
                     >
                       Contact us
                     </a>
@@ -227,7 +227,7 @@ export function FeedbackMenuItem() {
                         or{" "}
                         <Link
                           href="/docs"
-                          className="font-medium text-[#2563EB] transition-colors hover:text-[#1D4ED8]"
+                          className="font-medium text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
                         >
                           see docs
                         </Link>
@@ -248,7 +248,7 @@ export function FeedbackMenuItem() {
                 className={cn(
                   "inline-flex h-7 shrink-0 items-center gap-1 rounded-md px-2.5 text-sm font-medium transition-colors",
                   canSubmit
-                    ? "bg-[#2563eb] text-white hover:bg-[#1d4ed8]"
+                    ? "bg-[var(--creed-accent)] text-white hover:bg-[var(--creed-accent-hover)]"
                     : "bg-[var(--creed-surface-raised)] text-[var(--creed-text-tertiary)]"
                 )}
               >

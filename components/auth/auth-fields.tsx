@@ -53,7 +53,7 @@ export function AuthField({
             trailing ? "pr-12" : "",
             error
               ? "border-[#DC2626] focus:border-[#DC2626] focus:ring-[#DC2626]/15"
-              : "border-[var(--creed-border)] focus:border-[#2563EB] focus:ring-[#2563EB]/15"
+              : "border-[var(--creed-border)] focus:border-[var(--creed-accent)] focus:ring-[var(--creed-accent)]/15"
           )}
         />
         {trailing ? (
@@ -103,7 +103,7 @@ export function PasswordField({
           onClick={() => setShow((v) => !v)}
           onMouseEnter={eyeShake.start}
           onMouseLeave={eyeShake.settle}
-          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--creed-text-tertiary)] transition-colors hover:text-[#2563EB]"
+          className="flex h-8 w-8 items-center justify-center rounded-[8px] text-[var(--creed-text-tertiary)] transition-colors hover:text-[var(--creed-accent)]"
         >
           <EyeToggleIcon
             ref={eyeShake.iconRef}
@@ -127,7 +127,7 @@ export function AuthCheckbox({ checked, onChange }: { checked: boolean; onChange
       className={cn(
         "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[5px] border transition-colors",
         checked
-          ? "border-[#2563EB] bg-[#2563EB] text-white"
+          ? "border-[var(--creed-accent)] bg-[var(--creed-accent)] text-white"
           : "border-[var(--creed-border-strong)] bg-[var(--creed-surface)] hover:border-[var(--creed-text-tertiary)]"
       )}
     >
@@ -156,7 +156,7 @@ export function AuthSubmitButton({
       onPointerDown={(event) => {
         if (event.pointerType !== "mouse") arrow.start();
       }}
-      className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[#2563EB] text-[15px] font-medium text-white transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-50"
+      className="mt-2 inline-flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-md)] bg-[var(--creed-accent)] text-[15px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {label}
       {loading ? (

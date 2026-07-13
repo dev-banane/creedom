@@ -688,7 +688,7 @@ export function ExamplesPageView() {
                         className={cn(
                           "flex w-full items-center justify-between gap-2 py-1.5 text-left text-[15px] font-medium transition-opacity hover:opacity-70",
                           isActiveGroup
-                            ? "text-[#2563EB]"
+                            ? "text-[var(--creed-accent)]"
                             : "text-[var(--creed-text-primary)]",
                         )}
                       >
@@ -725,7 +725,7 @@ export function ExamplesPageView() {
                                   className={cn(
                                     "block text-[14px] leading-6 transition-colors",
                                     activeId === item.id
-                                      ? "font-medium text-[#2563EB]"
+                                      ? "font-medium text-[var(--creed-accent)]"
                                       : "text-[var(--creed-text-secondary)] hover:text-[var(--creed-text-primary)]",
                                   )}
                                 >
@@ -798,7 +798,7 @@ function ExamplesCta() {
       href="/pricing"
       onMouseEnter={() => arrowRef.current?.startAnimation()}
       onMouseLeave={() => arrowRef.current?.stopAnimation()}
-      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#2563EB] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+      className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[var(--creed-accent)] pl-4 pr-3 text-[14px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
     >
       <span className="leading-none">Create your Creed</span>
       <ArrowRightIcon

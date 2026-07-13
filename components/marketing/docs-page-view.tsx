@@ -1147,7 +1147,7 @@ export function DocsPageView() {
                         className={cn(
                           "flex w-full items-center justify-between gap-2 py-1.5 text-[15px] font-medium transition-opacity hover:opacity-70",
                           isActiveGroup
-                            ? "text-[#2563EB]"
+                            ? "text-[var(--creed-accent)]"
                             : "text-[var(--creed-text-primary)]",
                         )}
                       >
@@ -1184,7 +1184,7 @@ export function DocsPageView() {
                                   className={cn(
                                     "block text-[14px] leading-6 transition-colors",
                                     activeSection === section.id
-                                      ? "font-medium text-[#2563EB]"
+                                      ? "font-medium text-[var(--creed-accent)]"
                                       : "text-[var(--creed-text-secondary)] hover:text-[var(--creed-text-primary)]",
                                   )}
                                 >
@@ -1244,7 +1244,7 @@ export function DocsPageView() {
                           className="rounded-[20px] bg-[var(--creed-surface)] p-5"
                         >
                           <div className="flex items-center gap-3">
-                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[#2563EB] text-[13px] font-medium text-[var(--creed-surface)]">
+                            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--creed-accent)] text-[13px] font-medium text-[var(--creed-surface)]">
                               {loopStep.step}
                             </span>
                             <div className="text-[16px] font-medium text-[var(--creed-text-primary)]">
@@ -1269,7 +1269,7 @@ export function DocsPageView() {
                   <>
                     <div className="mt-8 grid gap-8 md:grid-cols-2">
                       <div>
-                        <div className="text-[12px] font-medium tracking-[0.02em] text-[#2563EB]">
+                        <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
                           Always on
                         </div>
                         <div className="mt-4 space-y-4">
@@ -1376,14 +1376,14 @@ export function DocsPageView() {
                     Set this up from{" "}
                     <Link
                       href="/connections"
-                      className="font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
                     >
                       Connections
                     </Link>
                     , then review proposed updates from the{" "}
                     <Link
                       href="/file"
-                      className="font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
                     >
                       file view
                     </Link>
@@ -1394,7 +1394,7 @@ export function DocsPageView() {
                 {section.id === "when-to-propose" ? (
                   <div className="mt-8 grid gap-6 md:grid-cols-2">
                     <div>
-                      <div className="text-[12px] font-medium tracking-[0.02em] text-[#2563EB]">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
                         Propose
                       </div>
                       <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
@@ -1428,7 +1428,7 @@ export function DocsPageView() {
                         </h3>
                         <div className="mt-4 grid gap-6 md:grid-cols-2">
                           <div>
-                            <div className="text-[12px] font-medium tracking-[0.02em] text-[#2563EB]">
+                            <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
                               What belongs
                             </div>
                             <ul className="creed-bullets mt-3 space-y-2 text-[15px] leading-7 text-[var(--creed-text-secondary)] [--creed-bullet:#2563EB] md:text-[16px]">
@@ -1540,7 +1540,7 @@ export function DocsPageView() {
                 {section.id === "quality" ? (
                   <>
                     <div className="mt-8 space-y-4">
-                      <div className="text-[12px] font-medium tracking-[0.02em] text-[#2563EB]">
+                      <div className="text-[12px] font-medium tracking-[0.02em] text-[var(--creed-accent)]">
                         The five tests
                       </div>
                       {qualityPractices.map((practice) => (
@@ -1650,7 +1650,7 @@ export function DocsPageView() {
                         className="rounded-[16px] bg-[var(--creed-surface)] p-5"
                       >
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-[6px] bg-[var(--creed-surface-raised)] px-2 py-0.5 text-[12px] font-medium text-[#2563EB]">
+                          <span className="rounded-[6px] bg-[var(--creed-surface-raised)] px-2 py-0.5 text-[12px] font-medium text-[var(--creed-accent)]">
                             {endpoint.method}
                           </span>
                           <span
@@ -1678,7 +1678,7 @@ export function DocsPageView() {
                     Read the full{" "}
                     <Link
                       href="/privacy"
-                      className="font-medium text-[#2563EB] hover:text-[#1D4ED8]"
+                      className="font-medium text-[var(--creed-accent)] hover:text-[var(--creed-accent-hover)]"
                     >
                       privacy policy
                     </Link>{" "}

@@ -43,7 +43,7 @@ function Block({ block }: { block: ArticleBlock }) {
           {block.items.map((item, i) => (
             <li
               key={i}
-              className="relative pl-5 text-[16px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[#2563EB]"
+              className="relative pl-5 text-[16px] leading-7 text-[var(--creed-text-secondary)] before:absolute before:left-0 before:top-[10px] before:h-2 before:w-2 before:rounded-[3px] before:bg-[var(--creed-accent)]"
             >
               {item}
             </li>
@@ -58,7 +58,7 @@ function Block({ block }: { block: ArticleBlock }) {
               key={i}
               className="flex gap-3 text-[16px] leading-7 text-[var(--creed-text-secondary)]"
             >
-              <span className="mt-[2px] shrink-0 text-[14px] font-medium tabular-nums text-[#2563EB]">
+              <span className="mt-[2px] shrink-0 text-[14px] font-medium tabular-nums text-[var(--creed-accent)]">
                 {i + 1}.
               </span>
               <span>{item}</span>
@@ -176,7 +176,7 @@ export function LearnArticle({ article }: { article: Article }) {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[15px] text-[#2563EB] transition-colors hover:text-[#1D4ED8]"
+                    className="text-[15px] text-[var(--creed-accent)] transition-colors hover:text-[var(--creed-accent-hover)]"
                   >
                     {link.label}
                   </Link>

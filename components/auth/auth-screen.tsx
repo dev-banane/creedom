@@ -264,7 +264,7 @@ export function AuthScreen({
       topRight={
         <Link
           href={withNext(t.topHref)}
-          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]"
+          className="text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
         >
           {t.topAction}
         </Link>
@@ -359,11 +359,11 @@ export function AuthScreen({
                 <AuthCheckbox checked={agreeTerms} onChange={() => setAgreeTerms((v) => !v)} />
                 <span>
                   I agree to the{" "}
-                  <Link href="/terms" className="text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]">
+                  <Link href="/terms" className="text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]">
                     Terms
                   </Link>{" "}
                   and{" "}
-                  <Link href="/privacy" className="text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]">
+                  <Link href="/privacy" className="text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]">
                     Privacy Policy
                   </Link>
                   .
@@ -379,7 +379,7 @@ export function AuthScreen({
                   type="button"
                   onClick={() => void handleForgotPassword()}
                   disabled={busy}
-                  className="text-[14px] text-[var(--creed-text-secondary)] transition-colors hover:text-[#2563EB] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="text-[14px] text-[var(--creed-text-secondary)] transition-colors hover:text-[var(--creed-accent)] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Forgot password?
                 </button>
@@ -397,7 +397,7 @@ export function AuthScreen({
             {t.switchPrompt}{" "}
             <Link
               href={withNext(t.switchHref)}
-              className="font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]"
+              className="font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
             >
               {t.switchAction}
             </Link>
@@ -435,7 +435,7 @@ function ConfirmationNotice({
       <button
         type="button"
         onClick={onBack}
-        className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[#2563EB]"
+        className="mt-6 text-[14px] font-medium text-[var(--creed-text-primary)] transition-colors hover:text-[var(--creed-accent)]"
       >
         Use a different email
       </button>
@@ -464,7 +464,7 @@ function ProviderButton({
       className="relative inline-flex h-12 w-full items-center justify-center gap-2.5 rounded-[var(--radius-md)] border border-[var(--creed-border)] bg-[var(--creed-surface)] text-[15px] font-medium text-[var(--creed-text-primary)] transition-colors hover:bg-[var(--creed-surface-raised)] disabled:cursor-not-allowed disabled:opacity-50"
     >
       {lastUsed ? (
-        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-[6px] border border-[#2563EB]/30 bg-[#EFF6FF] px-2 py-1 text-[12px] font-medium leading-none text-[#2563EB] dark:border-[#2563EB]/45 dark:bg-[#0e1b30] dark:text-[#60A5FA]">
+        <span className="pointer-events-none absolute -top-2.5 right-3 z-10 rounded-[6px] border border-[var(--creed-accent)]/30 bg-[#EFF6FF] px-2 py-1 text-[12px] font-medium leading-none text-[var(--creed-accent)] dark:border-[var(--creed-accent)]/45 dark:bg-[#0e1b30] dark:text-[#60A5FA]">
           Last used
         </span>
       ) : null}

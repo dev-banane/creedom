@@ -869,7 +869,7 @@ function SocialIconLink({
       target="_blank"
       rel="noreferrer"
       aria-label={label}
-      className="inline-flex items-center justify-center transition-colors hover:text-[#2563EB]"
+      className="inline-flex items-center justify-center transition-colors hover:text-[var(--creed-accent)]"
     >
       <span
         aria-hidden="true"
@@ -897,7 +897,7 @@ function FooterColumn({ title, items }: { title: string; items: NavItem[] }) {
           <Link
             key={item.label}
             href={item.href}
-            className="t-body-lg block text-[var(--creed-text-secondary)] hover:text-[#2563EB]"
+            className="t-body-lg block text-[var(--creed-text-secondary)] hover:text-[var(--creed-accent)]"
           >
             {item.label}
           </Link>

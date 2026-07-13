@@ -170,7 +170,7 @@ export function BillingDialog({ open, onOpenChange }: BillingDialogProps) {
                           "ml-2 inline-flex items-center rounded-[6px] px-1.5 py-0.5 text-[11px] font-medium",
                           isCompany
                             ? "bg-[#FEF3C7] text-[#92400E] dark:bg-[#78350F]/50 dark:text-[#FBBF24]"
-                            : "bg-[#DBEAFE] text-[#1D4ED8] dark:bg-[#1E3A8A]/50 dark:text-[#60A5FA]",
+                            : "bg-[#DBEAFE] text-[var(--creed-accent-hover)] dark:bg-[#1E3A8A]/50 dark:text-[#60A5FA]",
                         )}
                       >
                         {cadence}
@@ -211,7 +211,7 @@ export function BillingDialog({ open, onOpenChange }: BillingDialogProps) {
                   ) : !plan.paid && plan.scope === "personal" ? (
                     <Link
                       href="/pricing"
-                      className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-md bg-[#2563EB] px-4 text-[13px] font-medium text-white transition-colors hover:bg-[#1D4ED8]"
+                      className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-md bg-[var(--creed-accent)] px-4 text-[13px] font-medium text-white transition-colors hover:bg-[var(--creed-accent-hover)]"
                     >
                       View plans
                     </Link>
