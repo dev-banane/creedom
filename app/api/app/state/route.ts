@@ -10,7 +10,25 @@ export async function GET() {
   if (auth instanceof NextResponse) return auth;
 
   const active = await resolveActiveCreed(auth.supabase, auth.user);
-  const result = await loadActiveCreedState(auth.supabase, auth.user, active);
+  const [result, gettingStartedResult] = await Promise.all([
+    loadActiveCreedState(auth.supabase, auth.user, active),
+    // The "Get started" checklist rides along on every state GET (PK read,
+    // sub-ms) so the client never needs a separate fetch or poll for it.
+    auth.supabase
+      .from("creed_getting_started")
+      .select("steps, completed_at")
+      .eq("user_id", auth.user.id)
+      .maybeSingle(),
+  ]);
+  const row = gettingStartedResult.error
+    ? null
+    : (gettingStartedResult.data as {
+        steps: Record<string, boolean>;
+        completed_at: string | null;
+      } | null);
+  result.state.gettingStarted = row
+    ? { steps: row.steps ?? {}, completedAt: row.completed_at }
+    : null;
   return NextResponse.json(result);
 }
 

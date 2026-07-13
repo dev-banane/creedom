@@ -143,7 +143,7 @@ export function CreedShell({
 }: ShellProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { signOut, state, exportMarkdown } = useCreed();
+  const { signOut, state, exportMarkdown, markGettingStartedStep } = useCreed();
   const [failedAvatarUrl, setFailedAvatarUrl] = useState<string | null>(null);
   const [billingOpen, setBillingOpen] = useState(false);
   const searchIconRef = useRef<SearchIconHandle | null>(null);
@@ -341,6 +341,7 @@ export function CreedShell({
   }
 
   function handleActivityClick(open: boolean) {
+    if (open) markGettingStartedStep("activity");
     if (pathname === "/file" && fileActionsRef.current.onSetActivityOpen) {
       fileActionsRef.current.onSetActivityOpen(open);
       return;

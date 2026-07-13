@@ -792,6 +792,7 @@ export function FileScreen() {
     exportMarkdown,
     refreshState,
     sectionPresence,
+    markGettingStartedStep,
   } = useCreed();
   // Company role gates. In personal mode the sole user is effectively the owner.
   // Managers (owner/admin) create sections; plain members cannot. Section
@@ -1414,6 +1415,7 @@ export function FileScreen() {
             ]),
           ),
         );
+        markGettingStartedStep("analysis");
       }
     } catch {
       // Full-analysis failures surface as a toast via the shell QualityToasts
@@ -1453,6 +1455,7 @@ export function FileScreen() {
           ...current,
           [section.id]: sectionFingerprint,
         }));
+        markGettingStartedStep("analysis");
       }
     } catch {
       // The failure surfaces as a toast via the shell QualityToasts subscriber

@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 import { CreedShell } from "@/components/creed/shell";
+import { GettingStartedCard } from "@/components/creed/getting-started-card";
 import { QualityToasts } from "@/components/creed/quality-toasts";
 import { WelcomeDialog } from "@/components/creed/welcome-dialog";
 import { WelcomeVideoPreloader } from "@/components/creed/welcome-video-preloader";
@@ -41,6 +42,8 @@ export function AppShellLayout({
           pull videos for users who won't see it. Onboarding preloads too, for
           more lead time. */}
       {(showWelcome || IS_DEV) && <WelcomeVideoPreloader variant={variant} />}
+      {/* Post-onboarding checklist; renders nothing once every step is done. */}
+      <GettingStartedCard />
       <CreedShell
         userName={state.user.name}
         avatarInitials={state.user.avatarInitials}

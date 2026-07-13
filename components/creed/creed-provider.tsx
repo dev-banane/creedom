@@ -41,6 +41,7 @@ import {
   type CreedSection,
   type CreedSettings,
   type CreedState,
+  type GettingStartedStepKey,
   type Proposal,
   type ProposalDraft,
 } from "@/lib/creed-data";
@@ -104,6 +105,7 @@ type CreedContextValue = {
   exportMarkdown: () => string;
   exportActivityJson: () => string;
   exportAllDataJson: () => string;
+  markGettingStartedStep: (step: GettingStartedStepKey) => void;
 };
 
 const CreedContext = createContext<CreedContextValue | null>(null);
@@ -275,6 +277,21 @@ function mergeExternalState(
     activity: incoming.activity,
     settings: canReplaceSections ? incoming.settings : current.settings,
     connections: incoming.connections,
+    // Steps only flip false -> true, so a union of both sides can never
+    // regress a locally-earned check while its POST is still in flight.
+    gettingStarted:
+      incoming.gettingStarted || current.gettingStarted
+        ? {
+            steps: {
+              ...incoming.gettingStarted?.steps,
+              ...current.gettingStarted?.steps,
+            },
+            completedAt:
+              incoming.gettingStarted?.completedAt ??
+              current.gettingStarted?.completedAt ??
+              null,
+          }
+        : incoming.gettingStarted,
     sectionRevisions,
   };
 }
@@ -1151,6 +1168,116 @@ export function CreedProvider({
     syncFromServerRef.current = () => void syncFromServer();
   }, [syncFromServer]);
 
+  // ---- "Get started" checklist ------------------------------------------
+  // Steps only flip false -> true. Local state updates immediately (no
+  // mutationTick, so no full-state autosave); the tiny POST persists the
+  // flip. Duplicate posts are guarded per step per page load.
+  const gettingStartedPostedRef = useRef<Set<string>>(new Set());
+
+  const postGettingStartedSteps = useCallback(
+    (steps: GettingStartedStepKey[]) => {
+      void fetch("/api/app/getting-started", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ steps }),
+      })
+        .then((response) => (response.ok ? response.json() : null))
+        .then(
+          (payload: {
+            gettingStarted?: {
+              steps: Record<string, boolean>;
+              completedAt: string | null;
+            };
+          } | null) => {
+            if (!payload?.gettingStarted) return;
+            const server = payload.gettingStarted;
+            commitState((current) => ({
+              ...current,
+              gettingStarted: {
+                // Server merge wins for completedAt; locally-earned checks
+                // whose own POST is still in flight stay via the spread.
+                steps: { ...server.steps, ...current.gettingStarted?.steps },
+                completedAt: server.completedAt,
+              },
+            }));
+          },
+        )
+        .catch(() => {
+          // Transient failure: allow a later action to retry these steps.
+          for (const step of steps) gettingStartedPostedRef.current.delete(step);
+        });
+    },
+    [],
+  );
+
+  const markGettingStartedStep = useCallback(
+    (step: GettingStartedStepKey) => {
+      if (!persistenceEnabled) return;
+      const gettingStarted = latestStateRef.current.gettingStarted;
+      // Wait for the server row to load (null = loaded-but-empty is fine,
+      // undefined = not fetched yet; the seed pass covers early actions).
+      if (gettingStarted === undefined) return;
+      if (gettingStarted?.completedAt || gettingStarted?.steps?.[step]) return;
+      if (gettingStartedPostedRef.current.has(step)) return;
+      gettingStartedPostedRef.current.add(step);
+      commitState((current) => ({
+        ...current,
+        gettingStarted: {
+          steps: { ...current.gettingStarted?.steps, [step]: true },
+          completedAt: current.gettingStarted?.completedAt ?? null,
+        },
+      }));
+      postGettingStartedSteps([step]);
+    },
+    [persistenceEnabled, postGettingStartedSteps],
+  );
+
+  // First load with no row yet: seed from what the account has already done
+  // (long-time users shouldn't be asked to redo history). Runs once.
+  const gettingStartedSeededRef = useRef(false);
+  const hasGettingStartedRow = state.gettingStarted !== null;
+  useEffect(() => {
+    if (!persistenceEnabled || gettingStartedSeededRef.current) return;
+    if (hasGettingStartedRow) return;
+    gettingStartedSeededRef.current = true;
+    const snapshot = latestStateRef.current;
+    const seeds: GettingStartedStepKey[] = [];
+    if (snapshot.activity.some((entry) => entry.actorType === "user")) {
+      seeds.push("edit");
+    }
+    if (
+      snapshot.mcpClients.length > 0 ||
+      snapshot.connections.some((item) => item.status === "connected")
+    ) {
+      seeds.push("connect");
+    }
+    if (
+      snapshot.activity.some(
+        (entry) => entry.status === "accepted" || entry.status === "rejected",
+      )
+    ) {
+      seeds.push("review");
+    }
+    for (const step of seeds) gettingStartedPostedRef.current.add(step);
+    commitState((current) => ({
+      ...current,
+      gettingStarted: {
+        steps: Object.fromEntries(seeds.map((step) => [step, true])),
+        completedAt: null,
+      },
+    }));
+    postGettingStartedSteps(seeds);
+  }, [persistenceEnabled, hasGettingStartedRow, postGettingStartedSteps]);
+
+  // A connection flipping to connected mid-session (OAuth handshake landing,
+  // MCP client appearing) earns the step without an explicit user action.
+  const hasLiveConnection =
+    state.mcpClients.length > 0 ||
+    state.connections.some((item) => item.status === "connected");
+  useEffect(() => {
+    if (hasLiveConnection) markGettingStartedStep("connect");
+  }, [hasLiveConnection, markGettingStartedStep]);
+
   // Listen for other tabs' save announcements (see broadcastStateChanged).
   // The resync is trailing-debounced: a typing burst in the other tab
   // announces every autosave (~2/s), and answering each with a full-state GET
@@ -1481,6 +1608,7 @@ export function CreedProvider({
         ),
       }),
     );
+    markGettingStartedStep("edit");
     // Company mode persists per section (the full-state PUT is disabled).
     if (latestStateRef.current.creedType === "company") {
       trackEditingPresence(sectionId);
@@ -1995,6 +2123,7 @@ export function CreedProvider({
   }
 
   async function acceptProposal(proposalId: string) {
+    markGettingStartedStep("review");
     if (latestStateRef.current.creedType === "company") {
       const pending = latestStateRef.current.proposals.find(
         (item) => item.id === proposalId,
@@ -2038,6 +2167,7 @@ export function CreedProvider({
   // same section would race the revision recompute).
   function acceptProposals(proposalIds: string[]) {
     if (proposalIds.length === 0) return;
+    markGettingStartedStep("review");
     if (latestStateRef.current.creedType === "company") {
       // Company reviews are per-proposal server calls with their own
       // optimistic handling and error reconciliation; the personal
@@ -2206,6 +2336,7 @@ export function CreedProvider({
   }
 
   function rejectProposal(proposalId: string) {
+    markGettingStartedStep("review");
     if (latestStateRef.current.creedType === "company") {
       removeProposalLocal(proposalId);
       void reviewCompanyProposalRemote(proposalId, "reject");
@@ -2556,6 +2687,7 @@ export function CreedProvider({
       exportMarkdown,
       exportActivityJson,
       exportAllDataJson,
+      markGettingStartedStep,
     }),
     [
       state,
@@ -2595,6 +2727,7 @@ export function CreedProvider({
       exportMarkdown,
       exportActivityJson,
       exportAllDataJson,
+      markGettingStartedStep,
       sectionPresence,
     ],
   );

@@ -852,6 +852,25 @@ export type CompanyContext = {
   };
 };
 
+// Post-onboarding "Get started" checklist (the card by the toast stack).
+// Order here is display order. Progress lives in creed_getting_started
+// (one row per user) and rides into state on the /api/app/state GET.
+export const GETTING_STARTED_STEPS = [
+  { key: "edit", label: "Make an edit to your file" },
+  { key: "connect", label: "Connect an agent" },
+  { key: "review", label: "Review a proposal" },
+  { key: "analysis", label: "Run an analysis" },
+  { key: "activity", label: "Check activity" },
+] as const;
+
+export type GettingStartedStepKey =
+  (typeof GETTING_STARTED_STEPS)[number]["key"];
+
+export type GettingStartedState = {
+  steps: Partial<Record<GettingStartedStepKey, boolean>>;
+  completedAt: string | null;
+};
+
 export type CreedState = {
   user: {
     name: string;
@@ -894,6 +913,10 @@ export type CreedState = {
   settings: CreedSettings;
   connections: ConnectionItem[];
   onboarding: OnboardingState;
+  // Null until the state GET attaches the user's row (or seeds a fresh one).
+  // Absent from the persisted section payloads entirely - writes go through
+  // /api/app/getting-started.
+  gettingStarted?: GettingStartedState | null;
   mutationTick: number;
   sectionRevisions: Partial<Record<string, number>>;
 };

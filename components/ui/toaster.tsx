@@ -10,7 +10,10 @@ export function Toaster() {
   return (
     <SonnerToaster
       position="bottom-right"
-      offset={20}
+      // Toasts sit above the "Get started" card when it's on screen; the
+      // card publishes its live height into the CSS variable (0 elsewhere),
+      // so the stack tracks its expand/collapse in real time.
+      offset="calc(20px + var(--getting-started-offset, 0px))"
       gap={10}
       duration={4000}
       visibleToasts={4}
