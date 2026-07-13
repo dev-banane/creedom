@@ -347,14 +347,6 @@
   letter-spacing: 0;
 }
 
-.t-eyebrow {
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 1.2;
-  letter-spacing: 0.02em;
-}
-
 /* Onboarding "Copy prompt" button: smoothly cycles through the brand palette
    (mono, blue, green, yellow, orange, red, purple). Fixed dark mono + white
    text so the label stays legible across every colour and both themes. */
