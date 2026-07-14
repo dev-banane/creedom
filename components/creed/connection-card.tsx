@@ -141,6 +141,7 @@ export function resolveConnectionStatus(
 // copyable command/JSON/URL), falling back to a plain "Copy URL".
 export function ConnectionCard({
   connection,
+  creedId,
   mcpUrl,
   isConnected,
   lastSeen,
@@ -150,6 +151,7 @@ export function ConnectionCard({
   showMenu = false,
 }: {
   connection: ConnectionItem;
+  creedId?: string;
   mcpUrl: string;
   isConnected: boolean;
   lastSeen?: string;
@@ -172,10 +174,15 @@ export function ConnectionCard({
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [revoking, setRevoking] = useState(false);
   const runTest = async () => {
+    if (!creedId) {
+      setTestState("fail");
+      window.setTimeout(() => setTestState("idle"), 1600);
+      return;
+    }
     setTestState("testing");
     try {
       const response = await fetch(
-        `/api/app/mcp/test?icon=${encodeURIComponent(connection.icon)}`,
+        `/api/app/mcp/test?icon=${encodeURIComponent(connection.icon)}&creedId=${encodeURIComponent(creedId)}`,
       );
       const payload = (await response.json().catch(() => ({}))) as {
         connected?: boolean;
@@ -306,7 +313,7 @@ export function ConnectionCard({
               <span>
                 {mode === "cli"
                   ? isConnected
-                    ? "Connected via CLI"
+                    ? "Connected"
                     : "Not connected via CLI"
                   : isConnected
                     ? "Connected via MCP"

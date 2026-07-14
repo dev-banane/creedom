@@ -64,6 +64,7 @@ export function ConnectionsScreen() {
   const [setupOpen, setSetupOpen] = useState(false);
   const [connectionMode, setConnectionMode] = useState<ConnectionMode>("mcp");
   const [agentTypeFilter, setAgentTypeFilter] = useState<string>("all");
+  const [cliConnected, setCliConnected] = useState(false);
 
   async function copyValue(key: string, value: string) {
     await navigator.clipboard.writeText(value);
@@ -77,14 +78,59 @@ export function ConnectionsScreen() {
     }
   }, [router, state.sections.length]);
 
-  const { mcp: mcpAgentClients, cli: cliClients } = useMemo(
-    () => splitConnectionClients(state.mcpClients),
+  const mcpAgentClients = useMemo(
+    () => splitConnectionClients(state.mcpClients).mcp,
     [state.mcpClients],
   );
   const connected = mcpAgentClients.length > 0;
-  const cliConnected = cliClients.length > 0;
   const mcpStatusLabel = connected ? "Connected" : "Not connected via MCP";
   const showMcpStack = connected;
+
+  useEffect(() => {
+    const creedId = state.creedId;
+    if (!creedId) {
+      setCliConnected(false);
+      return;
+    }
+
+    let disposed = false;
+    let controller: AbortController | null = null;
+    const checkCliConnection = async () => {
+      controller?.abort();
+      controller = new AbortController();
+      try {
+        const response = await fetch(
+          `/api/app/mcp/test?icon=cli&creedId=${encodeURIComponent(creedId)}`,
+          { cache: "no-store", signal: controller.signal },
+        );
+        const payload = (await response.json().catch(() => ({}))) as {
+          connected?: boolean;
+        };
+        if (!disposed) {
+          setCliConnected(response.ok && payload.connected === true);
+        }
+      } catch (error) {
+        if (!disposed && !(error instanceof DOMException && error.name === "AbortError")) {
+          setCliConnected(false);
+        }
+      }
+    };
+    const checkWhenVisible = () => {
+      if (document.visibilityState === "visible") {
+        void checkCliConnection();
+      }
+    };
+
+    void checkCliConnection();
+    window.addEventListener("focus", checkWhenVisible);
+    document.addEventListener("visibilitychange", checkWhenVisible);
+    return () => {
+      disposed = true;
+      controller?.abort();
+      window.removeEventListener("focus", checkWhenVisible);
+      document.removeEventListener("visibilitychange", checkWhenVisible);
+    };
+  }, [state.creedId]);
 
   const visibleConnections = useMemo(
     () =>
@@ -433,6 +479,7 @@ export function ConnectionsScreen() {
               <ConnectionCard
                 key={connection.id}
                 connection={connection}
+                creedId={state.creedId}
                 mcpUrl={state.mcpUrl}
                 isConnected={cardConnected}
                 lastSeen={cardLastSeen}
