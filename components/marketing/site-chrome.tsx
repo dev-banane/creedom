@@ -177,15 +177,24 @@ export function MarketingHeader({
   const headerRef = useRef<HTMLElement | null>(null);
   const [stickyDropdownSurface, setStickyDropdownSurface] =
     useState<StickyDropdownSurface | null>(null);
+  const [desktopDropdownPromoted, setDesktopDropdownPromoted] = useState(false);
   // Which mobile dropdown row is expanded (one at a time).
   const [openMobileGroup, setOpenMobileGroup] = useState<string | null>(null);
   // Sticky-header morph: once scrolled past the hero's top edge the header
   // condenses into a translucent rounded bar (in-app surface material).
   const [isScrolled, setIsScrolled] = useState(false);
+  const stickyChromeActive =
+    isScrolled || desktopDropdownPromoted || stickyDropdownSurface !== null;
+
+  const promoteDesktopDropdown = useCallback(() => {
+    setDesktopDropdownPromoted(true);
+  }, []);
 
   useEffect(() => {
     function onScroll() {
-      setIsScrolled(window.scrollY > 64);
+      const nextIsScrolled = window.scrollY > 64;
+      setIsScrolled(nextIsScrolled);
+      if (nextIsScrolled) setDesktopDropdownPromoted(false);
     }
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -207,8 +216,8 @@ export function MarketingHeader({
   }, [mobileMenuOpen]);
 
   useEffect(() => {
-    if (!isScrolled) setStickyDropdownSurface(null);
-  }, [isScrolled]);
+    if (!stickyChromeActive) setStickyDropdownSurface(null);
+  }, [stickyChromeActive]);
 
   const updateStickyDropdownSurface = useCallback(
     (label: string, menu: HTMLDivElement | null) => {
@@ -242,7 +251,7 @@ export function MarketingHeader({
         ref={chromeRef}
         className={cn(
           "pointer-events-auto relative mx-auto w-full transition-[max-width] duration-300 ease-out",
-          isScrolled ? "max-w-[720px]" : "max-w-[880px]",
+          stickyChromeActive ? "max-w-[720px]" : "max-w-[880px]",
         )}
       >
         {/* The sticky surface stays behind the chrome. On mobile it extends
@@ -254,8 +263,8 @@ export function MarketingHeader({
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
             "pointer-events-none absolute inset-x-0 top-0 rounded-xl",
-            (isScrolled || mobileMenuOpen) && !stickyDropdownSurface
-              ? "bg-[color:var(--creed-surface)]/95 opacity-100 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+            (stickyChromeActive || mobileMenuOpen) && !stickyDropdownSurface
+              ? "bg-[color:var(--creed-surface)]/95 opacity-100 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)]"
               : "opacity-0",
           )}
         />
@@ -304,7 +313,7 @@ export function MarketingHeader({
                 );
               }
             }}
-            className="pointer-events-none absolute inset-x-0 top-0 bg-[color:var(--creed-surface)]/95 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+            className="pointer-events-none absolute inset-x-0 top-0 bg-[color:var(--creed-surface)]/95 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)]"
             style={{ height: stickyDropdownSurface.bottom }}
           />
         ) : null}
@@ -312,7 +321,7 @@ export function MarketingHeader({
           ref={headerRef}
           className={cn(
             "relative z-10 flex w-full items-center justify-between transition-[padding] duration-300 ease-out",
-            isScrolled ? "py-1.5 pl-4 pr-1.5" : "px-1 py-1",
+            stickyChromeActive ? "py-1.5 pl-4 pr-1.5" : "px-1 py-1",
           )}
         >
       <div className="flex items-center md:hidden">
@@ -324,7 +333,7 @@ export function MarketingHeader({
         >
           <CreedWordmark
             className="ml-1.5"
-            imageClassName={isScrolled ? undefined : "invert brightness-0"}
+            imageClassName={stickyChromeActive ? undefined : "invert brightness-0"}
           />
         </Link>
       </div>
@@ -334,7 +343,7 @@ export function MarketingHeader({
         aria-label="Creed home"
         className="hidden shrink-0 transition-opacity duration-200 hover:opacity-60 md:block"
       >
-        <CreedWordmark className="ml-0" imageClassName={isScrolled ? undefined : "invert brightness-0"} />
+        <CreedWordmark className="ml-0" imageClassName={stickyChromeActive ? undefined : "invert brightness-0"} />
       </Link>
 
       <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex">
@@ -344,18 +353,22 @@ export function MarketingHeader({
             label={group.label}
             items={group.items}
             align="left"
-            scrolled={isScrolled}
+            scrolled={stickyChromeActive}
+            delayOpen={!stickyChromeActive}
             onStickySurfaceChange={updateStickyDropdownSurface}
+            onStickyOpen={promoteDesktopDropdown}
           />
         ))}
       </nav>
 
       <HeaderAuthActions
         authState={authState}
-        scrolled={isScrolled}
+        scrolled={stickyChromeActive}
+        delayOpen={!stickyChromeActive}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
         onStickySurfaceChange={updateStickyDropdownSurface}
+        onStickyOpen={promoteDesktopDropdown}
       />
 
       <AnimatePresence initial={false}>
@@ -552,23 +565,42 @@ function HeaderDropdown({
   items,
   align = "left",
   scrolled,
+  delayOpen = false,
   className,
   onStickySurfaceChange,
+  onStickyOpen,
 }: {
   label: string;
   items: NavItem[];
   align?: "left" | "right";
   scrolled?: boolean;
+  delayOpen?: boolean;
   className?: string;
   onStickySurfaceChange?: (
     label: string,
     menu: HTMLDivElement | null,
   ) => void;
+  onStickyOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [pendingOpen, setPendingOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const openDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const alignRight = align === "right";
+
+  const cancelPendingOpen = useCallback(() => {
+    if (openDelayRef.current) clearTimeout(openDelayRef.current);
+    openDelayRef.current = null;
+    setPendingOpen(false);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (openDelayRef.current) clearTimeout(openDelayRef.current);
+    },
+    [],
+  );
 
   useLayoutEffect(() => {
     if (!open || !scrolled || !menuRef.current || !onStickySurfaceChange) {
@@ -588,17 +620,21 @@ function HeaderDropdown({
   }, [label, onStickySurfaceChange, open, scrolled]);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open && !pendingOpen) return;
+    const closeDropdown = () => {
+      if (pendingOpen) cancelPendingOpen();
+      setOpen(false);
+    };
     function onPointerDown(event: MouseEvent) {
       if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false);
+        closeDropdown();
       }
     }
     function onScroll() {
-      setOpen(false);
+      closeDropdown();
     }
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") closeDropdown();
     }
     document.addEventListener("mousedown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -608,7 +644,7 @@ function HeaderDropdown({
       document.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [open]);
+  }, [cancelPendingOpen, open, pendingOpen]);
 
   const linkClass = cn(
     "flex h-9 items-center rounded-md px-3.5 text-[14px] font-medium leading-none transition-colors duration-200",
@@ -622,8 +658,29 @@ function HeaderDropdown({
     <div ref={ref} className={cn("relative", className)}>
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
+        onClick={() => {
+          if (pendingOpen) {
+            cancelPendingOpen();
+            return;
+          }
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          if (delayOpen) {
+            onStickyOpen?.();
+            setPendingOpen(true);
+            openDelayRef.current = setTimeout(() => {
+              openDelayRef.current = null;
+              setPendingOpen(false);
+              setOpen(true);
+            }, 500);
+            return;
+          }
+          setOpen(true);
+        }}
+        aria-expanded={open || pendingOpen}
+        aria-busy={pendingOpen || undefined}
         aria-haspopup="menu"
         className={cn(
           "inline-flex h-9 items-center gap-1 rounded-md px-3.5 text-[14px] font-medium transition-colors duration-200",
@@ -741,18 +798,22 @@ function HeaderDropdown({
 function HeaderAuthActions({
   authState,
   scrolled,
+  delayOpen,
   mobileMenuOpen,
   setMobileMenuOpen,
   onStickySurfaceChange,
+  onStickyOpen,
 }: {
   authState: "loading" | "signed-in" | "signed-out";
   scrolled?: boolean;
+  delayOpen: boolean;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: Dispatch<SetStateAction<boolean>>;
   onStickySurfaceChange: (
     label: string,
     menu: HTMLDivElement | null,
   ) => void;
+  onStickyOpen: () => void;
 }) {
   const enterArrow = useAnimatedIconControls(80, undefined, 420);
 
@@ -826,8 +887,10 @@ function HeaderAuthActions({
         ]}
         align="right"
         scrolled={scrolled}
+        delayOpen={delayOpen}
         className="hidden md:block"
         onStickySurfaceChange={onStickySurfaceChange}
+        onStickyOpen={onStickyOpen}
       />
       <GitHubStarButton scrolled={scrolled} className="hidden md:inline-flex" />
       {mobileLinksTrigger}
