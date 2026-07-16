@@ -51,7 +51,7 @@ function stickySurfacePath(
   collapsedCap = false,
   preserveJoin = false,
 ) {
-  const outerRadius = 12;
+  const outerRadius = 16;
   const joinRadius = expanded || preserveJoin ? 20 : 0;
   const joinHandle = joinRadius * 0.55228475;
   const bottomRadius = expanded || collapsedCap ? 16 : 0;
@@ -266,60 +266,66 @@ export function MarketingHeader({
           animate={{ height: mobileMenuOpen ? "18rem" : "100%" }}
           transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
           className={cn(
-            "pointer-events-none absolute inset-x-0 top-0 rounded-xl",
+            "pointer-events-none absolute inset-x-0 top-0 drop-shadow-[0_10px_18px_rgba(0,0,0,0.16)]",
             (stickyChromeActive || mobileMenuOpen) && !stickyDropdownSurface
-              ? "bg-[color:var(--creed-surface)]/95 opacity-100 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+              ? "opacity-100"
               : "opacity-0",
           )}
-        />
+        >
+          <div className="absolute inset-0 rounded-xl bg-[var(--creed-surface)]" />
+        </motion.div>
         {stickyDropdownSurface ? (
-          <motion.div
+          <div
             aria-hidden="true"
-            initial={{
-              clipPath: `path("${stickySurfacePath(
-                stickyDropdownSurface,
-                false,
-                true,
-              )}")`,
-            }}
-            animate={{
-              clipPath: stickyDropdownSurface.open
-                ? `path("${stickySurfacePath(stickyDropdownSurface, true)}")`
-                : [
-                    `path("${stickySurfacePath(stickyDropdownSurface, true)}")`,
-                    `path("${stickySurfacePath(
-                      stickyDropdownSurface,
-                      false,
-                      true,
-                      true,
-                    )}")`,
-                    `path("${stickySurfacePath(
-                      stickyDropdownSurface,
-                      false,
-                      true,
-                    )}")`,
-                    `path("${stickySurfacePath(stickyDropdownSurface, false)}")`,
-                  ],
-            }}
-            transition={{
-              clipPath: stickyDropdownSurface.open
-                ? { duration: 0.24, ease: [0.22, 1, 0.36, 1] }
-                : {
-                    duration: 0.28,
-                    times: [0, 0.82, 0.96, 1],
-                    ease: [0.22, 1, 0.36, 1],
-                  },
-            }}
-            onAnimationComplete={() => {
-              if (!stickyDropdownSurface.open) {
-                setStickyDropdownSurface((current) =>
-                  current && !current.open ? null : current,
-                );
-              }
-            }}
-            className="pointer-events-none absolute inset-x-0 top-0 bg-[color:var(--creed-surface)]/95 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.22)] backdrop-blur-sm"
+            className="pointer-events-none absolute inset-x-0 top-0 drop-shadow-[0_10px_18px_rgba(0,0,0,0.16)]"
             style={{ height: stickyDropdownSurface.bottom }}
-          />
+          >
+            <motion.div
+              className="absolute inset-0 bg-[var(--creed-surface)]"
+              initial={{
+                clipPath: `path("${stickySurfacePath(
+                  stickyDropdownSurface,
+                  false,
+                  true,
+                )}")`,
+              }}
+              animate={{
+                clipPath: stickyDropdownSurface.open
+                  ? `path("${stickySurfacePath(stickyDropdownSurface, true)}")`
+                  : [
+                      `path("${stickySurfacePath(stickyDropdownSurface, true)}")`,
+                      `path("${stickySurfacePath(
+                        stickyDropdownSurface,
+                        false,
+                        true,
+                        true,
+                      )}")`,
+                      `path("${stickySurfacePath(
+                        stickyDropdownSurface,
+                        false,
+                        true,
+                      )}")`,
+                      `path("${stickySurfacePath(stickyDropdownSurface, false)}")`,
+                    ],
+              }}
+              transition={{
+                clipPath: stickyDropdownSurface.open
+                  ? { duration: 0.24, ease: [0.22, 1, 0.36, 1] }
+                  : {
+                      duration: 0.28,
+                      times: [0, 0.82, 0.96, 1],
+                      ease: [0.22, 1, 0.36, 1],
+                    },
+              }}
+              onAnimationComplete={() => {
+                if (!stickyDropdownSurface.open) {
+                  setStickyDropdownSurface((current) =>
+                    current && !current.open ? null : current,
+                  );
+                }
+              }}
+            />
+          </div>
         ) : null}
         <header
           ref={headerRef}
@@ -651,11 +657,10 @@ function HeaderDropdown({
   }, [cancelPendingOpen, open, pendingOpen]);
 
   const linkClass = cn(
-    "flex h-9 items-center rounded-md px-3.5 text-[14px] font-medium leading-none transition-colors duration-200",
+    "flex h-9 items-center justify-start rounded-md px-3.5 text-[14px] font-medium leading-none transition-colors duration-200",
     scrolled
       ? "text-[var(--creed-text-primary)] hover:text-[var(--creed-text-secondary)]"
       : "text-white hover:text-white/55",
-    alignRight ? "justify-end" : "justify-start",
   );
 
   return (

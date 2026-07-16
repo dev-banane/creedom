@@ -19,11 +19,52 @@ const ThemeContext = createContext<{
 } | null>(null);
 
 const KEY = "creed:theme";
+const SWITCHING_CLASS = "creed-theme-switching";
 
 function apply(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", theme === "dark");
   root.style.colorScheme = theme;
+}
+
+function guardThemeSwitchTransitions() {
+  const root = document.documentElement;
+  root.classList.add(SWITCHING_CLASS);
+  return () => root.classList.remove(SWITCHING_CLASS);
+}
+
+function suspendOffscreenFileSections() {
+  const viewportBuffer = 128;
+  const sections = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-theme-snapshot-section]"),
+  );
+  const offscreen = sections
+    .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+    .filter(
+      ({ rect }) =>
+        rect.bottom < -viewportBuffer ||
+        rect.top > innerHeight + viewportBuffer,
+    );
+  const suspended = offscreen.map(({ element, rect }) => ({
+    element,
+    previousHeight: element.style.height,
+    height: Math.ceil(rect.height),
+  }));
+
+  for (const { element, height } of suspended) {
+    element.style.height = `${height}px`;
+    element.setAttribute("data-theme-snapshot-hidden", "true");
+  }
+
+  let restored = false;
+  return () => {
+    if (restored) return;
+    restored = true;
+    for (const { element, previousHeight } of suspended) {
+      element.removeAttribute("data-theme-snapshot-hidden");
+      element.style.height = previousHeight;
+    }
+  };
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -57,11 +98,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       const reduceMotion =
         typeof matchMedia !== "undefined" &&
         matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const isFileRoute = window.location.pathname === "/file";
+      const transitionDuration = 520;
 
-      // No View Transitions support, or the user prefers reduced motion: just
-      // flip the theme with no animation.
-      if (!start || reduceMotion) {
+      if (reduceMotion) {
+        const removeTransitionGuard = guardThemeSwitchTransitions();
         apply(next);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(removeTransitionGuard);
+        });
         setTheme(next);
         persist();
         return;
@@ -71,6 +116,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         x: innerWidth / 2,
         y: innerHeight / 2,
       };
+
+      if (!start) {
+        const removeTransitionGuard = guardThemeSwitchTransitions();
+        apply(next);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(removeTransitionGuard);
+        });
+        setTheme(next);
+        persist();
+        return;
+      }
+
+      // Install the performance guard before the browser captures the old
+      // snapshot so both snapshots have the same computed animation styles.
+      // The reveal itself remains byte-for-byte equivalent to the original.
+      const removeTransitionGuard = guardThemeSwitchTransitions();
+      const restoreOffscreenSections = isFileRoute
+        ? suspendOffscreenFileSections()
+        : () => {};
 
       // Only the cheap `.dark` class flip runs inside the transition callback,
       // so the captured "new" snapshot is correct without paying for a full
@@ -84,16 +148,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setTheme(next);
       persist();
 
-      transition.ready.then(() => {
-        const r = Math.hypot(
-          Math.max(p.x, innerWidth - p.x),
-          Math.max(p.y, innerHeight - p.y)
-        );
-        document.documentElement.animate(
-          { clipPath: [`circle(0 at ${p.x}px ${p.y}px)`, `circle(${r}px at ${p.x}px ${p.y}px)`] },
-          { duration: 520, easing: "cubic-bezier(0.22,1,0.36,1)", pseudoElement: "::view-transition-new(root)" }
-        );
-      });
+      void transition.ready.then(
+        () => {
+          const r = Math.hypot(
+            Math.max(p.x, innerWidth - p.x),
+            Math.max(p.y, innerHeight - p.y),
+          );
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0 at ${p.x}px ${p.y}px)`,
+                `circle(${r}px at ${p.x}px ${p.y}px)`,
+              ],
+            },
+            {
+              duration: transitionDuration,
+              easing: "cubic-bezier(0.22,1,0.36,1)",
+              pseudoElement: "::view-transition-new(root)",
+            },
+          );
+          requestAnimationFrame(() => {
+            restoreOffscreenSections();
+            removeTransitionGuard();
+          });
+        },
+        () => {
+          restoreOffscreenSections();
+          removeTransitionGuard();
+        },
+      );
     },
     [theme]
   );

@@ -3557,6 +3557,7 @@ function SectionCard({
       layout={(dragActive || false) as true}
       onDragEnd={() => onDragActiveChange?.(false)}
       data-section-id={section.id}
+      data-theme-snapshot-section
       id={section.id}
       className="scroll-mt-24"
     >

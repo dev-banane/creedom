@@ -884,6 +884,21 @@
   z-index: 1;
 }
 
+/* The root reveal owns the theme animation. Prevent every mounted component
+   from running its own colour transition during the same two paint frames. */
+.creed-theme-switching *,
+.creed-theme-switching *::before,
+.creed-theme-switching *::after {
+  transition: none !important;
+}
+
+/* Preserve the document's exact geometry while excluding offscreen TipTap
+   trees from the theme View Transition snapshot. The attribute exists only
+   until the new root snapshot is ready. */
+[data-theme-snapshot-hidden] > * {
+  display: none !important;
+}
+
 /* Flip pure-black-on-white SVGs (brandmark, logo, GitHub mark, etc.) in dark
    mode so they read against the dark surface. Use sparingly - coloured brand
    assets shouldn't get this class. */

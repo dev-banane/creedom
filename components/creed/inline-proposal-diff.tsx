@@ -189,7 +189,7 @@ export function InlineProposalDiff({
   const stats = useMemo(() => summarizeDiff(parts), [parts]);
 
   return (
-    <div className="rounded-lg border border-[var(--creed-border)] bg-[var(--creed-surface)] shadow-[0_8px_24px_rgba(28,28,26,0.04)]">
+    <div className="rounded-xl border border-[var(--creed-border)] bg-[var(--creed-surface)] shadow-[0_8px_24px_rgba(28,28,26,0.04)]">
       <div className="flex items-center justify-between gap-3 px-3 py-2">
         <button
           type="button"
@@ -247,7 +247,7 @@ export function InlineProposalDiff({
             </button>
           </div>
         ) : canReview ? (
-          <div className="flex items-center gap-1">
+          <div className="-mr-1 flex items-center gap-1">
             <button
               type="button"
               onClick={onReject}
@@ -338,7 +338,7 @@ export function InlineNewSectionProposal({
     // Mirror the delete-meta proposal card but tinted green so additions
     // and removals read as opposites with the same chrome. Border, surface,
     // dividers, and the Accept button all share a single green hue.
-    <div className="rounded-lg border border-dashed border-[#10b981]/35 bg-[#ECFDF5]/40 shadow-[0_8px_24px_rgba(16,185,129,0.05)] dark:border-[#22c55e]/35 dark:bg-[#052e1a]/40 dark:shadow-none">
+    <div className="rounded-xl border border-dashed border-[#10b981]/35 bg-[#ECFDF5]/40 shadow-[0_8px_24px_rgba(16,185,129,0.05)] dark:border-[#22c55e]/35 dark:bg-[#052e1a]/40 dark:shadow-none">
       <div className="flex items-center justify-between gap-3 px-3 py-2">
         <button
           type="button"
@@ -379,7 +379,7 @@ export function InlineNewSectionProposal({
           </span>
         </button>
         {canReview ? (
-          <div className="flex items-center gap-1">
+          <div className="-mr-1 flex items-center gap-1">
             <button
               type="button"
               onClick={onReject}
@@ -466,8 +466,8 @@ export function InlineMetaProposal({
       : "proposed to recolour";
 
   const containerClass = isDelete
-    ? "rounded-lg border border-dashed border-[#dc2626]/35 bg-[#FEF2F2]/40 shadow-[0_8px_24px_rgba(220,38,38,0.05)] dark:border-[#ef4444]/35 dark:bg-[#7f1d1d]/15 dark:shadow-none"
-    : "rounded-lg border border-dashed border-[var(--creed-border)] bg-[var(--creed-surface)] shadow-[0_8px_24px_rgba(28,28,26,0.04)]";
+    ? "rounded-xl border border-dashed border-[#dc2626]/35 bg-[#FEF2F2]/40 shadow-[0_8px_24px_rgba(220,38,38,0.05)] dark:border-[#ef4444]/35 dark:bg-[#7f1d1d]/15 dark:shadow-none"
+    : "rounded-xl border border-dashed border-[var(--creed-border)] bg-[var(--creed-surface)] shadow-[0_8px_24px_rgba(28,28,26,0.04)]";
 
   const dividerClass = isDelete
     ? "border-t border-[#dc2626]/20"
@@ -534,7 +534,7 @@ export function InlineMetaProposal({
           )}
         </button>
         {canReview ? (
-          <div className="flex items-center gap-1">
+          <div className="-mr-1 flex items-center gap-1">
             <button
               type="button"
               onClick={onReject}

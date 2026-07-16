@@ -161,7 +161,7 @@ export function ReviewPill({
   }
 
   return (
-    <div className="inline-flex max-w-full items-center gap-1 rounded-xl border border-[var(--creed-border)] bg-[var(--creed-surface)] p-1.5 shadow-[0_8px_24px_rgba(28,28,26,0.04)]">
+    <div className="inline-flex max-w-full items-center gap-1 rounded-xl border border-[var(--creed-border)] bg-[var(--creed-surface)] px-1.5 py-1 shadow-[0_8px_24px_rgba(28,28,26,0.04)]">
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
           <button
@@ -179,28 +179,30 @@ export function ReviewPill({
                   }
             }
             onMouseLeave={isMobile ? undefined : scheduleClose}
-            className="group/trigger inline-flex h-7 items-center gap-2 rounded-md px-2.5 text-sm font-medium text-[var(--creed-text-secondary)] outline-none transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--creed-accent)]/45"
+            className="group/trigger -ml-0.5 inline-flex h-8 items-center rounded-md pr-2.5 pl-3 text-sm font-medium text-[var(--creed-text-secondary)] outline-none transition-colors hover:bg-[var(--creed-surface-raised)] hover:text-[var(--creed-text-primary)] focus-visible:ring-2 focus-visible:ring-[var(--creed-accent)]/45"
           >
-            <span className="inline-flex items-center gap-1">
-              <DiffBadge tone="added" count={totals.added} size="md" />
-              <DiffBadge tone="removed" count={totals.removed} size="md" />
-            </span>
-            <span className="text-[var(--creed-text-tertiary)]">·</span>
-            <span>
-              <span className="sm:hidden">{proposals.length}</span>
-              <span className="hidden sm:inline">
-                {proposals.length === 1
-                  ? "1 proposal"
-                  : `${proposals.length} proposals`}
+            <span className="inline-flex items-center gap-2">
+              <span className="inline-flex items-center gap-1">
+                <DiffBadge tone="added" count={totals.added} size="md" />
+                <DiffBadge tone="removed" count={totals.removed} size="md" />
               </span>
+              <span className="text-[var(--creed-text-tertiary)]">·</span>
+              <span>
+                <span className="sm:hidden">{proposals.length}</span>
+                <span className="hidden sm:inline">
+                  {proposals.length === 1
+                    ? "1 proposal"
+                    : `${proposals.length} proposals`}
+                </span>
+              </span>
+              <AnimatedChevronDown
+                size={14}
+                // Tertiary by default, flips to primary text colour when the
+                // trigger row is hovered or the dropdown is open - matches
+                // the chevron behaviour on the profile and colour dropdowns.
+                className="-rotate-90 text-[var(--creed-text-tertiary)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/trigger:text-[var(--creed-text-primary)] group-data-[state=open]/trigger:rotate-0 group-data-[state=open]/trigger:text-[var(--creed-text-primary)]"
+              />
             </span>
-            <AnimatedChevronDown
-              size={14}
-              // Tertiary by default, flips to primary text colour when the
-              // trigger row is hovered or the dropdown is open - matches
-              // the chevron behaviour on the profile and colour dropdowns.
-              className="-rotate-90 text-[var(--creed-text-tertiary)] transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover/trigger:text-[var(--creed-text-primary)] group-data-[state=open]/trigger:rotate-0 group-data-[state=open]/trigger:text-[var(--creed-text-primary)]"
-            />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -394,7 +396,7 @@ export function ReviewPill({
                           </button>
                         </div>
                       ) : item.canReview ? (
-                        <div className="flex items-center gap-1">
+                        <div className="-mr-1 flex items-center gap-1">
                           <button
                             type="button"
                             aria-label="Reject proposal"

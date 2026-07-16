@@ -442,7 +442,7 @@ export function SectionQualityPopover({
         onMouseEnter={isMobile ? undefined : cancelClose}
         onMouseLeave={isMobile ? undefined : scheduleClose}
         onCloseAutoFocus={(event) => event.preventDefault()}
-        className="relative w-64 rounded-lg border border-[var(--creed-border)] bg-[var(--creed-surface)] p-3 shadow-[0_8px_24px_rgba(28,28,26,0.10)] before:pointer-events-auto before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-['']"
+        className="relative w-64 rounded-lg bg-[var(--creed-surface)] p-3 shadow-[0_8px_24px_rgba(28,28,26,0.10)] before:pointer-events-auto before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-['']"
       >
         {quality ? (
           <QualityCompactCard
@@ -522,7 +522,7 @@ export function OverallQualityPopover({
         onMouseEnter={isMobile ? undefined : cancelClose}
         onMouseLeave={isMobile ? undefined : scheduleClose}
         onCloseAutoFocus={(event) => event.preventDefault()}
-        className="relative w-72 rounded-lg border border-[var(--creed-border)] bg-[var(--creed-surface)] p-3 shadow-[0_8px_24px_rgba(28,28,26,0.10)] before:pointer-events-auto before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-['']"
+        className="relative w-72 rounded-lg bg-[var(--creed-surface)] p-3 shadow-[0_8px_24px_rgba(28,28,26,0.10)] before:pointer-events-auto before:absolute before:-top-2 before:left-0 before:right-0 before:h-2 before:content-['']"
       >
         {report ? (
           <QualityCompactCard
