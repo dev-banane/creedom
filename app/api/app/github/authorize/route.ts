@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
 import { getCreedRole } from "@/lib/creed-membership";
+import { getSiteUrl } from "@/lib/supabase/env";
 import {
   buildGitHubAuthorizeUrl,
   getGitHubOAuthAppCredentials,
@@ -32,7 +33,7 @@ function backToSettings(
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const origin = url.origin;
+  const origin = getSiteUrl();
   const mode: Mode = url.searchParams.get("mode") === "company" ? "company" : "personal";
   const param = mode === "company" ? "teamGithub" : "github";
 

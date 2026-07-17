@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { requireApiAuth } from "@/lib/api-auth";
 import { getCreedRole } from "@/lib/creed-membership";
+import { getSiteUrl } from "@/lib/supabase/env";
 import {
   exchangeGitHubOAuthCode,
   getGitHubOAuthAppCredentials,
@@ -32,7 +33,8 @@ function backToSettings(
 }
 
 export async function GET(request: Request) {
-  const { origin, searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = getSiteUrl();
   const cookieStore = await cookies();
   const rawState = cookieStore.get(GITHUB_OAUTH_STATE_COOKIE)?.value ?? null;
   // Single-use: drop the cookie regardless of outcome.

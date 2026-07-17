@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { upsertGitHubIntegration } from "@/lib/creed-backend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/supabase/env";
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = getSiteUrl();
   const code = searchParams.get("code");
   const next = searchParams.get("next") || "/";
   const integration = searchParams.get("integration");
